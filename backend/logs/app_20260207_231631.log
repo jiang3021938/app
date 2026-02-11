@@ -1,0 +1,120 @@
+2026-02-07 23:16:31,914 - main - INFO - === Logging system initialized ===
+2026-02-07 23:16:31,915 - main - INFO - Log file: logs/app_20260207_231631.log
+2026-02-07 23:16:31,916 - main - INFO - Log level: INFO
+2026-02-07 23:16:31,916 - main - INFO - Timestamp: 20260207_231631
+2026-02-07 23:16:32,584 - main - INFO - Included router: routers.aihub.router
+2026-02-07 23:16:32,600 - main - INFO - Included router: routers.auth.router
+2026-02-07 23:16:32,653 - main - INFO - Included router: routers.documents.router
+2026-02-07 23:16:32,763 - main - INFO - Included router: routers.extractions.router
+2026-02-07 23:16:32,765 - main - INFO - Included router: routers.health.router
+2026-02-07 23:16:32,793 - main - INFO - Included router: routers.lease_analysis.router
+2026-02-07 23:16:32,838 - main - INFO - Included router: routers.payments.router
+2026-02-07 23:16:32,858 - main - INFO - Included router: routers.settings.router
+2026-02-07 23:16:32,898 - main - INFO - Included router: routers.state_regulations.router
+2026-02-07 23:16:32,937 - main - INFO - Included router: routers.storage.router
+2026-02-07 23:16:32,953 - core.config - DEBUG - Read dynamic attribute stripe_secret_key from environment variable STRIPE_SECRET_KEY
+2026-02-07 23:16:32,961 - main - INFO - Included router: routers.stripe_payments.router
+2026-02-07 23:16:32,969 - main - INFO - Included router: routers.user.router
+2026-02-07 23:16:33,010 - main - INFO - Included router: routers.user_credits.router
+2026-02-07 23:16:33,012 - main - INFO - === Application startup initiated ===
+2026-02-07 23:16:33,012 - services.database - DEBUG - [DB_OP] Starting database initialization
+2026-02-07 23:16:33,012 - services.database - INFO - 🔧 Starting database initialization...
+2026-02-07 23:16:33,012 - core.database - INFO - Starting database initialization...
+2026-02-07 23:16:33,012 - core.config - DEBUG - Read dynamic attribute database_url from environment variable DATABASE_URL
+2026-02-07 23:16:33,012 - core.database - INFO - Normalizing database URL for async compatibility...
+2026-02-07 23:16:33,013 - core.database - INFO - Creating async database engine...
+2026-02-07 23:16:33,013 - core.database - INFO - Using QueuePool with connection pooling for non-Lambda environment
+2026-02-07 23:16:33,070 - core.database - INFO - Database engine created successfully
+2026-02-07 23:16:33,070 - core.database - INFO - Creating async session maker...
+2026-02-07 23:16:33,070 - core.database - INFO - Async session maker created successfully
+2026-02-07 23:16:33,070 - core.database - INFO - Database connection initialized successfully
+2026-02-07 23:16:33,070 - services.database - INFO - 🔧 Database connection initialized, now creating tables if tables not exist...
+2026-02-07 23:16:33,070 - core.database - DEBUG - [DB_OP] Starting create_tables
+2026-02-07 23:16:33,070 - core.database - INFO - 🔧 Starting table creation...
+2026-02-07 23:16:34,621 - core.database - INFO - Tables initialized successfully
+2026-02-07 23:16:34,622 - core.database - DEBUG - [DB_OP] Create tables completed in 1.5514s
+2026-02-07 23:16:34,682 - services.database - INFO - 🔧 Table creation completed
+2026-02-07 23:16:34,683 - services.database - INFO - Database initialized successfully
+2026-02-07 23:16:34,683 - services.database - DEBUG - [DB_OP] Database initialization completed in 1.6710s
+2026-02-07 23:16:34,684 - services.mock_data - INFO - Processing mock data file state_regulations.json for table state_regulations
+2026-02-07 23:16:36,647 - services.mock_data - INFO - Table state_regulations already has 50 rows; skipping mock insert
+2026-02-07 23:16:36,707 - services.database - DEBUG - [DB_OP] Starting database initialization
+2026-02-07 23:16:36,708 - services.database - INFO - 🔧 Starting database initialization...
+2026-02-07 23:16:36,708 - core.database - INFO - Starting database initialization...
+2026-02-07 23:16:36,708 - core.database - INFO - Database already initialized
+2026-02-07 23:16:36,708 - services.database - INFO - 🔧 Database connection initialized, now creating tables if tables not exist...
+2026-02-07 23:16:36,708 - core.database - DEBUG - [DB_OP] Starting create_tables
+2026-02-07 23:16:36,708 - core.database - INFO - Tables already initialized
+2026-02-07 23:16:36,709 - services.database - INFO - 🔧 Table creation completed
+2026-02-07 23:16:36,709 - services.database - INFO - Database initialized successfully
+2026-02-07 23:16:36,709 - services.database - DEBUG - [DB_OP] Database initialization completed in 0.0014s
+2026-02-07 23:16:36,709 - core.config - DEBUG - Read dynamic attribute admin_user_id from environment variable ADMIN_USER_ID
+2026-02-07 23:16:36,709 - core.config - DEBUG - Read dynamic attribute admin_user_email from environment variable ADMIN_USER_EMAIL
+2026-02-07 23:16:37,077 - services.auth - DEBUG - Admin user 956410 already exists
+2026-02-07 23:16:37,137 - main - INFO - === Application startup completed successfully ===
+2026-02-07 23:36:29,816 - core.config - DEBUG - Read dynamic attribute jwt_secret_key from environment variable JWT_SECRET_KEY
+2026-02-07 23:36:29,817 - core.config - DEBUG - Read dynamic attribute jwt_algorithm from environment variable JWT_ALGORITHM
+2026-02-07 23:36:29,835 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 23:36:30,298 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 23:36:30,298 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 23:36:30,299 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0003s
+2026-02-07 23:36:30,299 - routers.documents - DEBUG - Querying documentss: query=None, sort=-created_at, skip=0, limit=50, fields=None
+2026-02-07 23:36:31,371 - routers.documents - DEBUG - Found 5 documentss
+2026-02-07 23:36:31,372 - core.database - DEBUG - [DB_OP] Database session cleanup after 1.0741s
+2026-02-07 23:36:31,800 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 23:36:31,800 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 23:36:31,801 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0002s
+2026-02-07 23:36:32,220 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.4192s
+2026-02-07 23:36:37,661 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 23:36:43,037 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 23:36:43,038 - core.config - DEBUG - Read dynamic attribute oss_service_url from environment variable OSS_SERVICE_URL
+2026-02-07 23:36:43,038 - core.config - DEBUG - Read dynamic attribute oss_api_key from environment variable OSS_API_KEY
+2026-02-07 23:36:43,605 - httpcore.connection - DEBUG - connect_tcp.started host='atoms.dev' port=443 local_address=None timeout=120.0 socket_options=None
+2026-02-07 23:36:43,618 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fbe7e13af20>
+2026-02-07 23:36:43,618 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fbe7eaf13c0> server_hostname='atoms.dev' timeout=120.0
+2026-02-07 23:36:43,626 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fbe7ec6eef0>
+2026-02-07 23:36:43,626 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-02-07 23:36:43,627 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-02-07 23:36:43,627 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-02-07 23:36:43,628 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-02-07 23:36:43,628 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-02-07 23:36:43,735 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sun, 08 Feb 2026 07:36:43 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Access-Control-Allow-Headers', b'Origin, Content-Type, Accept, Authorization'), (b'Access-Control-Allow-Methods', b'GET, POST, PUT, DELETE, OPTIONS'), (b'Access-Control-Allow-Origin', b'*'), (b'Access-Control-Max-Age', b'86400'), (b'X-Request-Id', b'74668f54c06d1740fa1d41f4d6ce3cfc'), (b'X-Trace-Id', b'abd00aca8ee44ea5955cfcde2bc0aac5'), (b'Content-Security-Policy', b"frame-ancestors 'self' https://atoms.dev"), (b'Strict-Transport-Security', b'max-age=63072000; includeSubDomains; preload'), (b'X-Content-Type-Options', b'nosniff'), (b'X-XSS-Protection', b'1; mode=block'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'cf-cache-status', b'DYNAMIC'), (b'Content-Encoding', b'gzip'), (b'Server', b'cloudflare'), (b'CF-RAY', b'9ca97528afdd0f27-LAX')])
+2026-02-07 23:36:43,736 - httpx - INFO - HTTP Request: POST https://atoms.dev/api/v1/infra/client/oss/buckets/lease-documents/objects/upload_url "HTTP/1.1 200 OK"
+2026-02-07 23:36:43,737 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-02-07 23:36:43,737 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-02-07 23:36:43,737 - httpcore.http11 - DEBUG - response_closed.started
+2026-02-07 23:36:43,737 - httpcore.http11 - DEBUG - response_closed.complete
+2026-02-07 23:36:43,739 - httpcore.connection - DEBUG - close.started
+2026-02-07 23:36:43,739 - httpcore.connection - DEBUG - close.complete
+2026-02-07 23:36:50,932 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 23:36:50,932 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 23:36:50,933 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0003s
+2026-02-07 23:36:50,933 - routers.documents - DEBUG - Creating new documents with data: file_name='California-Standard-Residential-Lease-Agreement.pdf' file_key='leases/956410/1770536203041-California-Standard-Residential-Lease-Agreement.pdf' file_size=81319 status='pending' created_at=datetime.datetime(2026, 2, 8, 7, 36, 50, 971000, tzinfo=TzInfo(UTC)) updated_at=datetime.datetime(2026, 2, 8, 7, 36, 50, 971000, tzinfo=TzInfo(UTC))
+2026-02-07 23:36:51,711 - services.documents - INFO - Created documents with id: 6
+2026-02-07 23:36:51,711 - routers.documents - INFO - Documents created successfully with id: 6
+2026-02-07 23:36:51,712 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.7800s
+2026-02-07 23:36:52,159 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 23:36:52,159 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 23:36:52,159 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0002s
+2026-02-07 23:36:53,102 - services.documents - INFO - Updated documents 6
+2026-02-07 23:36:53,103 - core.config - DEBUG - Read dynamic attribute app_ai_base_url from environment variable APP_AI_BASE_URL
+2026-02-07 23:36:53,103 - core.config - DEBUG - Read dynamic attribute app_ai_key from environment variable APP_AI_KEY
+2026-02-07 23:36:55,215 - services.aihub - ERROR - gentxt error: argument 'by_alias': 'NoneType' object cannot be converted to 'PyBool'
+2026-02-07 23:36:55,216 - services.lease_extraction - ERROR - Lease extraction error: argument 'by_alias': 'NoneType' object cannot be converted to 'PyBool'
+2026-02-07 23:36:55,683 - services.documents - INFO - Updated documents 6
+2026-02-07 23:36:55,684 - core.database - DEBUG - [DB_OP] Database session cleanup after 3.5250s
+2026-02-07 23:37:07,285 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 23:37:07,763 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 23:37:07,764 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 23:37:07,764 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0002s
+2026-02-07 23:37:07,764 - routers.documents - DEBUG - Querying documentss: query=None, sort=-created_at, skip=0, limit=50, fields=None
+2026-02-07 23:37:08,116 - routers.documents - DEBUG - Found 6 documentss
+2026-02-07 23:37:08,117 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.3532s
+2026-02-07 23:37:08,593 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 23:37:08,593 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 23:37:08,593 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0002s
+2026-02-07 23:37:08,886 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.2932s
+2026-02-07 23:38:21,357 - services.database - DEBUG - [DB_OP] Starting database close
+2026-02-07 23:38:21,419 - core.database - INFO - Database connection closed and engine disposed
+2026-02-07 23:38:21,419 - services.database - INFO - Database connections closed
+2026-02-07 23:38:21,419 - services.database - DEBUG - [DB_OP] Database close completed in 0.0626s

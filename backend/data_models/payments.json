@@ -1,0 +1,50 @@
+{
+    "title": "payments",
+    "type": "object",
+    "description": "Payment records",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "stripe_session_id": {
+            "type": "string",
+            "description": "Stripe checkout session ID"
+        },
+        "amount": {
+            "type": "number",
+            "description": "Payment amount in cents"
+        },
+        "currency": {
+            "type": "string",
+            "description": "Currency code (usd)"
+        },
+        "payment_type": {
+            "type": "string",
+            "description": "single, subscription"
+        },
+        "credits_purchased": {
+            "type": "integer",
+            "description": "Number of credits purchased"
+        },
+        "status": {
+            "type": "string",
+            "description": "pending, completed, failed, refunded"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Payment timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "amount",
+        "status"
+    ]
+}

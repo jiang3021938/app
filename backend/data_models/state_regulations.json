@@ -1,0 +1,58 @@
+{
+    "title": "state_regulations",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "state_code": {
+            "type": "string",
+            "description": "State code like CA, TX, NY"
+        },
+        "state_name": {
+            "type": "string",
+            "description": "Full state name"
+        },
+        "regulation_category": {
+            "type": "string",
+            "description": "Category like security_deposit, late_fees, notice_period"
+        },
+        "regulation_title": {
+            "type": "string",
+            "description": "Title of the regulation"
+        },
+        "regulation_content": {
+            "type": "string",
+            "description": "Detailed content of the regulation"
+        },
+        "max_amount": {
+            "type": "number",
+            "description": "Maximum amount if applicable"
+        },
+        "max_multiplier": {
+            "type": "number",
+            "description": "Multiplier for rent-based limits"
+        },
+        "required_days": {
+            "type": "integer",
+            "description": "Required notice days if applicable"
+        },
+        "source_url": {
+            "type": "string",
+            "description": "Source URL for the regulation"
+        },
+        "last_updated": {
+            "type": "string",
+            "description": "Last updated timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "state_code",
+        "state_name",
+        "regulation_category",
+        "regulation_title",
+        "regulation_content"
+    ]
+}

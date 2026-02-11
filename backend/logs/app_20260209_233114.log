@@ -1,0 +1,74 @@
+2026-02-09 23:31:14,865 - main - INFO - === Logging system initialized ===
+2026-02-09 23:31:14,865 - main - INFO - Log file: logs/app_20260209_233114.log
+2026-02-09 23:31:14,865 - main - INFO - Log level: INFO
+2026-02-09 23:31:14,865 - main - INFO - Timestamp: 20260209_233114
+2026-02-09 23:31:15,353 - main - INFO - Included router: routers.aihub.router
+2026-02-09 23:31:15,367 - main - INFO - Included router: routers.auth.router
+2026-02-09 23:31:15,410 - main - INFO - Included router: routers.documents.router
+2026-02-09 23:31:15,464 - main - INFO - Included router: routers.extractions.router
+2026-02-09 23:31:15,469 - main - INFO - Included router: routers.google_auth.router
+2026-02-09 23:31:15,470 - main - INFO - Included router: routers.health.router
+2026-02-09 23:31:15,680 - main - INFO - Included router: routers.lease_analysis.router
+2026-02-09 23:31:15,723 - main - INFO - Included router: routers.payments.router
+2026-02-09 23:31:15,743 - main - INFO - Included router: routers.settings.router
+2026-02-09 23:31:15,783 - main - INFO - Included router: routers.state_regulations.router
+2026-02-09 23:31:15,806 - main - INFO - Included router: routers.storage.router
+2026-02-09 23:31:15,823 - core.config - DEBUG - Read dynamic attribute stripe_secret_key from environment variable STRIPE_SECRET_KEY
+2026-02-09 23:31:15,830 - main - INFO - Included router: routers.stripe_payments.router
+2026-02-09 23:31:15,837 - main - INFO - Included router: routers.user.router
+2026-02-09 23:31:15,985 - main - INFO - Included router: routers.user_credits.router
+2026-02-09 23:31:15,986 - main - INFO - === Application startup initiated ===
+2026-02-09 23:31:15,986 - services.database - DEBUG - [DB_OP] Starting database initialization
+2026-02-09 23:31:15,986 - services.database - INFO - 🔧 Starting database initialization...
+2026-02-09 23:31:15,987 - core.database - INFO - Starting database initialization...
+2026-02-09 23:31:15,987 - core.config - DEBUG - Read dynamic attribute database_url from environment variable DATABASE_URL
+2026-02-09 23:31:15,987 - core.database - INFO - Normalizing database URL for async compatibility...
+2026-02-09 23:31:15,988 - core.database - INFO - Creating async database engine...
+2026-02-09 23:31:15,988 - core.database - INFO - Using QueuePool with connection pooling for non-Lambda environment
+2026-02-09 23:31:16,063 - core.database - INFO - Database engine created successfully
+2026-02-09 23:31:16,063 - core.database - INFO - Creating async session maker...
+2026-02-09 23:31:16,063 - core.database - INFO - Async session maker created successfully
+2026-02-09 23:31:16,063 - core.database - INFO - Database connection initialized successfully
+2026-02-09 23:31:16,063 - services.database - INFO - 🔧 Database connection initialized, now creating tables if tables not exist...
+2026-02-09 23:31:16,063 - core.database - DEBUG - [DB_OP] Starting create_tables
+2026-02-09 23:31:16,063 - core.database - INFO - 🔧 Starting table creation...
+2026-02-09 23:31:19,642 - core.database - INFO - Tables initialized successfully
+2026-02-09 23:31:19,642 - core.database - DEBUG - [DB_OP] Create tables completed in 3.5787s
+2026-02-09 23:31:19,702 - services.database - INFO - 🔧 Table creation completed
+2026-02-09 23:31:19,703 - services.database - INFO - 🔧 Checking and repairing existing tables...
+2026-02-09 23:31:20,177 - services.database - INFO - Existing columns in extractions table: ['monthly_rent', 'renewal_notice_days', 'created_at', 'security_deposit', 'document_id', 'id', 'lease_end_date', 'pet_policy', 'late_fee_terms', 'risk_flags', 'raw_extraction', 'compliance_data', 'source_map', 'pages_meta', 'user_id', 'tenant_name', 'landlord_name', 'property_address', 'lease_start_date']
+2026-02-09 23:31:20,237 - services.database - INFO - 🔧 Table repair completed
+2026-02-09 23:31:20,237 - services.database - INFO - Database initialized successfully
+2026-02-09 23:31:20,237 - services.database - DEBUG - [DB_OP] Database initialization completed in 4.2511s
+2026-02-09 23:31:20,238 - services.mock_data - INFO - Processing mock data file state_regulations.json for table state_regulations
+2026-02-09 23:31:22,192 - services.mock_data - INFO - Table state_regulations already has 50 rows; skipping mock insert
+2026-02-09 23:31:22,253 - services.database - DEBUG - [DB_OP] Starting database initialization
+2026-02-09 23:31:22,253 - services.database - INFO - 🔧 Starting database initialization...
+2026-02-09 23:31:22,253 - core.database - INFO - Starting database initialization...
+2026-02-09 23:31:22,253 - core.database - INFO - Database already initialized
+2026-02-09 23:31:22,253 - services.database - INFO - 🔧 Database connection initialized, now creating tables if tables not exist...
+2026-02-09 23:31:22,253 - core.database - DEBUG - [DB_OP] Starting create_tables
+2026-02-09 23:31:22,253 - core.database - INFO - Tables already initialized
+2026-02-09 23:31:22,253 - services.database - INFO - 🔧 Table creation completed
+2026-02-09 23:31:22,254 - services.database - INFO - 🔧 Checking and repairing existing tables...
+2026-02-09 23:31:22,610 - services.database - INFO - Existing columns in extractions table: ['monthly_rent', 'renewal_notice_days', 'created_at', 'security_deposit', 'document_id', 'id', 'lease_end_date', 'pet_policy', 'late_fee_terms', 'risk_flags', 'raw_extraction', 'compliance_data', 'source_map', 'pages_meta', 'user_id', 'tenant_name', 'landlord_name', 'property_address', 'lease_start_date']
+2026-02-09 23:31:22,671 - services.database - INFO - 🔧 Table repair completed
+2026-02-09 23:31:22,671 - services.database - INFO - Database initialized successfully
+2026-02-09 23:31:22,671 - services.database - DEBUG - [DB_OP] Database initialization completed in 0.4181s
+2026-02-09 23:31:22,671 - core.config - DEBUG - Read dynamic attribute admin_user_id from environment variable ADMIN_USER_ID
+2026-02-09 23:31:22,671 - core.config - DEBUG - Read dynamic attribute admin_user_email from environment variable ADMIN_USER_EMAIL
+2026-02-09 23:31:23,041 - services.auth - DEBUG - Admin user 956410 already exists
+2026-02-09 23:31:23,102 - main - INFO - === Application startup completed successfully ===
+2026-02-09 23:32:36,725 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 23:32:36,725 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0004s
+2026-02-09 23:32:37,278 - routers.auth - DEBUG - [get_dynamic_backend_url] mgx-external-domain=None, x-forwarded-host=t590x-348dff0be7fa4659be92ce913b8d81ed-preview.app.atoms.dev, host=127.0.0.1:8000, scheme=https, dynamic_url=https://t590x-348dff0be7fa4659be92ce913b8d81ed-preview.app.atoms.dev
+2026-02-09 23:32:37,278 - routers.auth - INFO - [login] Starting OIDC flow with redirect_uri=https://t590x-348dff0be7fa4659be92ce913b8d81ed-preview.app.atoms.dev/api/v1/auth/callback
+2026-02-09 23:32:37,279 - core.config - DEBUG - Read dynamic attribute oidc_client_id from environment variable OIDC_CLIENT_ID
+2026-02-09 23:32:37,279 - core.config - DEBUG - Read dynamic attribute oidc_scope from environment variable OIDC_SCOPE
+2026-02-09 23:32:37,279 - core.config - DEBUG - Read dynamic attribute oidc_issuer_url from environment variable OIDC_ISSUER_URL
+2026-02-09 23:32:37,279 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.5542s
+2026-02-09 23:38:32,469 - dependencies.auth - DEBUG - Authentication required for request GET /api/v1/auth/me
+2026-02-09 23:39:05,588 - services.database - DEBUG - [DB_OP] Starting database close
+2026-02-09 23:39:05,590 - core.database - INFO - Database connection closed and engine disposed
+2026-02-09 23:39:05,590 - services.database - INFO - Database connections closed
+2026-02-09 23:39:05,590 - services.database - DEBUG - [DB_OP] Database close completed in 0.0019s

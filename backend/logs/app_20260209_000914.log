@@ -1,0 +1,23 @@
+2026-02-09 00:09:14,389 - main - INFO - === Logging system initialized ===
+2026-02-09 00:09:14,389 - main - INFO - Log file: logs/app_20260209_000914.log
+2026-02-09 00:09:14,389 - main - INFO - Log level: INFO
+2026-02-09 00:09:14,389 - main - INFO - Timestamp: 20260209_000914
+2026-02-09 00:09:14,850 - main - INFO - Included router: routers.aihub.router
+2026-02-09 00:09:14,867 - main - INFO - Included router: routers.auth.router
+2026-02-09 00:09:14,912 - main - INFO - Included router: routers.documents.router
+2026-02-09 00:09:14,966 - main - INFO - Included router: routers.extractions.router
+2026-02-09 00:09:14,971 - main - INFO - Included router: routers.google_auth.router
+2026-02-09 00:09:14,972 - main - INFO - Included router: routers.health.router
+2026-02-09 00:09:15,216 - main - INFO - Included router: routers.lease_analysis.router
+2026-02-09 00:09:15,266 - main - INFO - Included router: routers.payments.router
+2026-02-09 00:09:15,298 - main - INFO - Included router: routers.settings.router
+2026-02-09 00:09:15,356 - main - INFO - Included router: routers.state_regulations.router
+2026-02-09 00:09:15,379 - main - INFO - Included router: routers.storage.router
+2026-02-09 00:09:15,397 - main - WARNING - Failed to import module 'routers.stripe_payments': 'Settings' object has no attribute 'stripe_secret_key'
+2026-02-09 00:09:15,405 - main - INFO - Included router: routers.user.router
+2026-02-09 00:09:15,445 - main - INFO - Included router: routers.user_credits.router
+2026-02-09 00:09:15,446 - main - INFO - === Application startup initiated ===
+2026-02-09 00:09:15,447 - services.database - DEBUG - [DB_OP] Starting database initialization
+2026-02-09 00:09:15,447 - services.database - INFO - 🔧 Starting database initialization...
+2026-02-09 00:09:15,447 - core.database - INFO - Starting database initialization...
+2026-02-09 00:09:15,447 - services.database - ERROR - Failed to initialize database: 'Settings' object has no attribute 'database_url'

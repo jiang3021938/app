@@ -1,0 +1,88 @@
+{
+    "title": "extractions",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "document_id": {
+            "type": "integer",
+            "description": "Document ID"
+        },
+        "tenant_name": {
+            "type": "string",
+            "description": "Tenant name extracted from lease"
+        },
+        "landlord_name": {
+            "type": "string",
+            "description": "Landlord name extracted from lease"
+        },
+        "property_address": {
+            "type": "string",
+            "description": "Property address"
+        },
+        "monthly_rent": {
+            "type": "number",
+            "description": "Monthly rent amount"
+        },
+        "security_deposit": {
+            "type": "number",
+            "description": "Security deposit amount"
+        },
+        "lease_start_date": {
+            "type": "string",
+            "description": "Lease start date"
+        },
+        "lease_end_date": {
+            "type": "string",
+            "description": "Lease end date"
+        },
+        "renewal_notice_days": {
+            "type": "integer",
+            "description": "Days notice required for renewal"
+        },
+        "pet_policy": {
+            "type": "string",
+            "description": "Pet policy terms"
+        },
+        "late_fee_terms": {
+            "type": "string",
+            "description": "Late fee terms"
+        },
+        "risk_flags": {
+            "type": "string",
+            "description": "JSON string of risk flags"
+        },
+        "compliance_data": {
+            "type": "string",
+            "description": "JSON string of compliance data"
+        },
+        "raw_extraction": {
+            "type": "string",
+            "description": "Raw extraction JSON"
+        },
+        "source_map": {
+            "type": "string",
+            "description": "JSON mapping of fields to PDF source locations"
+        },
+        "pages_meta": {
+            "type": "string",
+            "description": "JSON array of PDF page dimensions"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "document_id"
+    ]
+}

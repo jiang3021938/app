@@ -1,0 +1,46 @@
+{
+    "title": "user_credits",
+    "type": "object",
+    "description": "User credit balance for document analysis",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "free_credits": {
+            "type": "integer",
+            "description": "Free credits remaining (starts at 1)"
+        },
+        "paid_credits": {
+            "type": "integer",
+            "description": "Paid credits remaining"
+        },
+        "subscription_type": {
+            "type": "string",
+            "description": "none, monthly"
+        },
+        "subscription_expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Subscription expiration date"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Record creation timestamp"
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "user_id"
+    ]
+}

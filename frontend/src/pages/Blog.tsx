@@ -1,0 +1,152 @@
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { FileText, ArrowLeft, Clock, ArrowRight } from "lucide-react";
+
+const BLOG_POSTS = [
+  {
+    slug: "california-lease-clauses",
+    title: "California Lease Agreement: 10 Clauses Every Landlord Must Include",
+    excerpt: "Missing these critical clauses in your California lease could cost you thousands. Learn what state law requires and how to protect your investment.",
+    category: "State Guide",
+    readTime: "8 min",
+    date: "Jan 15, 2026",
+    featured: true,
+  },
+  {
+    slug: "review-lease-5-minutes",
+    title: "How to Review a Lease Agreement in 5 Minutes Using AI",
+    excerpt: "Manual lease review takes hours. Here's how AI-powered tools can extract key terms, flag risks, and give you actionable insights in under 5 minutes.",
+    category: "How-To",
+    readTime: "5 min",
+    date: "Jan 22, 2026",
+    featured: true,
+  },
+  {
+    slug: "security-deposit-laws",
+    title: "Security Deposit Laws by State: 2026 Complete Guide",
+    excerpt: "Every state has different rules for security deposits — limits, return timelines, and penalties. This comprehensive guide covers all 50 states.",
+    category: "Legal Guide",
+    readTime: "12 min",
+    date: "Feb 1, 2026",
+  },
+  {
+    slug: "lease-renewal-mistakes",
+    title: "5 Common Lease Renewal Mistakes That Cost Landlords Money",
+    excerpt: "Renewing a lease seems straightforward, but these common mistakes can lead to lost revenue, legal disputes, and tenant turnover.",
+    category: "Tips",
+    readTime: "6 min",
+    date: "Feb 5, 2026",
+  },
+  {
+    slug: "ai-vs-lawyer-lease-review",
+    title: "AI vs. Lawyer for Lease Review: When to Use Each",
+    excerpt: "AI tools are getting smarter, but when do you still need a real attorney? We break down the use cases for each approach.",
+    category: "Industry",
+    readTime: "7 min",
+    date: "Feb 8, 2026",
+  },
+  {
+    slug: "late-fee-best-practices",
+    title: "Setting Late Fees: Best Practices & Legal Limits",
+    excerpt: "Late fees that are too high are unenforceable. Too low and you lose leverage. Here's how to find the sweet spot while staying legal.",
+    category: "Tips",
+    readTime: "5 min",
+    date: "Feb 10, 2026",
+  },
+];
+
+export default function BlogPage() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <header className="border-b bg-white">
+        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />Back
+          </Button>
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+            <FileText className="h-8 w-8 text-blue-600" />
+            <span className="text-xl font-bold text-slate-800">LeaseLenses Blog</span>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-12 max-w-4xl">
+        <div className="text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+            Landlord Resource Center
+          </h1>
+          <p className="text-lg text-slate-600">
+            Expert guides, state-specific laws, and practical tips for lease management.
+          </p>
+        </div>
+
+        {/* Featured Posts */}
+        <div className="grid md:grid-cols-2 gap-6 mb-12">
+          {BLOG_POSTS.filter((p) => p.featured).map((post) => (
+            <Card
+              key={post.slug}
+              className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+              onClick={() => navigate(`/blog/${post.slug}`)}
+            >
+              <div className="h-3 bg-blue-600" />
+              <CardContent className="py-6">
+                <Badge variant="secondary" className="mb-3">{post.category}</Badge>
+                <h2 className="text-xl font-semibold text-slate-800 mb-2 group-hover:text-blue-600 transition-colors">
+                  {post.title}
+                </h2>
+                <p className="text-slate-600 text-sm mb-4">{post.excerpt}</p>
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />{post.readTime} read
+                  </div>
+                  <span>{post.date}</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* All Posts */}
+        <h2 className="text-xl font-semibold text-slate-800 mb-6">All Articles</h2>
+        <div className="space-y-4">
+          {BLOG_POSTS.map((post) => (
+            <Card
+              key={post.slug}
+              className="hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => navigate(`/blog/${post.slug}`)}
+            >
+              <CardContent className="py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge variant="secondary" className="text-xs">{post.category}</Badge>
+                      <span className="text-xs text-slate-400">{post.date}</span>
+                    </div>
+                    <h3 className="font-medium text-slate-800 hover:text-blue-600">{post.title}</h3>
+                    <p className="text-sm text-slate-500 mt-1 truncate">{post.excerpt}</p>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-slate-400 flex-shrink-0 ml-4" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <Card className="mt-12 bg-blue-600 border-blue-600 text-white">
+          <CardContent className="py-8 text-center">
+            <h2 className="text-2xl font-bold mb-2">Ready to analyze your lease?</h2>
+            <p className="text-blue-100 mb-4">Sign up free and get your first analysis on us.</p>
+            <Button variant="secondary" size="lg" onClick={() => navigate("/dashboard")}>
+              Sign Up Free
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  );
+}

@@ -1,0 +1,4 @@
+.env.local
+backend/app.db
+backend/.env
+backend/leaselenses.db

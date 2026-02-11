@@ -1,0 +1,305 @@
+2026-02-09 01:20:21,793 - main - INFO - === Logging system initialized ===
+2026-02-09 01:20:21,794 - main - INFO - Log file: logs/app_20260209_012021.log
+2026-02-09 01:20:21,794 - main - INFO - Log level: INFO
+2026-02-09 01:20:21,794 - main - INFO - Timestamp: 20260209_012021
+2026-02-09 01:20:22,690 - main - INFO - Included router: routers.aihub.router
+2026-02-09 01:20:22,713 - main - INFO - Included router: routers.auth.router
+2026-02-09 01:20:22,777 - main - INFO - Included router: routers.documents.router
+2026-02-09 01:20:22,845 - main - INFO - Included router: routers.extractions.router
+2026-02-09 01:20:22,852 - main - INFO - Included router: routers.google_auth.router
+2026-02-09 01:20:22,856 - main - INFO - Included router: routers.health.router
+2026-02-09 01:20:23,136 - main - INFO - Included router: routers.lease_analysis.router
+2026-02-09 01:20:23,205 - main - INFO - Included router: routers.payments.router
+2026-02-09 01:20:23,237 - main - INFO - Included router: routers.settings.router
+2026-02-09 01:20:23,286 - main - INFO - Included router: routers.state_regulations.router
+2026-02-09 01:20:23,314 - main - INFO - Included router: routers.storage.router
+2026-02-09 01:20:23,347 - core.config - DEBUG - Read dynamic attribute stripe_secret_key from environment variable STRIPE_SECRET_KEY
+2026-02-09 01:20:23,356 - main - INFO - Included router: routers.stripe_payments.router
+2026-02-09 01:20:23,365 - main - INFO - Included router: routers.user.router
+2026-02-09 01:20:23,538 - main - INFO - Included router: routers.user_credits.router
+2026-02-09 01:20:23,540 - main - INFO - === Application startup initiated ===
+2026-02-09 01:20:23,540 - services.database - DEBUG - [DB_OP] Starting database initialization
+2026-02-09 01:20:23,540 - services.database - INFO - 🔧 Starting database initialization...
+2026-02-09 01:20:23,541 - core.database - INFO - Starting database initialization...
+2026-02-09 01:20:23,541 - core.config - DEBUG - Read dynamic attribute database_url from environment variable DATABASE_URL
+2026-02-09 01:20:23,541 - core.database - INFO - Normalizing database URL for async compatibility...
+2026-02-09 01:20:23,543 - core.database - INFO - Creating async database engine...
+2026-02-09 01:20:23,543 - core.database - INFO - Using QueuePool with connection pooling for non-Lambda environment
+2026-02-09 01:20:23,617 - core.database - INFO - Database engine created successfully
+2026-02-09 01:20:23,617 - core.database - INFO - Creating async session maker...
+2026-02-09 01:20:23,617 - core.database - INFO - Async session maker created successfully
+2026-02-09 01:20:23,618 - core.database - INFO - Database connection initialized successfully
+2026-02-09 01:20:23,618 - services.database - INFO - 🔧 Database connection initialized, now creating tables if tables not exist...
+2026-02-09 01:20:23,618 - core.database - DEBUG - [DB_OP] Starting create_tables
+2026-02-09 01:20:23,618 - core.database - INFO - 🔧 Starting table creation...
+2026-02-09 01:20:25,148 - core.database - INFO - Tables initialized successfully
+2026-02-09 01:20:25,148 - core.database - DEBUG - [DB_OP] Create tables completed in 1.5305s
+2026-02-09 01:20:25,208 - services.database - INFO - 🔧 Table creation completed
+2026-02-09 01:20:25,209 - services.database - INFO - 🔧 Checking and repairing existing tables...
+2026-02-09 01:20:25,627 - services.database - INFO - Existing columns in extractions table: ['monthly_rent', 'renewal_notice_days', 'created_at', 'security_deposit', 'document_id', 'id', 'lease_end_date', 'pet_policy', 'late_fee_terms', 'risk_flags', 'raw_extraction', 'compliance_data', 'source_map', 'pages_meta', 'user_id', 'tenant_name', 'landlord_name', 'property_address', 'lease_start_date']
+2026-02-09 01:20:25,687 - services.database - INFO - 🔧 Table repair completed
+2026-02-09 01:20:25,687 - services.database - INFO - Database initialized successfully
+2026-02-09 01:20:25,688 - services.database - DEBUG - [DB_OP] Database initialization completed in 2.1477s
+2026-02-09 01:20:25,691 - services.mock_data - INFO - Processing mock data file state_regulations.json for table state_regulations
+2026-02-09 01:20:27,589 - services.mock_data - INFO - Table state_regulations already has 50 rows; skipping mock insert
+2026-02-09 01:20:27,649 - services.database - DEBUG - [DB_OP] Starting database initialization
+2026-02-09 01:20:27,649 - services.database - INFO - 🔧 Starting database initialization...
+2026-02-09 01:20:27,650 - core.database - INFO - Starting database initialization...
+2026-02-09 01:20:27,650 - core.database - INFO - Database already initialized
+2026-02-09 01:20:27,650 - services.database - INFO - 🔧 Database connection initialized, now creating tables if tables not exist...
+2026-02-09 01:20:27,650 - core.database - DEBUG - [DB_OP] Starting create_tables
+2026-02-09 01:20:27,650 - core.database - INFO - Tables already initialized
+2026-02-09 01:20:27,651 - services.database - INFO - 🔧 Table creation completed
+2026-02-09 01:20:27,651 - services.database - INFO - 🔧 Checking and repairing existing tables...
+2026-02-09 01:20:28,003 - services.database - INFO - Existing columns in extractions table: ['monthly_rent', 'renewal_notice_days', 'created_at', 'security_deposit', 'document_id', 'id', 'lease_end_date', 'pet_policy', 'late_fee_terms', 'risk_flags', 'raw_extraction', 'compliance_data', 'source_map', 'pages_meta', 'user_id', 'tenant_name', 'landlord_name', 'property_address', 'lease_start_date']
+2026-02-09 01:20:28,063 - services.database - INFO - 🔧 Table repair completed
+2026-02-09 01:20:28,063 - services.database - INFO - Database initialized successfully
+2026-02-09 01:20:28,063 - services.database - DEBUG - [DB_OP] Database initialization completed in 0.4143s
+2026-02-09 01:20:28,063 - core.config - DEBUG - Read dynamic attribute admin_user_id from environment variable ADMIN_USER_ID
+2026-02-09 01:20:28,063 - core.config - DEBUG - Read dynamic attribute admin_user_email from environment variable ADMIN_USER_EMAIL
+2026-02-09 01:20:28,427 - services.auth - DEBUG - Admin user 956410 already exists
+2026-02-09 01:20:28,486 - main - INFO - === Application startup completed successfully ===
+2026-02-09 01:22:46,566 - core.config - DEBUG - Read dynamic attribute jwt_secret_key from environment variable JWT_SECRET_KEY
+2026-02-09 01:22:46,566 - core.config - DEBUG - Read dynamic attribute jwt_algorithm from environment variable JWT_ALGORITHM
+2026-02-09 01:22:46,709 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:22:47,160 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:22:47,160 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:22:47,161 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0002s
+2026-02-09 01:22:47,161 - routers.documents - DEBUG - Querying documentss: query=None, sort=-created_at, skip=0, limit=50, fields=None
+2026-02-09 01:22:47,717 - routers.documents - DEBUG - Found 15 documentss
+2026-02-09 01:22:47,718 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.5576s
+2026-02-09 01:22:48,207 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:22:48,208 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:22:48,208 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0003s
+2026-02-09 01:22:48,568 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.3602s
+2026-02-09 01:22:55,398 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:22:55,874 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:22:55,874 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:22:55,874 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0003s
+2026-02-09 01:22:56,169 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.2949s
+2026-02-09 01:23:00,584 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:23:00,585 - core.config - DEBUG - Read dynamic attribute oss_service_url from environment variable OSS_SERVICE_URL
+2026-02-09 01:23:00,585 - core.config - DEBUG - Read dynamic attribute oss_api_key from environment variable OSS_API_KEY
+2026-02-09 01:23:01,998 - httpcore.connection - DEBUG - connect_tcp.started host='atoms.dev' port=443 local_address=None timeout=120.0 socket_options=None
+2026-02-09 01:23:02,045 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa818c16e60>
+2026-02-09 01:23:02,045 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fa81886cdc0> server_hostname='atoms.dev' timeout=120.0
+2026-02-09 01:23:02,053 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa8194ed1e0>
+2026-02-09 01:23:02,054 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-02-09 01:23:02,054 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-02-09 01:23:02,055 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-02-09 01:23:02,057 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-02-09 01:23:02,057 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-02-09 01:23:02,085 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Mon, 09 Feb 2026 09:23:02 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Access-Control-Allow-Headers', b'Origin, Content-Type, Accept, Authorization'), (b'Access-Control-Allow-Methods', b'GET, POST, PUT, DELETE, OPTIONS'), (b'Access-Control-Allow-Origin', b'*'), (b'Access-Control-Max-Age', b'86400'), (b'X-Request-Id', b'0bea58362fc504a232b3ae93be4005f2'), (b'X-Trace-Id', b'f685ed92a0cb4d38acb24936e5b2f8cd'), (b'Content-Security-Policy', b"frame-ancestors 'self' https://atoms.dev"), (b'Strict-Transport-Security', b'max-age=63072000; includeSubDomains; preload'), (b'X-Content-Type-Options', b'nosniff'), (b'X-XSS-Protection', b'1; mode=block'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'cf-cache-status', b'DYNAMIC'), (b'Content-Encoding', b'gzip'), (b'Server', b'cloudflare'), (b'CF-RAY', b'9cb24e41de30ef79-LAX')])
+2026-02-09 01:23:02,087 - httpx - INFO - HTTP Request: POST https://atoms.dev/api/v1/infra/client/oss/buckets/lease-documents/objects/upload_url "HTTP/1.1 200 OK"
+2026-02-09 01:23:02,087 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-02-09 01:23:02,088 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-02-09 01:23:02,088 - httpcore.http11 - DEBUG - response_closed.started
+2026-02-09 01:23:02,089 - httpcore.http11 - DEBUG - response_closed.complete
+2026-02-09 01:23:02,090 - httpcore.connection - DEBUG - close.started
+2026-02-09 01:23:02,091 - httpcore.connection - DEBUG - close.complete
+2026-02-09 01:23:05,510 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:23:05,511 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:23:05,511 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0006s
+2026-02-09 01:23:05,512 - routers.documents - DEBUG - Creating new documents with data: file_name='California_Residential_Lease_Agreement.pdf' file_key='leases/956410/1770628980831-California_Residential_Lease_Agreement.pdf' file_size=79715 status='pending' created_at=datetime.datetime(2026, 2, 9, 9, 23, 5, 778000, tzinfo=TzInfo(UTC)) updated_at=datetime.datetime(2026, 2, 9, 9, 23, 5, 778000, tzinfo=TzInfo(UTC))
+2026-02-09 01:23:06,288 - services.documents - INFO - Created documents with id: 16
+2026-02-09 01:23:06,288 - routers.documents - INFO - Documents created successfully with id: 16
+2026-02-09 01:23:06,289 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.7785s
+2026-02-09 01:23:07,364 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:23:07,365 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:23:07,365 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0003s
+2026-02-09 01:23:08,317 - services.documents - INFO - Updated documents 16
+2026-02-09 01:23:08,370 - httpcore.connection - DEBUG - connect_tcp.started host='atoms.dev' port=443 local_address=None timeout=120.0 socket_options=None
+2026-02-09 01:23:08,377 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa818c15630>
+2026-02-09 01:23:08,378 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fa818b7b340> server_hostname='atoms.dev' timeout=120.0
+2026-02-09 01:23:08,386 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa818c140d0>
+2026-02-09 01:23:08,387 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-02-09 01:23:08,388 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-02-09 01:23:08,388 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-02-09 01:23:08,388 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-02-09 01:23:08,389 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-02-09 01:23:08,427 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Mon, 09 Feb 2026 09:23:08 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Access-Control-Allow-Headers', b'Origin, Content-Type, Accept, Authorization'), (b'Access-Control-Allow-Methods', b'GET, POST, PUT, DELETE, OPTIONS'), (b'Access-Control-Allow-Origin', b'*'), (b'Access-Control-Max-Age', b'86400'), (b'X-Request-Id', b'fc1d841ba7c563ea579d94c03db52d93'), (b'X-Trace-Id', b'7a60fcd76dad4facbb91f9c33c5fc817'), (b'Content-Security-Policy', b"frame-ancestors 'self' https://atoms.dev"), (b'Strict-Transport-Security', b'max-age=63072000; includeSubDomains; preload'), (b'X-Content-Type-Options', b'nosniff'), (b'X-XSS-Protection', b'1; mode=block'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'cf-cache-status', b'DYNAMIC'), (b'Content-Encoding', b'gzip'), (b'Server', b'cloudflare'), (b'CF-RAY', b'9cb24e696bb214ee-LAX')])
+2026-02-09 01:23:08,428 - httpx - INFO - HTTP Request: POST https://atoms.dev/api/v1/infra/client/oss/buckets/lease-documents/objects/download_url "HTTP/1.1 200 OK"
+2026-02-09 01:23:08,428 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-02-09 01:23:08,428 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-02-09 01:23:08,428 - httpcore.http11 - DEBUG - response_closed.started
+2026-02-09 01:23:08,429 - httpcore.http11 - DEBUG - response_closed.complete
+2026-02-09 01:23:08,429 - httpcore.connection - DEBUG - close.started
+2026-02-09 01:23:08,429 - httpcore.connection - DEBUG - close.complete
+2026-02-09 01:23:08,460 - httpcore.connection - DEBUG - connect_tcp.started host='ec703bc455e9fe085c3fab7a4c274a50.oss.atoms.dev' port=443 local_address=None timeout=120.0 socket_options=None
+2026-02-09 01:23:08,478 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa818be9330>
+2026-02-09 01:23:08,479 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fa818b79040> server_hostname='ec703bc455e9fe085c3fab7a4c274a50.oss.atoms.dev' timeout=120.0
+2026-02-09 01:23:08,489 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa818be8a60>
+2026-02-09 01:23:08,490 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2026-02-09 01:23:08,490 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-02-09 01:23:08,490 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2026-02-09 01:23:08,491 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-02-09 01:23:08,491 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2026-02-09 01:23:08,762 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Mon, 09 Feb 2026 09:23:08 GMT'), (b'Content-Type', b'application/pdf'), (b'Content-Length', b'79715'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'9cb24e6a1dfd293b-LAX'), (b'Accept-Ranges', b'bytes'), (b'Access-Control-Allow-Origin', b'*'), (b'ETag', b'"9f762a6082d2700a1a0dd7f27debbafe"'), (b'Last-Modified', b'Mon, 09 Feb 2026 09:23:04 GMT'), (b'Server', b'cloudflare'), (b'Access-Control-Allow-Headers', b'*'), (b'Access-Control-Allow-Methods', b'GET, HEAD, PUT, POST, DELETE, OPTIONS'), (b'Access-Control-Expose-Headers', b'ETag, Content-Length, Content-Type'), (b'Access-Control-Max-Age', b'86400')])
+2026-02-09 01:23:08,763 - httpx - INFO - HTTP Request: GET https://ec703bc455e9fe085c3fab7a4c274a50.oss.atoms.dev/1770628980831-California_Residential_Lease_Agreement.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=a05ea2f709c25b65a5e5567d8ca51890%2F20260209%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260209T092308Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=e9635415b853cfec0839dede4e071b9c5a7ee85025c13cd6d5bb33c2533e557b "HTTP/1.1 200 OK"
+2026-02-09 01:23:08,763 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2026-02-09 01:23:08,767 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-02-09 01:23:08,768 - httpcore.http11 - DEBUG - response_closed.started
+2026-02-09 01:23:08,768 - httpcore.http11 - DEBUG - response_closed.complete
+2026-02-09 01:23:08,768 - httpcore.connection - DEBUG - close.started
+2026-02-09 01:23:08,768 - httpcore.connection - DEBUG - close.complete
+2026-02-09 01:23:08,936 - routers.lease_analysis - INFO - Extracted 189 text blocks from pdf (6 pages)
+2026-02-09 01:23:08,937 - core.config - DEBUG - Read dynamic attribute app_ai_base_url from environment variable APP_AI_BASE_URL
+2026-02-09 01:23:08,937 - core.config - DEBUG - Read dynamic attribute app_ai_key from environment variable APP_AI_KEY
+2026-02-09 01:23:08,978 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'You are a legal document analyzer specializing in residential lease agreements. Always respond with valid JSON only.'}, {'role': 'user', 'content': 'You are an expert lease agreement analyzer. Analyze the following lease document text and extract the key information.\n\nReturn a JSON object with the following fields (use null if not found):\n{\n  "tenant_name": "Full name of the tenant(s)",\n  "landlord_name": "Full name of the landlord/property owner",\n  "property_address": "Complete property address",\n  "monthly_rent": 0.00,\n  "security_deposit": 0.00,\n  "lease_start_date": "YYYY-MM-DD",\n  "lease_end_date": "YYYY-MM-DD",\n  "renewal_notice_days": 30,\n  "pet_policy": "Description of pet policy or \'Not specified\'",\n  "late_fee_terms": "Description of late fee terms or \'Not specified\'",\n  "risk_flags": [\n    {\n      "severity": "high|medium|low",\n      "category": "Category name",\n      "description": "Description of the risk or missing clause"\n    }\n  ]\n}\n\nCommon risk flags to check for:\n1. Missing lead-based paint disclosure (required for pre-1978 buildings)\n2. Missing security deposit return terms\n3. Unclear or missing late fee terms\n4. Missing maintenance responsibility clauses\n5. Missing entry notice requirements\n6. Missing subletting/assignment clauses\n7. Unusual or potentially unfair terms\n8. Missing dispute resolution procedures\n\nIMPORTANT: \n- Extract exact values from the document\n- For dates, convert to YYYY-MM-DD format\n- For monetary values, extract as numbers without currency symbols\n- Identify ALL potential risks and missing standard clauses\n- Return ONLY valid JSON, no additional text\n\nDocument text:\nCalifornia Residential Lease Agreement\nThis Lease Agreement (hereinafter referred to as the "Agreement") is signed by the following\ntwo parties on March 1, 2026, in Los Angeles, California, United States. Both parties voluntarily\nabide by all terms of this Agreement, which have equal legal effect.\nParty A (Landlord)\nLegal Name: Sarah Elizabeth Johnson\nCalifornia Driver’s License Number: A1234567\nContact Phone: +1 (213) 555-7890\nEmail Address: sarah.johnson@email.com\nPermanent Address: 456 Oak Street, Pasadena, CA 91101\nParty B (Tenant)\nLegal Name: Michael David Lee\nCalifornia Driver’s License Number: B7654321\nContact Phone: +1 (310) 555-1234\nEmail Address: michael.lee@email.com\nEmergency Contact: Lisa Marie Wang, Contact Phone: +1 (424) 555-5678, Relationship with\nTenant: Friend\nI. Rental Property Information\nProperty Address: 1234 Maple Avenue, Los Angeles, CA 90001 (hereinafter referred to as the\n"Property")\nProperty Type: Single-family Apartment, including 2 Bedrooms, 1.5 Bathrooms, 1 Living Room,\n1 Kitchen, 1 Balcony, with a building area of approximately 95 square meters (1022 square feet).\nIncluded Amenities: Built-in air conditioning, central heating, stainless steel refrigerator,\nwashing machine, dryer, gas stove, microwave oven, dishwasher, built-in wardrobe, outdoor\nfurniture on the balcony, full-house flooring, and 1 outdoor fixed parking space (Parking Space\nNumber: 12).\nUse of Property: The Property shall be used solely for the Tenant’s personal residence.\nCommercial operations, illegal activities, subletting, or subleasing to a third party are strictly\nprohibited. Unauthorized changes to the structure or use of the Property are strictly prohibited.\nII. Lease Term\n1. This Agreement is a Fixed-Term Lease, commencing on March 10, 2026, and ending on March\n9, 2027, for a total of 12 months. Upon the expiration of the Lease Term, this Agreement shall\nautomatically terminate, and the Tenant shall move out of the Property on the expiration date.\n2. If the Tenant wishes to renew the lease, he/she shall notify the Landlord in writing 30 days\nprior to the expiration of the Lease Term (i.e., before February 8, 2027). Both parties shall\nnegotiate the renewal terms separately and sign a new agreement. If the Tenant fails to submit\na renewal application on time or the two parties fail to reach a renewal agreement, the Tenant\nshall move out on time. Failure to move out on time shall be handled in accordance with the\nLiability for Breach of Contract in Article VII of this Agreement.\n3. During the Lease Term, the Tenant shall not terminate the Agreement early without\nauthorization. If there are special circumstances requiring early termination, the Tenant shall\nnotify the Landlord in writing 60 days in advance. After obtaining the Landlord’s written\nconsent, both parties shall complete the termination procedures. The Tenant shall pay a\nliquidated damages equivalent to one month’s rent, and the Landlord shall refund the\nremaining security deposit (if any) after deducting the liquidated damages.\nIII. Rent and Payment Terms\n1. The monthly rent for the Property is: 2,800 US Dollars (Two Thousand Eight Hundred US\nDollars). The rent includes the usage fee of the Property’s supporting facilities and\nHomeowners Association (HOA) Fees, but does not include electricity, water, gas, internet fees,\nor other fees incurred by the Tenant’s personal consumption.\n2. Rent Payment Date: The Tenant shall pay the monthly rent on or before the 5th day of each\nmonth without delay. The first rent shall be paid on the date of signing this Agreement, i.e.,\n2,000 US Dollars paid on March 1, 2026, for the period from March 10, 2026, to March 31, 2026\n(calculated based on the actual number of days of residence). Subsequent monthly rents shall\nbe paid in full at 2,800 US Dollars per month.\n3. Payment Method: The Tenant shall pay the rent to the Landlord’s designated bank account\nby bank transfer. After the transfer, the Tenant shall send the transfer receipt to the\nLandlord’s email address for filing.\nLandlord’s Bank Account Information:\nBank Name: Bank of America\nAccount Holder: Sarah Elizabeth Johnson\nAccount Number: 1234567890123\nRouting Number: 121000358\n4. Liability for Delay: If the Tenant delays paying the rent, he/she shall pay a late fee of 3% of\nthe monthly rent per day overdue. If the delay exceeds 15 days, the Landlord has the right to\nunilaterally terminate this Agreement, take back the Property, and pursue the Tenant’s\nliability for breach of contract.\nIV. Security Deposit\n1. On the date of signing this Agreement, the Tenant shall pay a security deposit to the\nLandlord in the amount of 2,800 US Dollars (equal to one month’s rent) as guarantee for the\nTenant’s performance of the obligations under this Agreement.\n2. Purpose of Security Deposit: It shall be used to compensate for the losses caused to the\nLandlord by the Tenant’s violation of the provisions of this Agreement (such as damage to the\nProperty’s facilities, arrears of rent, late fees, unpaid water and electricity fees, etc.). If the\nTenant has no breach of contract, the Property’s facilities are in good condition, and all\nrelevant fees have been settled, the Landlord shall refund the full security deposit without\ninterest to the Tenant’s designated bank account within 21 days after the expiration of the\nLease Term.\nTenant’s Bank Account Information:\nBank Name: Chase Bank\nAccount Holder: Michael David Lee\nAccount Number: 9876543210987\nRouting Number: 021000021\n3. If the Tenant has a breach of contract, the Landlord has the right to deduct the\ncorresponding losses from the security deposit. If there is any remaining after deduction, the\nremaining amount shall be refunded without interest. If the security deposit is insufficient to\ncover the Landlord’s losses, the Tenant shall make up the difference within 7 days after\nreceiving the Landlord’s notice.\nV. Rights and Obligations of Both Parties\n(I) Rights and Obligations of the Landlord\n1. The Landlord has the right to collect rent, security deposit, and late fees in accordance with\nthe provisions of this Agreement, and has the right to conduct reasonable inspections of the\nTenant’s use of the Property (a 24-hour written notice shall be given to the Tenant before the\ninspection).\n2. The Landlord shall ensure that the Property has a clear property right, no encumbrances\nsuch as mortgages or seizures, and that the Property and its supporting facilities are in normal\nusable condition at the time of delivery (except for normal wear and tear).\n3. The Landlord shall be responsible for structural maintenance of the Property (such as walls,\nroof, main water pipes, main electrical circuits, etc.). After receiving the Tenant’s maintenance\nnotice, the Landlord shall conduct maintenance within 7 days. If maintenance is not performed\non time, the Tenant may perform the maintenance by himself/herself, and the maintenance\ncosts shall be borne by the Landlord (the Tenant shall provide a formal maintenance invoice).\n4. The Landlord shall not unreasonably interfere with the Tenant’s normal residential use,\nand shall not enter the Property without authorization (except in emergency situations such as\nfire, water leakage, etc., and shall notify the Tenant in a timely manner afterwards).\n5. In accordance with California law, the Landlord shall disclose relevant information about the\nProperty to the Tenant: the Property was built in 2005, has no Lead-Based Paint, is equipped\nwith qualified Smoke Detectors and Carbon Monoxide Detectors, which shall be regularly\ninspected to ensure their normal operation.\n(II) Rights and Obligations of the Tenant\n1. The Tenant has the right to legally use the Property and its supporting facilities during the\nLease Term, and has the right to require the Landlord to perform property maintenance in\naccordance with the provisions of this Agreement.\n2. The Tenant shall pay the rent, security deposit, and water, electricity, gas, internet and other\nfees incurred by himself/herself in full and on time. Upon the expiration of the Lease Term, the\nTenant shall settle all fees and provide relevant settlement certificates.\n3. The Tenant shall properly keep the Property and its supporting facilities, and shall not\ndamage, modify, or disassemble the Property’s facilities without authorization. If the\nProperty’s facilities are damaged due to improper use or intentional damage by the Tenant,\nthe Tenant shall repair them in a timely manner or bear the corresponding maintenance costs.\n4. The Tenant shall comply with the relevant laws and regulations of California and the city of\nLos Angeles, and the property management regulations of the community. The Tenant shall\nnot engage in illegal activities (such as gambling, drug use, etc.) in the Property, shall not make\nnoise or disturb the neighbors, and shall not change the structure or use of the Property\nwithout authorization.\n5. During the Lease Term, if there is a maintenance problem with the Property (non-structural\nproblem), the Tenant shall notify the Landlord in writing in a timely manner and cooperate\nwith the Landlord in maintenance. If the loss is expanded due to the Tenant’s failure to notify\nin a timely manner, the Tenant shall bear the corresponding liability.\n6. The Tenant shall not sublet, sublease, or lend the Property to a third party without\nauthorization, and shall not use the Property for mortgage, guarantee, or other purposes.\n7. Upon the expiration of the Lease Term, the Tenant shall restore the Property and its\nsupporting facilities to the state at the time of delivery (except for normal wear and tear), clean\nup personal items in the Property, and return the house keys, access cards, etc., to the\nLandlord.\nVI. Property Maintenance and Upkeep\n1. The Landlord shall be responsible for structural maintenance of the Property, and the\nTenant shall be responsible for daily minor maintenance and upkeep of the Property (such as\nreplacing light bulbs, unclogging drains, replacing faucet washers, etc.), and the relevant costs\nshall be borne by the Tenant.\n2. During the Lease Term, if the Property is damaged due to force majeure (such as\nearthquakes, floods, typhoons, and other natural disasters), neither party shall bear liability to\nthe other. The Landlord shall refund the remaining rent and security deposit to the Tenant,\nand this Agreement shall automatically terminate.\n3. The Tenant shall not renovate or modify the Property without authorization. If renovation or\nmodification is really necessary, the Tenant shall notify the Landlord in writing in advance and\nmay proceed only after obtaining the Landlord’s written consent. The renovation costs shall\nbe borne by the Tenant. Upon the expiration of the Lease Term, the Tenant shall restore the\nrenovated part to its original state (unless the Landlord agrees in writing to retain it).\nVII. Breach of Contract\n1. Landlord’s Breach of Contract: If the Landlord fails to provide the Tenant with a normally\nusable Property in accordance with the provisions of this Agreement, or fails to perform\nstructural maintenance on time, resulting in the Tenant’s inability to live normally, the Tenant\nhas the right to require the Landlord to reduce or exempt the corresponding rent, or\nunilaterally terminate this Agreement. The Landlord shall refund the rent and security deposit\nalready paid by the Tenant and pay a liquidated damages equivalent to one month’s rent.\n2. Tenant’s Breach of Contract:\n(1) For delayed payment of rent or late fees, the Tenant shall bear liability in accordance with\nthe provisions of Section 4 of Article III of this Agreement. If the delay exceeds 15 days, the\nLandlord has the right to terminate the Agreement, take back the Property, confiscate the\nsecurity deposit, and require the Tenant to pay the arrears of rent and late fees.\n(2) If the Tenant arbitrarily damages the Property’s facilities or modifies the Property’s\nstructure, he/she shall bear the maintenance costs or compensate the Landlord for the losses.\nThe Landlord has the right to deduct the corresponding amount from the security deposit, and\nhas the right to recover the shortfall from the Tenant if the security deposit is insufficient.\n(3) If the Tenant arbitrarily sublets, subleases, or lends the Property, or uses it for illegal\nactivities or changes its use, the Landlord has the right to unilaterally terminate this\nAgreement, confiscate the security deposit, and require the Tenant to pay a liquidated\n（注：文档部分内容可能由 AI 生成）\ndamages equivalent to two months’ rent. If the Tenant causes losses to the Landlord, the\nTenant shall make additional compensation.\n(4) After the expiration of the lease term, if the Tenant fails to move out on time, he/she shall\npay a liquidated damages of 5% of the monthly rent per day overdue. The Landlord has the\nright to forcibly take back the property, and all expenses incurred shall be borne by the Tenant.\nVIII. Miscellaneous Provisions\n1. This Agreement shall be governed by the laws of the State of California, United States. Any\ndispute arising from this Agreement shall be settled through negotiation between the two\nparties; if negotiation fails, either party may file a lawsuit with the people’s court having\njurisdiction over the location of the Property.\n2. This Agreement constitutes the entire agreement between the two parties regarding the\nrental of the Property, and supersedes all prior oral or written agreements, understandings,\nand commitments between the two parties.\n3. Any modification or supplement to this Agreement shall be made in writing and signed by\nboth parties to take effect.\n4. This Agreement is made in two copies, one for each party, and both copies have the same\nlegal effect.\nIX. Signatures of Both Parties\nLandlord’s Signature: ________________________ Date: March 1, 2026\nTenant’s Signature: ________________________ Date: March 1, 2026'}], 'model': 'gpt-5-chat', 'max_tokens': 4096, 'stream': False, 'temperature': 0.7}}
+2026-02-09 01:23:08,980 - httpcore.connection - DEBUG - connect_tcp.started host='llmapi-api.deepwisdom.ai' port=443 local_address=None timeout=5.0 socket_options=None
+2026-02-09 01:23:08,998 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa81895e290>
+2026-02-09 01:23:08,999 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fa8189a8940> server_hostname='llmapi-api.deepwisdom.ai' timeout=5.0
+2026-02-09 01:23:09,007 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa81895c460>
+2026-02-09 01:23:09,008 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-02-09 01:23:09,009 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-02-09 01:23:09,010 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-02-09 01:23:09,010 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-02-09 01:23:09,011 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-02-09 01:23:14,493 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Mon, 09 Feb 2026 09:23:14 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Content-Encoding', b'gzip'), (b'Apim-Request-Id', b'9aa08913-cc8b-4281-b88b-224b72f4aa5b'), (b'Azureml-Model-Session', b'd20251215133231-f8b7a15f45ad4fe8'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains; preload'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Ms-Deployment-Name', b'gpt-5-chat'), (b'X-Ms-Rai-Invoked', b'true'), (b'X-Ms-Region', b'Sweden Central'), (b'X-Oneapi-Request-Id', b'202602090123094301598143167485'), (b'X-Oneapi-Trans-Id', b'19045812759691439'), (b'X-Ratelimit-Limit-Requests', b'5000'), (b'X-Ratelimit-Limit-Tokens', b'5000000'), (b'X-Ratelimit-Remaining-Requests', b'4999'), (b'X-Ratelimit-Remaining-Tokens', b'4996124'), (b'X-Request-Id', b'2b026908-3ec7-4b97-95e4-be513b58493b'), (b'cf-cache-status', b'DYNAMIC'), (b'Server', b'cloudflare'), (b'CF-RAY', b'9cb24e6d5e8de1ee-LAX')])
+2026-02-09 01:23:14,494 - httpx - INFO - HTTP Request: POST https://llmapi-api.deepwisdom.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-02-09 01:23:14,495 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-02-09 01:23:14,496 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-02-09 01:23:14,496 - httpcore.http11 - DEBUG - response_closed.started
+2026-02-09 01:23:14,496 - httpcore.http11 - DEBUG - response_closed.complete
+2026-02-09 01:23:14,497 - openai._base_client - DEBUG - HTTP Request: POST https://llmapi-api.deepwisdom.ai/v1/chat/completions "200 OK"
+2026-02-09 01:23:15,182 - services.extractions - INFO - Created extractions with id: 2
+2026-02-09 01:23:15,657 - services.documents - INFO - Updated documents 16
+2026-02-09 01:23:15,658 - core.database - DEBUG - [DB_OP] Database session cleanup after 8.2935s
+2026-02-09 01:23:16,084 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:23:16,556 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:23:16,556 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:23:16,557 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0004s
+2026-02-09 01:23:16,557 - routers.documents - DEBUG - Fetching documents with id: 16, fields=None
+2026-02-09 01:23:16,853 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.2967s
+2026-02-09 01:23:17,333 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:23:17,334 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:23:17,334 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0003s
+2026-02-09 01:23:17,334 - routers.extractions - DEBUG - Querying extractionss: query={"document_id":16}, sort=None, skip=0, limit=1, fields=None
+2026-02-09 01:23:17,868 - routers.extractions - DEBUG - Found 1 extractionss
+2026-02-09 01:23:17,869 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.5357s
+2026-02-09 01:23:18,273 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:23:18,273 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:23:18,274 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0005s
+2026-02-09 01:23:18,689 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.4157s
+2026-02-09 01:23:19,164 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:23:19,164 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:23:19,164 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0004s
+2026-02-09 01:23:19,529 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.3652s
+2026-02-09 01:23:56,699 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:23:56,699 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:23:56,699 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0002s
+2026-02-09 01:23:56,997 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.2979s
+2026-02-09 01:23:57,465 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:23:57,465 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:23:57,466 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0005s
+2026-02-09 01:23:57,807 - httpcore.connection - DEBUG - connect_tcp.started host='atoms.dev' port=443 local_address=None timeout=120.0 socket_options=None
+2026-02-09 01:23:57,824 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa818883df0>
+2026-02-09 01:23:57,825 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fa818744dc0> server_hostname='atoms.dev' timeout=120.0
+2026-02-09 01:23:57,832 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa818881540>
+2026-02-09 01:23:57,833 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-02-09 01:23:57,834 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-02-09 01:23:57,834 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-02-09 01:23:57,834 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-02-09 01:23:57,834 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-02-09 01:23:57,869 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Mon, 09 Feb 2026 09:23:57 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Access-Control-Allow-Headers', b'Origin, Content-Type, Accept, Authorization'), (b'Access-Control-Allow-Methods', b'GET, POST, PUT, DELETE, OPTIONS'), (b'Access-Control-Allow-Origin', b'*'), (b'Access-Control-Max-Age', b'86400'), (b'X-Request-Id', b'5f6c655d00905aa8a4cc2f9918d90833'), (b'X-Trace-Id', b'3366b85ccea14809ac1c81cab696b7e3'), (b'Content-Security-Policy', b"frame-ancestors 'self' https://atoms.dev"), (b'Strict-Transport-Security', b'max-age=63072000; includeSubDomains; preload'), (b'X-Content-Type-Options', b'nosniff'), (b'X-XSS-Protection', b'1; mode=block'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'cf-cache-status', b'DYNAMIC'), (b'Content-Encoding', b'gzip'), (b'Server', b'cloudflare'), (b'CF-RAY', b'9cb24f9e7d644113-LAX')])
+2026-02-09 01:23:57,870 - httpx - INFO - HTTP Request: POST https://atoms.dev/api/v1/infra/client/oss/buckets/lease-documents/objects/download_url "HTTP/1.1 200 OK"
+2026-02-09 01:23:57,870 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-02-09 01:23:57,871 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-02-09 01:23:57,871 - httpcore.http11 - DEBUG - response_closed.started
+2026-02-09 01:23:57,871 - httpcore.http11 - DEBUG - response_closed.complete
+2026-02-09 01:23:57,871 - httpcore.connection - DEBUG - close.started
+2026-02-09 01:23:57,872 - httpcore.connection - DEBUG - close.complete
+2026-02-09 01:23:57,899 - httpcore.connection - DEBUG - connect_tcp.started host='ec703bc455e9fe085c3fab7a4c274a50.oss.atoms.dev' port=443 local_address=None timeout=120.0 socket_options=None
+2026-02-09 01:23:57,939 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa8188833a0>
+2026-02-09 01:23:57,939 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fa818744c40> server_hostname='ec703bc455e9fe085c3fab7a4c274a50.oss.atoms.dev' timeout=120.0
+2026-02-09 01:23:57,947 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa818883700>
+2026-02-09 01:23:57,948 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2026-02-09 01:23:57,948 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-02-09 01:23:57,948 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2026-02-09 01:23:57,949 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-02-09 01:23:57,949 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2026-02-09 01:23:58,066 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Mon, 09 Feb 2026 09:23:58 GMT'), (b'Content-Type', b'application/pdf'), (b'Content-Length', b'79715'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'9cb24f9f293c23de-LAX'), (b'Accept-Ranges', b'bytes'), (b'Access-Control-Allow-Origin', b'*'), (b'ETag', b'"9f762a6082d2700a1a0dd7f27debbafe"'), (b'Last-Modified', b'Mon, 09 Feb 2026 09:23:04 GMT'), (b'Server', b'cloudflare'), (b'Access-Control-Allow-Headers', b'*'), (b'Access-Control-Allow-Methods', b'GET, HEAD, PUT, POST, DELETE, OPTIONS'), (b'Access-Control-Expose-Headers', b'ETag, Content-Length, Content-Type'), (b'Access-Control-Max-Age', b'86400')])
+2026-02-09 01:23:58,067 - httpx - INFO - HTTP Request: GET https://ec703bc455e9fe085c3fab7a4c274a50.oss.atoms.dev/1770628980831-California_Residential_Lease_Agreement.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=a05ea2f709c25b65a5e5567d8ca51890%2F20260209%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260209T092357Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=b4eb32ad41b653bd4719c9f623cea3a57b9b1d7cd01a10d2bf420d69975632aa "HTTP/1.1 200 OK"
+2026-02-09 01:23:58,068 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2026-02-09 01:23:58,070 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-02-09 01:23:58,071 - httpcore.http11 - DEBUG - response_closed.started
+2026-02-09 01:23:58,071 - httpcore.http11 - DEBUG - response_closed.complete
+2026-02-09 01:23:58,071 - httpcore.connection - DEBUG - close.started
+2026-02-09 01:23:58,071 - httpcore.connection - DEBUG - close.complete
+2026-02-09 01:23:58,191 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.7257s
+2026-02-09 01:24:04,202 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:24:04,202 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:24:04,202 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0002s
+2026-02-09 01:24:04,546 - httpcore.connection - DEBUG - connect_tcp.started host='atoms.dev' port=443 local_address=None timeout=120.0 socket_options=None
+2026-02-09 01:24:04,560 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa818882830>
+2026-02-09 01:24:04,562 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fa818744f40> server_hostname='atoms.dev' timeout=120.0
+2026-02-09 01:24:04,571 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa818883700>
+2026-02-09 01:24:04,573 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-02-09 01:24:04,574 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-02-09 01:24:04,574 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-02-09 01:24:04,574 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-02-09 01:24:04,574 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-02-09 01:24:04,606 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Mon, 09 Feb 2026 09:24:04 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Access-Control-Allow-Headers', b'Origin, Content-Type, Accept, Authorization'), (b'Access-Control-Allow-Methods', b'GET, POST, PUT, DELETE, OPTIONS'), (b'Access-Control-Allow-Origin', b'*'), (b'Access-Control-Max-Age', b'86400'), (b'X-Request-Id', b'c92205145a02de4c6c381c629bfb502e'), (b'X-Trace-Id', b'6a7a7670d8244c349422bf1755ae70c0'), (b'Content-Security-Policy', b"frame-ancestors 'self' https://atoms.dev"), (b'Strict-Transport-Security', b'max-age=63072000; includeSubDomains; preload'), (b'X-Content-Type-Options', b'nosniff'), (b'X-XSS-Protection', b'1; mode=block'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'cf-cache-status', b'DYNAMIC'), (b'Content-Encoding', b'gzip'), (b'Server', b'cloudflare'), (b'CF-RAY', b'9cb24fc89ad3279a-LAX')])
+2026-02-09 01:24:04,607 - httpx - INFO - HTTP Request: POST https://atoms.dev/api/v1/infra/client/oss/buckets/lease-documents/objects/download_url "HTTP/1.1 200 OK"
+2026-02-09 01:24:04,610 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-02-09 01:24:04,611 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-02-09 01:24:04,611 - httpcore.http11 - DEBUG - response_closed.started
+2026-02-09 01:24:04,611 - httpcore.http11 - DEBUG - response_closed.complete
+2026-02-09 01:24:04,612 - httpcore.connection - DEBUG - close.started
+2026-02-09 01:24:04,612 - httpcore.connection - DEBUG - close.complete
+2026-02-09 01:24:04,641 - httpcore.connection - DEBUG - connect_tcp.started host='ec703bc455e9fe085c3fab7a4c274a50.oss.atoms.dev' port=443 local_address=None timeout=120.0 socket_options=None
+2026-02-09 01:24:04,659 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa818883460>
+2026-02-09 01:24:04,660 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fa818744fc0> server_hostname='ec703bc455e9fe085c3fab7a4c274a50.oss.atoms.dev' timeout=120.0
+2026-02-09 01:24:04,669 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fa818883010>
+2026-02-09 01:24:04,670 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2026-02-09 01:24:04,671 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-02-09 01:24:04,672 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2026-02-09 01:24:04,672 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-02-09 01:24:04,672 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2026-02-09 01:24:04,810 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Mon, 09 Feb 2026 09:24:04 GMT'), (b'Content-Type', b'application/pdf'), (b'Content-Length', b'79715'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'9cb24fc939a10926-LAX'), (b'Accept-Ranges', b'bytes'), (b'Access-Control-Allow-Origin', b'*'), (b'ETag', b'"9f762a6082d2700a1a0dd7f27debbafe"'), (b'Last-Modified', b'Mon, 09 Feb 2026 09:23:04 GMT'), (b'Server', b'cloudflare'), (b'Access-Control-Allow-Headers', b'*'), (b'Access-Control-Allow-Methods', b'GET, HEAD, PUT, POST, DELETE, OPTIONS'), (b'Access-Control-Expose-Headers', b'ETag, Content-Length, Content-Type'), (b'Access-Control-Max-Age', b'86400')])
+2026-02-09 01:24:04,812 - httpx - INFO - HTTP Request: GET https://ec703bc455e9fe085c3fab7a4c274a50.oss.atoms.dev/1770628980831-California_Residential_Lease_Agreement.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=a05ea2f709c25b65a5e5567d8ca51890%2F20260209%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260209T092404Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=cc4eab9f7519e238ac19a91102955700ab02e1b687a9e3d9720d828df9553df0 "HTTP/1.1 200 OK"
+2026-02-09 01:24:04,812 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2026-02-09 01:24:04,816 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-02-09 01:24:04,817 - httpcore.http11 - DEBUG - response_closed.started
+2026-02-09 01:24:04,818 - httpcore.http11 - DEBUG - response_closed.complete
+2026-02-09 01:24:04,819 - httpcore.connection - DEBUG - close.started
+2026-02-09 01:24:04,819 - httpcore.connection - DEBUG - close.complete
+2026-02-09 01:24:04,970 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.7681s
+2026-02-09 01:25:17,175 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:25:17,176 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:25:17,176 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0003s
+2026-02-09 01:25:17,474 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.2979s
+2026-02-09 01:25:32,563 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:25:32,563 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:25:32,564 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0003s
+2026-02-09 01:25:33,277 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.7135s
+2026-02-09 01:25:36,469 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:25:36,469 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:25:36,470 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0003s
+2026-02-09 01:25:36,883 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.4136s
+2026-02-09 01:26:19,098 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:26:21,307 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:26:21,308 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:26:21,308 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0002s
+2026-02-09 01:26:21,308 - routers.documents - DEBUG - Querying documentss: query=None, sort=-created_at, skip=0, limit=50, fields=None
+2026-02-09 01:26:21,725 - routers.documents - DEBUG - Found 16 documentss
+2026-02-09 01:26:21,726 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.4184s
+2026-02-09 01:26:22,175 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:26:22,176 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:26:22,177 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0005s
+2026-02-09 01:26:22,475 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.2987s
+2026-02-09 01:27:04,634 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:27:05,072 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:27:05,072 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:27:05,073 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0005s
+2026-02-09 01:27:05,073 - routers.documents - DEBUG - Querying documentss: query=None, sort=-created_at, skip=0, limit=50, fields=None
+2026-02-09 01:27:05,486 - routers.documents - DEBUG - Found 16 documentss
+2026-02-09 01:27:05,487 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.4148s
+2026-02-09 01:27:05,941 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-09 01:27:05,941 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-09 01:27:05,941 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0002s
+2026-02-09 01:27:06,239 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.2975s
+2026-02-09 01:37:13,365 - services.database - DEBUG - [DB_OP] Starting database close
+2026-02-09 01:37:13,366 - core.database - INFO - Database connection closed and engine disposed
+2026-02-09 01:37:13,366 - services.database - INFO - Database connections closed
+2026-02-09 01:37:13,367 - services.database - DEBUG - [DB_OP] Database close completed in 0.0021s

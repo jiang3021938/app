@@ -1,0 +1,239 @@
+2026-02-07 21:51:56,494 - main - INFO - === Logging system initialized ===
+2026-02-07 21:51:56,495 - main - INFO - Log file: logs/app_20260207_215156.log
+2026-02-07 21:51:56,495 - main - INFO - Log level: INFO
+2026-02-07 21:51:56,495 - main - INFO - Timestamp: 20260207_215156
+2026-02-07 21:51:57,072 - main - INFO - Included router: routers.aihub.router
+2026-02-07 21:51:57,091 - main - INFO - Included router: routers.auth.router
+2026-02-07 21:51:57,144 - main - INFO - Included router: routers.documents.router
+2026-02-07 21:51:57,259 - main - INFO - Included router: routers.extractions.router
+2026-02-07 21:51:57,261 - main - INFO - Included router: routers.health.router
+2026-02-07 21:51:57,288 - main - INFO - Included router: routers.lease_analysis.router
+2026-02-07 21:51:57,333 - main - INFO - Included router: routers.payments.router
+2026-02-07 21:51:57,351 - main - INFO - Included router: routers.settings.router
+2026-02-07 21:51:57,391 - main - INFO - Included router: routers.state_regulations.router
+2026-02-07 21:51:57,425 - main - INFO - Included router: routers.storage.router
+2026-02-07 21:51:57,437 - core.config - DEBUG - Read dynamic attribute stripe_secret_key from environment variable STRIPE_SECRET_KEY
+2026-02-07 21:51:57,445 - main - INFO - Included router: routers.stripe_payments.router
+2026-02-07 21:51:57,451 - main - INFO - Included router: routers.user.router
+2026-02-07 21:51:57,491 - main - INFO - Included router: routers.user_credits.router
+2026-02-07 21:51:57,492 - main - INFO - === Application startup initiated ===
+2026-02-07 21:51:57,492 - services.database - DEBUG - [DB_OP] Starting database initialization
+2026-02-07 21:51:57,492 - services.database - INFO - 🔧 Starting database initialization...
+2026-02-07 21:51:57,492 - core.database - INFO - Starting database initialization...
+2026-02-07 21:51:57,492 - core.config - DEBUG - Read dynamic attribute database_url from environment variable DATABASE_URL
+2026-02-07 21:51:57,492 - core.database - INFO - Normalizing database URL for async compatibility...
+2026-02-07 21:51:57,493 - core.database - INFO - Creating async database engine...
+2026-02-07 21:51:57,493 - core.database - INFO - Using QueuePool with connection pooling for non-Lambda environment
+2026-02-07 21:51:57,529 - core.database - INFO - Database engine created successfully
+2026-02-07 21:51:57,529 - core.database - INFO - Creating async session maker...
+2026-02-07 21:51:57,529 - core.database - INFO - Async session maker created successfully
+2026-02-07 21:51:57,529 - core.database - INFO - Database connection initialized successfully
+2026-02-07 21:51:57,529 - services.database - INFO - 🔧 Database connection initialized, now creating tables if tables not exist...
+2026-02-07 21:51:57,529 - core.database - DEBUG - [DB_OP] Starting create_tables
+2026-02-07 21:51:57,529 - core.database - INFO - 🔧 Starting table creation...
+2026-02-07 21:51:59,043 - core.database - INFO - Tables initialized successfully
+2026-02-07 21:51:59,043 - core.database - DEBUG - [DB_OP] Create tables completed in 1.5141s
+2026-02-07 21:51:59,102 - services.database - INFO - 🔧 Table creation completed
+2026-02-07 21:51:59,102 - services.database - INFO - Database initialized successfully
+2026-02-07 21:51:59,102 - services.database - DEBUG - [DB_OP] Database initialization completed in 1.6105s
+2026-02-07 21:51:59,103 - services.mock_data - INFO - Processing mock data file state_regulations.json for table state_regulations
+2026-02-07 21:52:01,044 - services.mock_data - INFO - Table state_regulations already has 50 rows; skipping mock insert
+2026-02-07 21:52:01,104 - services.database - DEBUG - [DB_OP] Starting database initialization
+2026-02-07 21:52:01,104 - services.database - INFO - 🔧 Starting database initialization...
+2026-02-07 21:52:01,104 - core.database - INFO - Starting database initialization...
+2026-02-07 21:52:01,104 - core.database - INFO - Database already initialized
+2026-02-07 21:52:01,105 - services.database - INFO - 🔧 Database connection initialized, now creating tables if tables not exist...
+2026-02-07 21:52:01,105 - core.database - DEBUG - [DB_OP] Starting create_tables
+2026-02-07 21:52:01,105 - core.database - INFO - Tables already initialized
+2026-02-07 21:52:01,105 - services.database - INFO - 🔧 Table creation completed
+2026-02-07 21:52:01,105 - services.database - INFO - Database initialized successfully
+2026-02-07 21:52:01,105 - services.database - DEBUG - [DB_OP] Database initialization completed in 0.0019s
+2026-02-07 21:52:01,106 - core.config - DEBUG - Read dynamic attribute admin_user_id from environment variable ADMIN_USER_ID
+2026-02-07 21:52:01,106 - core.config - DEBUG - Read dynamic attribute admin_user_email from environment variable ADMIN_USER_EMAIL
+2026-02-07 21:52:01,474 - services.auth - DEBUG - Admin user 956410 already exists
+2026-02-07 21:52:01,533 - main - INFO - === Application startup completed successfully ===
+2026-02-07 21:53:12,442 - core.config - DEBUG - Read dynamic attribute jwt_secret_key from environment variable JWT_SECRET_KEY
+2026-02-07 21:53:12,443 - core.config - DEBUG - Read dynamic attribute jwt_algorithm from environment variable JWT_ALGORITHM
+2026-02-07 21:53:12,597 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:53:13,090 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:53:13,090 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 21:53:13,090 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0002s
+2026-02-07 21:53:13,091 - routers.documents - DEBUG - Querying documentss: query=None, sort=-created_at, skip=0, limit=50, fields=None
+2026-02-07 21:53:13,570 - routers.documents - DEBUG - Found 0 documentss
+2026-02-07 21:53:13,571 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.4808s
+2026-02-07 21:53:14,047 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:53:14,047 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 21:53:14,048 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0004s
+2026-02-07 21:53:14,419 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.3715s
+2026-02-07 21:53:18,326 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:53:22,264 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:53:22,741 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:53:22,742 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 21:53:22,742 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0008s
+2026-02-07 21:53:22,743 - routers.documents - DEBUG - Querying documentss: query=None, sort=-created_at, skip=0, limit=50, fields=None
+2026-02-07 21:53:23,096 - routers.documents - DEBUG - Found 0 documentss
+2026-02-07 21:53:23,097 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.3554s
+2026-02-07 21:53:23,518 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:53:23,519 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 21:53:23,519 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0001s
+2026-02-07 21:53:23,812 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.2937s
+2026-02-07 21:56:43,265 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:56:45,720 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:56:45,720 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 21:56:45,721 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0002s
+2026-02-07 21:56:50,689 - stripe - INFO - message='Request to Stripe api' method=post url=https://api.stripe.com/v1/checkout/sessions
+2026-02-07 21:56:50,689 - stripe - DEBUG - api_version=2026-01-28.clover message='Post details' post_data=payment_method_types[0]=card&line_items[0][price_data][currency]=usd&line_items[0][price_data][product_data][name]=5-Pack+Analysis&line_items[0][price_data][product_data][description]=Five+lease+document+analyses&line_items[0][price_data][unit_amount]=2900&line_items[0][quantity]=1&mode=payment&success_url=https%3A%2F%2Ft590x-348dff0be7fa4659be92ce913b8d81ed-preview.app.atoms.dev%2Fpayment-success%3Fsession_id%3D%7BCHECKOUT_SESSION_ID%7D&cancel_url=https%3A%2F%2Ft590x-348dff0be7fa4659be92ce913b8d81ed-preview.app.atoms.dev%2Fpricing&metadata[user_id]=956410&metadata[plan_type]=pack5&metadata[credits]=5
+2026-02-07 21:56:50,692 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.stripe.com:443
+2026-02-07 21:56:50,810 - urllib3.connectionpool - DEBUG - https://api.stripe.com:443 "POST /v1/checkout/sessions HTTP/1.1" 401 342
+2026-02-07 21:56:50,811 - stripe - INFO - message='Stripe API response' path=https://api.stripe.com/v1/checkout/sessions response_code=401
+2026-02-07 21:56:50,812 - stripe - DEBUG - body='{\n  "error": {\n    "message": "You did not provide an API key. You need to provide your API key in the Authorization header, using Bearer auth (e.g. \'Authorization: Bearer YOUR_SECRET_KEY\'). See https://stripe.com/docs/api#authentication for details, or we can help at https://support.stripe.com/.",\n    "type": "invalid_request_error"\n  }\n}\n' message='API response body'
+2026-02-07 21:56:50,812 - stripe - INFO - error_code=None error_message="You did not provide an API key. You need to provide your API key in the Authorization header, using Bearer auth (e.g. 'Authorization: Bearer YOUR_SECRET_KEY'). See https://stripe.com/docs/api#authentication for details, or we can help at https://support.stripe.com/." error_param=None error_type=invalid_request_error message='Stripe v1 API error received'
+2026-02-07 21:56:50,812 - routers.stripe_payments - ERROR - Checkout session error: You did not provide an API key. You need to provide your API key in the Authorization header, using Bearer auth (e.g. 'Authorization: Bearer YOUR_SECRET_KEY'). See https://stripe.com/docs/api#authentication for details, or we can help at https://support.stripe.com/.
+2026-02-07 21:56:50,813 - core.database - ERROR - Database session error: 500: You did not provide an API key. You need to provide your API key in the Authorization header, using Bearer auth (e.g. 'Authorization: Bearer YOUR_SECRET_KEY'). See https://stripe.com/docs/api#authentication for details, or we can help at https://support.stripe.com/.
+Traceback (most recent call last):
+  File "/workspace/app/backend/routers/stripe_payments.py", line 105, in create_checkout_session
+    session = stripe.checkout.Session.create(
+  File "/data/.cache/python/lib/python3.10/site-packages/stripe/checkout/_session.py", line 2470, in create
+    cls._static_request(
+  File "/data/.cache/python/lib/python3.10/site-packages/stripe/_api_resource.py", line 172, in _static_request
+    return _APIRequestor._global_instance().request(
+  File "/data/.cache/python/lib/python3.10/site-packages/stripe/_api_requestor.py", line 210, in request
+    resp = requestor._interpret_response(rbody, rcode, rheaders, api_mode)
+  File "/data/.cache/python/lib/python3.10/site-packages/stripe/_api_requestor.py", line 868, in _interpret_response
+    self.handle_error_response(
+  File "/data/.cache/python/lib/python3.10/site-packages/stripe/_api_requestor.py", line 351, in handle_error_response
+    raise err
+stripe._error.AuthenticationError: You did not provide an API key. You need to provide your API key in the Authorization header, using Bearer auth (e.g. 'Authorization: Bearer YOUR_SECRET_KEY'). See https://stripe.com/docs/api#authentication for details, or we can help at https://support.stripe.com/.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspace/app/backend/core/database.py", line 534, in get_db
+    yield session
+  File "/data/.cache/python/lib/python3.10/site-packages/fastapi/routing.py", line 107, in app
+    response = await f(request)
+  File "/data/.cache/python/lib/python3.10/site-packages/fastapi/routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+  File "/data/.cache/python/lib/python3.10/site-packages/fastapi/routing.py", line 314, in run_endpoint_function
+    return await dependant.call(**values)
+  File "/workspace/app/backend/routers/stripe_payments.py", line 140, in create_checkout_session
+    raise HTTPException(status_code=500, detail=str(e))
+fastapi.exceptions.HTTPException: 500: You did not provide an API key. You need to provide your API key in the Authorization header, using Bearer auth (e.g. 'Authorization: Bearer YOUR_SECRET_KEY'). See https://stripe.com/docs/api#authentication for details, or we can help at https://support.stripe.com/.
+2026-02-07 21:56:50,857 - core.database - DEBUG - [DB_OP] Database session cleanup after 5.1367s
+2026-02-07 21:56:50,858 - core.database - ERROR - Failed to create database session: 500: You did not provide an API key. You need to provide your API key in the Authorization header, using Bearer auth (e.g. 'Authorization: Bearer YOUR_SECRET_KEY'). See https://stripe.com/docs/api#authentication for details, or we can help at https://support.stripe.com/.
+Traceback (most recent call last):
+  File "/workspace/app/backend/routers/stripe_payments.py", line 105, in create_checkout_session
+    session = stripe.checkout.Session.create(
+  File "/data/.cache/python/lib/python3.10/site-packages/stripe/checkout/_session.py", line 2470, in create
+    cls._static_request(
+  File "/data/.cache/python/lib/python3.10/site-packages/stripe/_api_resource.py", line 172, in _static_request
+    return _APIRequestor._global_instance().request(
+  File "/data/.cache/python/lib/python3.10/site-packages/stripe/_api_requestor.py", line 210, in request
+    resp = requestor._interpret_response(rbody, rcode, rheaders, api_mode)
+  File "/data/.cache/python/lib/python3.10/site-packages/stripe/_api_requestor.py", line 868, in _interpret_response
+    self.handle_error_response(
+  File "/data/.cache/python/lib/python3.10/site-packages/stripe/_api_requestor.py", line 351, in handle_error_response
+    raise err
+stripe._error.AuthenticationError: You did not provide an API key. You need to provide your API key in the Authorization header, using Bearer auth (e.g. 'Authorization: Bearer YOUR_SECRET_KEY'). See https://stripe.com/docs/api#authentication for details, or we can help at https://support.stripe.com/.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspace/app/backend/core/database.py", line 534, in get_db
+    yield session
+  File "/data/.cache/python/lib/python3.10/site-packages/fastapi/routing.py", line 107, in app
+    response = await f(request)
+  File "/data/.cache/python/lib/python3.10/site-packages/fastapi/routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+  File "/data/.cache/python/lib/python3.10/site-packages/fastapi/routing.py", line 314, in run_endpoint_function
+    return await dependant.call(**values)
+  File "/workspace/app/backend/routers/stripe_payments.py", line 140, in create_checkout_session
+    raise HTTPException(status_code=500, detail=str(e))
+fastapi.exceptions.HTTPException: 500: You did not provide an API key. You need to provide your API key in the Authorization header, using Bearer auth (e.g. 'Authorization: Bearer YOUR_SECRET_KEY'). See https://stripe.com/docs/api#authentication for details, or we can help at https://support.stripe.com/.
+2026-02-07 21:58:41,430 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:58:41,871 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:58:41,871 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 21:58:41,871 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0001s
+2026-02-07 21:58:41,871 - routers.documents - DEBUG - Querying documentss: query=None, sort=-created_at, skip=0, limit=50, fields=None
+2026-02-07 21:58:42,511 - routers.documents - DEBUG - Found 0 documentss
+2026-02-07 21:58:42,512 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.6410s
+2026-02-07 21:58:42,942 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:58:42,942 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 21:58:42,943 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0001s
+2026-02-07 21:58:43,235 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.2922s
+2026-02-07 21:58:46,797 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:58:55,276 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:58:55,277 - core.config - DEBUG - Read dynamic attribute oss_service_url from environment variable OSS_SERVICE_URL
+2026-02-07 21:58:55,277 - core.config - DEBUG - Read dynamic attribute oss_api_key from environment variable OSS_API_KEY
+2026-02-07 21:58:55,320 - httpcore.connection - DEBUG - connect_tcp.started host='atoms.dev' port=443 local_address=None timeout=120.0 socket_options=None
+2026-02-07 21:58:55,337 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f1e2c1c70a0>
+2026-02-07 21:58:55,337 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f1e27122240> server_hostname='atoms.dev' timeout=120.0
+2026-02-07 21:58:55,345 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f1e2c1c6920>
+2026-02-07 21:58:55,346 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-02-07 21:58:55,346 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-02-07 21:58:55,346 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-02-07 21:58:55,347 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-02-07 21:58:55,347 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-02-07 21:58:55,445 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sun, 08 Feb 2026 05:58:55 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Access-Control-Allow-Headers', b'Origin, Content-Type, Accept, Authorization'), (b'Access-Control-Allow-Methods', b'GET, POST, PUT, DELETE, OPTIONS'), (b'Access-Control-Allow-Origin', b'*'), (b'Access-Control-Max-Age', b'86400'), (b'X-Request-Id', b'9282d303caba2d1267eb247302783b2e'), (b'X-Trace-Id', b'02d33c4ddb734a7d8e724a45c11cd59d'), (b'Content-Security-Policy', b"frame-ancestors 'self' https://atoms.dev"), (b'Strict-Transport-Security', b'max-age=63072000; includeSubDomains; preload'), (b'X-Content-Type-Options', b'nosniff'), (b'X-XSS-Protection', b'1; mode=block'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'cf-cache-status', b'DYNAMIC'), (b'Content-Encoding', b'gzip'), (b'Server', b'cloudflare'), (b'CF-RAY', b'9ca8e5e3ecd03f13-LAX')])
+2026-02-07 21:58:55,446 - httpx - INFO - HTTP Request: POST https://atoms.dev/api/v1/infra/client/oss/buckets/lease-documents/objects/upload_url "HTTP/1.1 200 OK"
+2026-02-07 21:58:55,447 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-02-07 21:58:55,447 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-02-07 21:58:55,447 - httpcore.http11 - DEBUG - response_closed.started
+2026-02-07 21:58:55,448 - httpcore.http11 - DEBUG - response_closed.complete
+2026-02-07 21:58:55,448 - httpcore.connection - DEBUG - close.started
+2026-02-07 21:58:55,448 - httpcore.connection - DEBUG - close.complete
+2026-02-07 21:58:59,832 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:58:59,832 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 21:58:59,833 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0003s
+2026-02-07 21:58:59,833 - routers.documents - DEBUG - Creating new documents with data: file_name='California-Standard-Residential-Lease-Agreement.pdf' file_key='leases/956410/1770530335859-California-Standard-Residential-Lease-Agreement.pdf' file_size=81319 status='pending' created_at=datetime.datetime(2026, 2, 8, 5, 58, 59, 602000, tzinfo=TzInfo(UTC)) updated_at=datetime.datetime(2026, 2, 8, 5, 58, 59, 602000, tzinfo=TzInfo(UTC))
+2026-02-07 21:59:00,617 - services.documents - INFO - Created documents with id: 1
+2026-02-07 21:59:00,617 - routers.documents - INFO - Documents created successfully with id: 1
+2026-02-07 21:59:00,618 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.7852s
+2026-02-07 21:59:01,050 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 21:59:01,051 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 21:59:01,051 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0002s
+2026-02-07 21:59:01,997 - services.documents - INFO - Updated documents 1
+2026-02-07 21:59:01,997 - core.config - DEBUG - Read dynamic attribute app_ai_base_url from environment variable APP_AI_BASE_URL
+2026-02-07 21:59:01,997 - core.config - DEBUG - Read dynamic attribute app_ai_key from environment variable APP_AI_KEY
+2026-02-07 21:59:14,122 - services.aihub - ERROR - gentxt error: argument 'by_alias': 'NoneType' object cannot be converted to 'PyBool'
+2026-02-07 21:59:14,122 - services.lease_extraction - ERROR - Lease extraction error: argument 'by_alias': 'NoneType' object cannot be converted to 'PyBool'
+2026-02-07 21:59:14,598 - services.documents - INFO - Updated documents 1
+2026-02-07 21:59:14,599 - core.database - DEBUG - [DB_OP] Database session cleanup after 13.5481s
+2026-02-07 22:01:54,811 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 22:02:13,379 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 22:02:13,433 - httpcore.connection - DEBUG - connect_tcp.started host='atoms.dev' port=443 local_address=None timeout=120.0 socket_options=None
+2026-02-07 22:02:13,450 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f1e26af4ee0>
+2026-02-07 22:02:13,450 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f1e26fea340> server_hostname='atoms.dev' timeout=120.0
+2026-02-07 22:02:13,459 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f1e274dcbe0>
+2026-02-07 22:02:13,460 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-02-07 22:02:13,461 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-02-07 22:02:13,461 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-02-07 22:02:13,461 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-02-07 22:02:13,461 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-02-07 22:02:13,502 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sun, 08 Feb 2026 06:02:13 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Access-Control-Allow-Headers', b'Origin, Content-Type, Accept, Authorization'), (b'Access-Control-Allow-Methods', b'GET, POST, PUT, DELETE, OPTIONS'), (b'Access-Control-Allow-Origin', b'*'), (b'Access-Control-Max-Age', b'86400'), (b'X-Request-Id', b'a1750a17296ea85ba58452ed38a36581'), (b'X-Trace-Id', b'd87d720313fd4f2b93d334f2ca45f4e9'), (b'Content-Security-Policy', b"frame-ancestors 'self' https://atoms.dev"), (b'Strict-Transport-Security', b'max-age=63072000; includeSubDomains; preload'), (b'X-Content-Type-Options', b'nosniff'), (b'X-XSS-Protection', b'1; mode=block'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'cf-cache-status', b'DYNAMIC'), (b'Content-Encoding', b'gzip'), (b'Server', b'cloudflare'), (b'CF-RAY', b'9ca8eaba2cec2b89-LAX')])
+2026-02-07 22:02:13,502 - httpx - INFO - HTTP Request: POST https://atoms.dev/api/v1/infra/client/oss/buckets/lease-documents/objects/upload_url "HTTP/1.1 200 OK"
+2026-02-07 22:02:13,503 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-02-07 22:02:13,503 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-02-07 22:02:13,503 - httpcore.http11 - DEBUG - response_closed.started
+2026-02-07 22:02:13,504 - httpcore.http11 - DEBUG - response_closed.complete
+2026-02-07 22:02:13,504 - httpcore.connection - DEBUG - close.started
+2026-02-07 22:02:13,504 - httpcore.connection - DEBUG - close.complete
+2026-02-07 22:02:20,482 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 22:02:20,483 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 22:02:20,484 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0009s
+2026-02-07 22:02:20,484 - routers.documents - DEBUG - Creating new documents with data: file_name='LeaseLens SEO与AIgeo排名策略 - Google 文档.pdf' file_key='leases/956410/1770530533958-LeaseLens SEO与AIgeo排名策略 - Google 文档.pdf' file_size=1431988 status='pending' created_at=datetime.datetime(2026, 2, 8, 6, 2, 21, 63000, tzinfo=TzInfo(UTC)) updated_at=datetime.datetime(2026, 2, 8, 6, 2, 21, 63000, tzinfo=TzInfo(UTC))
+2026-02-07 22:02:21,135 - services.documents - INFO - Created documents with id: 2
+2026-02-07 22:02:21,135 - routers.documents - INFO - Documents created successfully with id: 2
+2026-02-07 22:02:21,135 - core.database - DEBUG - [DB_OP] Database session cleanup after 0.6526s
+2026-02-07 22:02:21,521 - core.auth - DEBUG - Authentication token validated for user hash: a89dfb40
+2026-02-07 22:02:21,521 - core.database - DEBUG - [DB_OP] Starting get_db session creation
+2026-02-07 22:02:21,521 - core.database - DEBUG - [DB_OP] Database session created successfully in 0.0002s
+2026-02-07 22:02:22,351 - services.documents - INFO - Updated documents 2
+2026-02-07 22:02:22,400 - services.aihub - ERROR - gentxt error: argument 'by_alias': 'NoneType' object cannot be converted to 'PyBool'
+2026-02-07 22:02:22,401 - services.lease_extraction - ERROR - Lease extraction error: argument 'by_alias': 'NoneType' object cannot be converted to 'PyBool'
+2026-02-07 22:02:22,878 - services.documents - INFO - Updated documents 2
+2026-02-07 22:02:22,878 - core.database - DEBUG - [DB_OP] Database session cleanup after 1.3572s
+2026-02-07 22:06:43,562 - services.database - DEBUG - [DB_OP] Starting database close
+2026-02-07 22:06:43,624 - core.database - INFO - Database connection closed and engine disposed
+2026-02-07 22:06:43,624 - services.database - INFO - Database connections closed
+2026-02-07 22:06:43,624 - services.database - DEBUG - [DB_OP] Database close completed in 0.0629s

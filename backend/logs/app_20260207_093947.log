@@ -1,0 +1,68 @@
+2026-02-07 09:39:47,799 - main - INFO - === Logging system initialized ===
+2026-02-07 09:39:47,799 - main - INFO - Log file: logs/app_20260207_093947.log
+2026-02-07 09:39:47,799 - main - INFO - Log level: INFO
+2026-02-07 09:39:47,800 - main - INFO - Timestamp: 20260207_093947
+2026-02-07 09:39:47,855 - main - INFO - === Logging system initialized ===
+2026-02-07 09:39:47,856 - main - INFO - Log file: logs/app_20260207_093947.log
+2026-02-07 09:39:47,856 - main - INFO - Log level: INFO
+2026-02-07 09:39:47,856 - main - INFO - Timestamp: 20260207_093947
+2026-02-07 09:39:48,511 - main - INFO - Included router: routers.aihub.router
+2026-02-07 09:39:48,516 - main - INFO - Included router: routers.aihub.router
+2026-02-07 09:39:48,531 - main - INFO - Included router: routers.auth.router
+2026-02-07 09:39:48,531 - main - INFO - Included router: routers.auth.router
+2026-02-07 09:39:48,583 - main - INFO - Included router: routers.documents.router
+2026-02-07 09:39:48,584 - main - INFO - Included router: routers.documents.router
+2026-02-07 09:39:48,705 - main - INFO - Included router: routers.extractions.router
+2026-02-07 09:39:48,707 - main - INFO - Included router: routers.health.router
+2026-02-07 09:39:48,726 - main - INFO - Included router: routers.lease_analysis.router
+2026-02-07 09:39:48,733 - main - INFO - Included router: routers.extractions.router
+2026-02-07 09:39:48,735 - main - INFO - Included router: routers.health.router
+2026-02-07 09:39:48,755 - main - INFO - Included router: routers.lease_analysis.router
+2026-02-07 09:39:48,776 - main - INFO - Included router: routers.payments.router
+2026-02-07 09:39:48,797 - main - INFO - Included router: routers.settings.router
+2026-02-07 09:39:48,810 - main - INFO - Included router: routers.payments.router
+2026-02-07 09:39:48,835 - main - INFO - Included router: routers.storage.router
+2026-02-07 09:39:48,839 - main - INFO - Included router: routers.settings.router
+2026-02-07 09:39:48,884 - main - INFO - Included router: routers.storage.router
+2026-02-07 09:39:49,302 - core.config - DEBUG - Read dynamic attribute stripe_secret_key from environment variable STRIPE_SECRET_KEY
+2026-02-07 09:39:49,302 - core.config - DEBUG - Read dynamic attribute stripe_secret_key from environment variable STRIPE_SECRET_KEY
+2026-02-07 09:39:49,312 - main - INFO - Included router: routers.stripe_payments.router
+2026-02-07 09:39:49,312 - main - INFO - Included router: routers.stripe_payments.router
+2026-02-07 09:39:49,322 - main - INFO - Included router: routers.user.router
+2026-02-07 09:39:49,322 - main - INFO - Included router: routers.user.router
+2026-02-07 09:39:49,373 - main - INFO - Included router: routers.user_credits.router
+2026-02-07 09:39:49,374 - main - INFO - === Application startup initiated ===
+2026-02-07 09:39:49,375 - services.database - DEBUG - [DB_OP] Starting database initialization
+2026-02-07 09:39:49,375 - services.database - INFO - 🔧 Starting database initialization...
+2026-02-07 09:39:49,375 - core.database - INFO - Starting database initialization...
+2026-02-07 09:39:49,375 - core.config - DEBUG - Read dynamic attribute database_url from environment variable DATABASE_URL
+2026-02-07 09:39:49,375 - core.database - INFO - Normalizing database URL for async compatibility...
+2026-02-07 09:39:49,375 - main - INFO - Included router: routers.user_credits.router
+2026-02-07 09:39:49,376 - core.database - INFO - Creating async database engine...
+2026-02-07 09:39:49,376 - core.database - INFO - Using QueuePool with connection pooling for non-Lambda environment
+2026-02-07 09:39:49,377 - main - INFO - === Application startup initiated ===
+2026-02-07 09:39:49,377 - services.database - DEBUG - [DB_OP] Starting database initialization
+2026-02-07 09:39:49,377 - services.database - INFO - 🔧 Starting database initialization...
+2026-02-07 09:39:49,377 - core.database - INFO - Starting database initialization...
+2026-02-07 09:39:49,377 - core.config - DEBUG - Read dynamic attribute database_url from environment variable DATABASE_URL
+2026-02-07 09:39:49,378 - core.database - INFO - Normalizing database URL for async compatibility...
+2026-02-07 09:39:49,379 - core.database - INFO - Creating async database engine...
+2026-02-07 09:39:49,379 - core.database - INFO - Using QueuePool with connection pooling for non-Lambda environment
+2026-02-07 09:39:49,427 - core.database - INFO - Database engine created successfully
+2026-02-07 09:39:49,427 - core.database - INFO - Creating async session maker...
+2026-02-07 09:39:49,427 - core.database - INFO - Database engine created successfully
+2026-02-07 09:39:49,428 - core.database - INFO - Creating async session maker...
+2026-02-07 09:39:49,428 - core.database - INFO - Async session maker created successfully
+2026-02-07 09:39:49,428 - core.database - INFO - Database connection initialized successfully
+2026-02-07 09:39:49,428 - services.database - INFO - 🔧 Database connection initialized, now creating tables if tables not exist...
+2026-02-07 09:39:49,428 - core.database - INFO - Async session maker created successfully
+2026-02-07 09:39:49,428 - core.database - DEBUG - [DB_OP] Starting create_tables
+2026-02-07 09:39:49,428 - core.database - INFO - Database connection initialized successfully
+2026-02-07 09:39:49,428 - core.database - INFO - 🔧 Starting table creation...
+2026-02-07 09:39:49,428 - services.database - INFO - 🔧 Database connection initialized, now creating tables if tables not exist...
+2026-02-07 09:39:49,429 - core.database - DEBUG - [DB_OP] Starting create_tables
+2026-02-07 09:39:49,429 - core.database - INFO - 🔧 Starting table creation...
+2026-02-07 09:39:49,821 - core.database - ERROR - Failed to create tables: password authentication failed for user 'neondb_owner'
+2026-02-07 09:39:49,822 - services.database - ERROR - Failed to initialize database: password authentication failed for user 'neondb_owner'
+2026-02-07 09:39:49,827 - core.database - ERROR - Failed to create tables: password authentication failed for user 'neondb_owner'
+2026-02-07 09:39:49,827 - services.database - ERROR - Failed to initialize database: password authentication failed for user 'neondb_owner'
