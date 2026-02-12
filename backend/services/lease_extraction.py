@@ -6,129 +6,80 @@ from schemas.aihub import GenTxtRequest, ChatMessage
 
 logger = logging.getLogger(__name__)
 
-EXTRACTION_PROMPT = """You are an expert lease agreement analyzer with deep knowledge of US residential tenancy laws. Perform a comprehensive analysis of the following lease document.
+EXTRACTION_PROMPT = """You are an expert lease agreement analyzer specializing in U.S. residential leases. 
+Analyze the following lease document thoroughly and extract all key information.
 
-Return a JSON object with ALL of the following sections (use null for any field not found in the document):
+Return a JSON object with the following structure (use null if not found in document):
 
 {
   "tenant_name": "Full legal name of the tenant(s)",
   "landlord_name": "Full legal name of the landlord/property owner",
-  "property_address": "Complete property address including unit number",
+  "property_address": "Complete property address including city, state, ZIP",
   "monthly_rent": 0.00,
   "security_deposit": 0.00,
   "lease_start_date": "YYYY-MM-DD",
   "lease_end_date": "YYYY-MM-DD",
   "renewal_notice_days": 30,
-  "pet_policy": "Description of pet policy or 'Not specified'",
-  "late_fee_terms": "Description of late fee terms or 'Not specified'",
-
-  "financial_analysis": {
-    "annualized_rent_cost": 0.00,
-    "deposit_months_equivalent": 0.0,
-    "deposit_legal_compliance": "Compliant / Exceeds typical limit / Cannot determine — explain based on common state limits (e.g. 1-2 months rent)",
-    "rent_increase_clause": "Description of any rent escalation terms, or 'Not specified'",
-    "rent_increase_assessment": "Reasonable / Above average / Concerning — with explanation",
-    "hidden_fees": [
-      {
-        "fee_type": "e.g. Utilities, Maintenance, Insurance, Parking, Amenity, Admin",
-        "description": "What the fee covers",
-        "amount": "Amount or 'Variable'",
-        "assessment": "Standard / Unusual / Potentially excessive"
-      }
-    ],
-    "total_move_in_cost": 0.00
-  },
-
-  "rights_obligations": {
-    "landlord_obligations": ["List of landlord responsibilities stated in the lease"],
-    "tenant_obligations": ["List of tenant responsibilities stated in the lease"],
-    "maintenance_division": {
-      "landlord_responsible": ["Items landlord must maintain/repair"],
-      "tenant_responsible": ["Items tenant must maintain/repair"],
-      "unclear_items": ["Items with ambiguous responsibility"]
-    },
-    "entry_notice_requirement": "Required notice period for landlord entry, or 'Not specified'",
-    "entry_notice_legal_compliance": "Compliant / Non-compliant / Not specified — based on typical 24-48 hour requirement",
-    "subletting_policy": "Description of subletting/assignment terms, or 'Not specified'",
-    "early_termination": "Terms for early lease termination, or 'Not specified'"
-  },
-
+  "pet_policy": "Description of pet policy or 'Not specified in lease'",
+  "late_fee_terms": "Description of late fee terms or 'Not specified in lease'",
+  "early_termination": "Description of early termination terms or 'Not specified'",
+  "subletting_policy": "Description of subletting/assignment policy or 'Not specified'",
+  "maintenance_responsibilities": "Summary of landlord vs tenant maintenance duties",
+  "entry_notice_requirements": "Notice period landlord must give before entering property",
+  "utilities_included": "What utilities are included in rent, if any",
   "risk_flags": [
     {
       "severity": "high|medium|low",
       "category": "Category name",
-      "description": "Detailed description of the risk",
-      "recommendation": "Specific action the tenant should take",
-      "is_unusual": false
+      "title": "Short title of the finding",
+      "description": "Detailed description of what was found or what is missing",
+      "recommendation": "Specific action the tenant/landlord should take"
     }
   ],
-
-  "missing_protections": [
-    "List of standard lease protections/clauses that are absent from this lease"
-  ],
-
   "health_score": {
-    "overall_score": 75,
-    "grade": "A|B|C|D|F",
-    "category_scores": {
-      "financial_fairness": { "score": 0, "max": 25, "notes": "Brief explanation" },
-      "legal_compliance": { "score": 0, "max": 25, "notes": "Brief explanation" },
-      "tenant_protection": { "score": 0, "max": 25, "notes": "Brief explanation" },
-      "completeness": { "score": 0, "max": 25, "notes": "Brief explanation" }
-    },
-    "summary": "One-paragraph overall assessment of the lease quality"
-  },
-
-  "action_items": {
-    "negotiate_points": [
-      {
-        "item": "What to negotiate",
-        "priority": "high|medium|low",
-        "suggested_language": "Suggested clause wording"
-      }
-    ],
-    "verify_before_signing": [
-      "List of things tenant should confirm or verify before signing"
-    ],
-    "recommended_additions": [
-      {
-        "clause": "Name of recommended clause",
-        "reason": "Why it should be added",
-        "suggested_language": "Suggested wording"
-      }
-    ]
+    "overall": 0,
+    "financial_fairness": 0,
+    "legal_compliance": 0,
+    "tenant_protection": 0,
+    "completeness": 0
   }
 }
 
-Risk flags to check (at minimum):
-1. Missing lead-based paint disclosure (required for pre-1978 buildings)
-2. Missing or unclear security deposit return terms and timeline
-3. Excessive or unclear late fee terms
-4. Missing or one-sided maintenance responsibility clauses
-5. Missing or insufficient entry notice requirements
-6. Missing subletting/assignment clauses
-7. Unusual or potentially unfair terms compared to standard leases
-8. Missing dispute resolution procedures
-9. Automatic renewal clauses with inadequate notice (auto-renew without adequate notice)
-10. Excessive penalty clauses
-11. Waiver of tenant legal rights
-12. Missing habitability guarantees
-13. Unreasonable insurance requirements
-14. Vague or overbroad landlord discretion clauses
+CRITICAL INSTRUCTIONS FOR risk_flags:
+You MUST check ALL of the following categories and include EACH ONE in risk_flags, even if the clause is present and satisfactory. This serves as a complete audit checklist for the user.
 
-Health score guidelines:
-- Financial Fairness (25 pts): Rent and fees are reasonable, no hidden costs, deposit within legal limits
-- Legal Compliance (25 pts): Meets standard legal requirements, proper disclosures included
-- Tenant Protection (25 pts): Adequate rights, proper notice periods, fair termination terms
-- Completeness (25 pts): All standard clauses present, no ambiguous terms, clear language
+For each category:
+- If the clause is present and adequate: severity = "low", describe what was found
+- If the clause is present but has issues: severity = "medium", explain the concern
+- If the clause is missing or seriously problematic: severity = "high", explain the risk
+
+Categories to ALWAYS check and include:
+1. "Lead-based paint disclosure" - Required for pre-1978 buildings. Check if disclosed.
+2. "Security deposit terms" - Check amount vs state legal limits, return timeline, conditions.
+3. "Late fee terms" - Check if defined, reasonable percentage, grace period.
+4. "Maintenance responsibilities" - Check if landlord/tenant duties are clearly split.
+5. "Entry notice requirements" - Check if notice period is specified and legal.
+6. "Subletting/assignment clauses" - Check if subletting policy is addressed.
+7. "Dispute resolution procedures" - Check if arbitration/mediation/court procedures defined.
+8. "Pet policy" - Check if pet rules are explicitly stated.
+9. "Early termination clause" - Check penalties and notice requirements.
+10. "Rent increase provisions" - Check if rent increase terms are specified for renewal.
+11. "Insurance requirements" - Check if renter's insurance is required.
+12. "Habitable condition guarantee" - Check if landlord guarantees habitability.
+
+For health_score:
+- overall: 0-100 score based on all factors
+- financial_fairness: 0-100 (rent reasonableness, deposit limits, fee fairness)
+- legal_compliance: 0-100 (state law compliance, required disclosures)
+- tenant_protection: 0-100 (tenant rights, maintenance, entry notice)
+- completeness: 0-100 (how many standard clauses are present)
 
 IMPORTANT:
-- Extract exact values from the document
+- Extract exact values from the document, do not make up data
 - For dates, convert to YYYY-MM-DD format
 - For monetary values, extract as numbers without currency symbols
-- Be thorough in identifying ALL risks and missing protections
-- Provide actionable, specific recommendations
-- Return ONLY valid JSON, no additional text
+- Return ONLY valid JSON, no markdown, no additional text
+- ALWAYS include ALL 12 risk_flag categories listed above
 
 Document text:
 """
@@ -155,7 +106,7 @@ class LeaseExtractionService:
                     ChatMessage(role="system", content="You are a legal document analyzer specializing in residential lease agreements. Always respond with valid JSON only."),
                     ChatMessage(role="user", content=EXTRACTION_PROMPT + document_text)
                 ],
-                model="gpt-5-chat"
+                model="gemini-3-pro-preview"
             )
             
             response = await self.ai_service.gentxt(request)

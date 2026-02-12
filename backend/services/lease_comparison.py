@@ -137,7 +137,7 @@ class LeaseComparisonService:
                         content=COMPARISON_PROMPT + json.dumps(leases_context, indent=2, default=str),
                     ),
                 ],
-                model="gpt-5-chat",
+                model="gemini-3-pro-preview",
                 max_tokens=4000,
             )
 
