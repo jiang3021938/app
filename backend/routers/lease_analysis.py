@@ -354,17 +354,22 @@ async def upload_and_analyze(
 
         # Upload to Supabase Storage for temporary PDF preview
         try:
+            # Determine content type based on file extension
+            content_type = "application/pdf"
+            if file.filename.lower().endswith(('.docx', '.doc')):
+                content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document" if file.filename.lower().endswith('.docx') else "application/msword"
+            
             supabase_storage = SupabaseStorageService()
             await supabase_storage.upload_file(
                 bucket_name="lease-documents",
                 object_key=file_key,
                 file_data=file_bytes,
-                content_type="application/pdf"
+                content_type=content_type
             )
-            logger.info(f"PDF cached to Supabase Storage: {file_key}")
+            logger.info(f"Document cached to Supabase Storage: {file_key}")
         except Exception as e:
             # Non-blocking: PDF preview won't work but analysis still succeeds
-            logger.warning(f"Failed to cache PDF to Supabase Storage: {e}")
+            logger.warning(f"Failed to cache document to Supabase Storage: {e}")
 
         await db.flush()
         await db.refresh(document)
