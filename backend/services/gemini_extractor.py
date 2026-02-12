@@ -7,6 +7,7 @@ Gemini can process PDF files natively, eliminating the need for PyMuPDF.
 
 import logging
 import os
+import re
 from typing import Dict, Any, List, Optional
 from google import genai
 from google.genai import types
@@ -260,10 +261,9 @@ IMPORTANT:
 
     def _build_source_map(self, full_text: str, extracted_data: dict) -> dict:
         """Build source_map by finding extracted values in the full text."""
-        import re
         source_map = {}
         
-        # Split text into pages (approximate: ~3000 chars per page)
+        # Approximate page size in characters (~3000 chars per PDF page)
         page_size = 3000
         pages = [full_text[i:i+page_size] for i in range(0, len(full_text), page_size)]
         
@@ -295,7 +295,7 @@ IMPORTANT:
                 if search_lower in page_text.lower():
                     source_map[field_name] = [{
                         "page": page_idx,
-                        "bbox": {"x0": 72, "y0": 200, "x1": 540, "y1": 220},
+                        "bbox": {"x0": 72, "y0": 200, "x1": 540, "y1": 220},  # Placeholder coordinates
                         "matched_text": search_value,
                         "match_type": "text_search"
                     }]
