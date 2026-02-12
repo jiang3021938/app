@@ -4,17 +4,16 @@ import logging
 import re
 from typing import Optional
 
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Header, HTTPException, Depends
 from pydantic import BaseModel, field_validator
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.email_auth import EmailAuthService
+from core.database import get_db
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/email-auth", tags=["email-authentication"])
-
-# Global service instance (uses in-memory storage)
-email_auth_service = EmailAuthService()
 
 
 def validate_email(email: str) -> str:
@@ -73,10 +72,11 @@ class LoginRequest(BaseModel):
 
 
 @router.post("/send-code")
-async def send_code(request: SendCodeRequest):
+async def send_code(request: SendCodeRequest, db: AsyncSession = Depends(get_db)):
     """Send verification code to email via Resend."""
     try:
-        success, code = await email_auth_service.send_verification_code(request.email)
+        service = EmailAuthService(db)
+        success, code = await service.send_verification_code(request.email)
         if success:
             return {"success": True, "message": "Verification code sent to your email"}
         else:
@@ -87,10 +87,11 @@ async def send_code(request: SendCodeRequest):
 
 
 @router.post("/verify-code")
-async def verify_code(request: VerifyCodeRequest):
-    """Verify the code sent to email."""
+async def verify_code(request: VerifyCodeRequest, db: AsyncSession = Depends(get_db)):
+    """Verify code sent to email."""
     try:
-        success, message = await email_auth_service.verify_code(request.email, request.code)
+        service = EmailAuthService(db)
+        success, message = await service.verify_code(request.email, request.code)
         return {"success": success, "message": message}
     except Exception as e:
         logger.error(f"Error verifying code: {str(e)}")
@@ -98,10 +99,11 @@ async def verify_code(request: VerifyCodeRequest):
 
 
 @router.post("/register")
-async def register(request: RegisterRequest):
+async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """Register a new user with email and password."""
     try:
-        success, message, user = await email_auth_service.register_user(
+        service = EmailAuthService(db)
+        success, message, user = await service.register_user(
             email=request.email,
             password=request.password,
             name=request.name
@@ -117,10 +119,11 @@ async def register(request: RegisterRequest):
 
 
 @router.post("/login")
-async def login(request: LoginRequest):
+async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     """Login with email and password."""
     try:
-        success, message, token = await email_auth_service.login_user(
+        service = EmailAuthService(db)
+        success, message, token = await service.login_user(
             email=request.email,
             password=request.password
         )
@@ -135,7 +138,7 @@ async def login(request: LoginRequest):
 
 
 @router.get("/me")
-async def get_current_user(authorization: str = Header(None)):
+async def get_current_user(authorization: str = Header(None), db: AsyncSession = Depends(get_db)):
     """Get current user from JWT token."""
     try:
         if not authorization or not authorization.startswith("Bearer "):
@@ -143,9 +146,9 @@ async def get_current_user(authorization: str = Header(None)):
         
         token = authorization.replace("Bearer ", "")
         
-        # Decode token
-        from services.email_auth import email_auth_service
-        user = await email_auth_service.verify_token(token)
+        # Create service instance to verify token
+        service = EmailAuthService(db)
+        user = await service.verify_token(token)
         
         if not user:
             return {"success": False, "message": "Invalid token"}

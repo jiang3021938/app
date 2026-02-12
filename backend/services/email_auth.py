@@ -3,18 +3,22 @@ import jwt
 import random
 import string
 import hashlib
+import secrets
+import uuid
 import httpx
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Tuple, Dict, Any
 
 from core.auth import create_access_token
 from core.config import settings
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from models.auth import User
 
 logger = logging.getLogger(__name__)
 
-# In-memory storage for verification codes and users
+# In-memory storage for verification codes (short-lived data is OK)
 verification_codes: Dict[str, Dict[str, Any]] = {}
-email_users: Dict[str, Dict[str, Any]] = {}  # email -> user data
 
 # Resend API configuration
 RESEND_API_KEY = "re_3M2tYDM3_2Jc16xhPX1sZmsCniCQGZ9E4"
@@ -25,13 +29,20 @@ BRAND_NAME = "LeaseLenses"
 
 
 def hash_password(password: str) -> str:
-    """Hash password using SHA256."""
-    return hashlib.sha256(password.encode()).hexdigest()
+    """Hash password using SHA256 with salt for security."""
+    salt = secrets.token_hex(16)
+    hash_obj = hashlib.sha256((password + salt).encode())
+    return f"{salt}${hash_obj.hexdigest()}"
 
 
 def verify_password(password: str, hashed: str) -> bool:
-    """Verify password against hash."""
-    return hash_password(password) == hashed
+    """Verify password against hash with salt."""
+    try:
+        salt, stored_hash = hashed.split('$')
+        hash_obj = hashlib.sha256((password + salt).encode())
+        return hash_obj.hexdigest() == stored_hash
+    except (ValueError, AttributeError):
+        return False
 
 
 def generate_verification_code() -> str:
@@ -69,7 +80,7 @@ async def send_email_via_resend(to_email: str, subject: str, html_content: str) 
 
 
 class EmailAuthService:
-    def __init__(self, db=None):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
     async def send_verification_code(self, email: str) -> Tuple[bool, str]:
@@ -137,7 +148,7 @@ class EmailAuthService:
             return True, code
 
     async def verify_code(self, email: str, code: str) -> Tuple[bool, str]:
-        """Verify the code sent to email."""
+        """Verify code sent to email."""
         if email not in verification_codes:
             return False, "No verification code found. Please request a new one."
         
@@ -168,33 +179,41 @@ class EmailAuthService:
         password: str, 
         name: Optional[str] = None
     ) -> Tuple[bool, str, Optional[Dict]]:
-        """Register a new user with email and password."""
+        """Register a new user with email and password in database."""
         
-        # Check if user already exists
-        if email in email_users:
+        # Check if user already exists in database
+        result = await self.db.execute(
+            select(User).where(User.email == email)
+        )
+        existing_user = result.scalar_one_or_none()
+        
+        if existing_user:
             return False, "Email already registered.", None
         
-        # Create new user
-        import uuid
+        # Create new user in database
         user_id = str(uuid.uuid4())
         hashed_password = hash_password(password)
         
-        user_data = {
-            "id": user_id,
-            "email": email,
-            "name": name or email.split("@")[0],
-            "password_hash": hashed_password,
-            "role": "user",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "last_login": datetime.now(timezone.utc).isoformat()
-        }
+        new_user = User(
+            id=user_id,
+            email=email,
+            name=name or email.split("@")[0],
+            password_hash=hashed_password,
+            role="user",
+            created_at=datetime.now(timezone.utc),
+            last_login=datetime.now(timezone.utc)
+        )
         
-        email_users[email] = user_data
+        self.db.add(new_user)
+        await self.db.commit()
+        await self.db.refresh(new_user)
+        
+        logger.info(f"[EmailAuth] New user registered: {email}")
         
         return True, "Registration successful.", {
-            "id": user_data["id"],
-            "email": user_data["email"],
-            "name": user_data["name"]
+            "id": new_user.id,
+            "email": new_user.email,
+            "name": new_user.name
         }
 
     async def login_user(
@@ -202,20 +221,24 @@ class EmailAuthService:
         email: str, 
         password: str
     ) -> Tuple[bool, str, Optional[str]]:
-        """Login user with email and password."""
+        """Login user with email and password from database."""
         
-        # Find user by email
-        if email not in email_users:
+        # Find user by email in database
+        result = await self.db.execute(
+            select(User).where(User.email == email)
+        )
+        user = result.scalar_one_or_none()
+        
+        if not user:
             return False, "Invalid email or password.", None
         
-        user = email_users[email]
-        
         # Check password
-        if not verify_password(password, user["password_hash"]):
+        if not verify_password(password, user.password_hash):
             return False, "Invalid email or password.", None
         
         # Update last login
-        user["last_login"] = datetime.now(timezone.utc).isoformat()
+        user.last_login = datetime.now(timezone.utc)
+        await self.db.commit()
         
         # Generate token
         try:
@@ -224,35 +247,48 @@ class EmailAuthService:
             expires_minutes = 60
         
         claims = {
-            "sub": user["id"],
-            "email": user["email"],
-            "role": user["role"],
+            "sub": user.id,
+            "email": user.email,
+            "role": user.role,
         }
-        if user.get("name"):
-            claims["name"] = user["name"]
+        if user.name:
+            claims["name"] = user.name
         
         token = create_access_token(claims, expires_minutes=expires_minutes)
+        
+        logger.info(f"[EmailAuth] User logged in: {email}")
         
         return True, "Login successful.", token
 
     async def verify_token(self, token: str) -> Optional[dict]:
-        """Verify JWT token and return user data."""
+        """Verify JWT token and return user data from database."""
         try:
             payload = jwt.decode(token, settings.jwt_secret_key, algorithms=["HS256"])
-            email = payload.get("email")
-            if email and email in email_users:
-                user = email_users[email]
+            user_id = payload.get("sub")
+            
+            if not user_id:
+                return None
+            
+            # Query user from database
+            result = await self.db.execute(
+                select(User).where(User.id == user_id)
+            )
+            user = result.scalar_one_or_none()
+            
+            if user:
                 return {
-                    "id": user["id"],
-                    "email": user["email"],
-                    "name": user["name"],
-                    "role": user["role"]
+                    "id": user.id,
+                    "email": user.email,
+                    "name": user.name,
+                    "role": user.role
                 }
             return None
         except jwt.ExpiredSignatureError:
+            logger.warning("[EmailAuth] Token expired")
             return None
-        except jwt.InvalidTokenError:
+        except jwt.InvalidTokenError as e:
+            logger.warning(f"[EmailAuth] Invalid token: {e}")
             return None
-
-# Create singleton instance
-email_auth_service = EmailAuthService()
+        except Exception as e:
+            logger.error(f"[EmailAuth] Error verifying token: {e}")
+            return None
