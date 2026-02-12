@@ -18,7 +18,7 @@ class SupabaseStorageService:
         self.supabase_url = os.environ.get("SUPABASE_URL", "")
         self.supabase_key = os.environ.get("SUPABASE_KEY", "")
         if not self.supabase_url or not self.supabase_key:
-            logger.warning("SUPABASE_URL or SUPABASE_KEY not configured")
+            raise ValueError("SUPABASE_URL and SUPABASE_KEY environment variables must be set")
 
     def _headers(self, content_type: Optional[str] = None) -> dict:
         headers = {
@@ -40,8 +40,8 @@ class SupabaseStorageService:
                 content=file_data,
             )
 
-            if response.status_code == 400 and "already exists" in response.text.lower():
-                # If file already exists, try to update (upsert)
+            if response.status_code in (409, 400):
+                # File might already exist, try upsert via PUT
                 response = await client.put(
                     url,
                     headers=self._headers(content_type),

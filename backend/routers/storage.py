@@ -160,6 +160,9 @@ async def download_file(request: FileUpDownRequest, _current_user: UserResponse 
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{e}")
 
 
+ALLOWED_BUCKETS = {"lease-documents"}
+
+
 @router.post("/upload")
 async def upload_file_direct(
     file: UploadFile = File(...),
@@ -171,6 +174,8 @@ async def upload_file_direct(
     Direct file upload to Supabase Storage.
     Replaces the old OSS presigned-URL workflow.
     """
+    if bucket_name not in ALLOWED_BUCKETS:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid bucket name")
     try:
         storage = SupabaseStorageService()
         file_data = await file.read()
