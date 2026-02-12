@@ -223,6 +223,163 @@ async def analyze_document(
         logger.error(f"Analysis error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/upload-and-analyze", response_model=AnalysisResponse)
+async def upload_and_analyze(
+    file: UploadFile = File(...),
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Upload a lease document and analyze it in one step"""
+    try:
+        # Validate file type
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="No file provided")
+        
+        allowed_extensions = (".pdf", ".docx", ".doc")
+        if not file.filename.lower().endswith(allowed_extensions):
+            raise HTTPException(status_code=400, detail="Please upload a PDF or Word (.docx) file")
+
+        # Read file bytes
+        file_bytes = await file.read()
+        if len(file_bytes) == 0:
+            raise HTTPException(status_code=400, detail="Empty file")
+
+        # Check user credits
+        is_admin = getattr(current_user, 'role', 'user') == 'admin'
+        credits_service = User_creditsService(db)
+        user_credits = await credits_service.get_by_field("user_id", current_user.id)
+
+        if not user_credits:
+            user_credits = await credits_service.create({
+                "user_id": current_user.id,
+                "free_credits": 1,
+                "paid_credits": 0,
+                "subscription_type": "none",
+                "created_at": datetime.now(),
+                "updated_at": datetime.now()
+            }, current_user.id)
+
+        total_credits = (user_credits.free_credits or 0) + (user_credits.paid_credits or 0)
+        has_subscription = False
+        if user_credits.subscription_type == "monthly" and user_credits.subscription_expires_at:
+            if user_credits.subscription_expires_at > datetime.now():
+                has_subscription = True
+
+        if not is_admin and total_credits <= 0 and not has_subscription:
+            raise HTTPException(
+                status_code=402,
+                detail="No credits remaining. Please purchase more credits or subscribe."
+            )
+
+        # Upload file to storage via presigned URL
+        import time
+        timestamp = int(time.time() * 1000)
+        safe_name = file.filename.replace(" ", "-")
+        object_key = f"{timestamp}-{safe_name}"
+
+        storage = StorageService()
+        upload_url_response = await storage.create_upload_url(
+            FileUpDownRequest(bucket_name="lease-documents", object_key=object_key)
+        )
+
+        # PUT file to presigned upload URL
+        import mimetypes
+        content_type = mimetypes.guess_type(file.filename)[0] or "application/octet-stream"
+        async with httpx_client.AsyncClient(timeout=120.0) as http_client:
+            put_response = await http_client.put(
+                upload_url_response.upload_url,
+                content=file_bytes,
+                headers={"Content-Type": content_type}
+            )
+            if put_response.status_code >= 400:
+                logger.error(f"Storage upload failed: {put_response.status_code} {put_response.text}")
+                raise HTTPException(status_code=500, detail="Failed to upload file to storage")
+
+        # Create document record
+        doc_service = DocumentsService(db)
+        document = await doc_service.create({
+            "file_name": file.filename,
+            "file_key": object_key,
+            "file_size": len(file_bytes),
+            "status": "processing",
+            "created_at": datetime.now(),
+            "updated_at": datetime.now(),
+        }, current_user.id)
+
+        # Analyze PDF using Gemini API
+        try:
+            gemini_extractor = GeminiExtractor()
+            analysis_result = await gemini_extractor.analyze_pdf(file_bytes, file.filename)
+            extracted_data = analysis_result["extracted_data"]
+            full_text = analysis_result["full_text"]
+            source_blocks = analysis_result["source_blocks"]
+            pages_meta = analysis_result["pages_meta"]
+            source_map = analysis_result.get("source_map", {})
+            logger.info(f"Successfully analyzed PDF using Gemini API")
+        except Exception as e:
+            logger.error(f"Gemini analysis failed: {e}")
+            await doc_service.update(document.id, {"status": "failed"}, current_user.id)
+            return AnalysisResponse(
+                success=False,
+                error=f"PDF analysis failed: {str(e)}"
+            )
+
+        # Perform compliance check
+        compliance_checker = ComplianceChecker(db)
+        compliance_result = await compliance_checker.check_compliance(extracted_data)
+
+        # Save extraction results
+        extractions_service = ExtractionsService(db)
+        extraction = await extractions_service.create({
+            "user_id": current_user.id,
+            "document_id": document.id,
+            "tenant_name": extracted_data.get("tenant_name"),
+            "landlord_name": extracted_data.get("landlord_name"),
+            "property_address": extracted_data.get("property_address"),
+            "monthly_rent": extracted_data.get("monthly_rent"),
+            "security_deposit": extracted_data.get("security_deposit"),
+            "lease_start_date": extracted_data.get("lease_start_date"),
+            "lease_end_date": extracted_data.get("lease_end_date"),
+            "renewal_notice_days": extracted_data.get("renewal_notice_days"),
+            "pet_policy": extracted_data.get("pet_policy"),
+            "late_fee_terms": extracted_data.get("late_fee_terms"),
+            "risk_flags": json.dumps(extracted_data.get("risk_flags", [])),
+            "compliance_data": json.dumps(compliance_result),
+            "raw_extraction": json.dumps(extracted_data),
+            "source_map": json.dumps(source_map) if source_map else None,
+            "pages_meta": json.dumps(pages_meta) if pages_meta else None,
+            "created_at": datetime.now()
+        }, current_user.id)
+
+        # Deduct credits
+        if not is_admin:
+            if user_credits.free_credits and user_credits.free_credits > 0:
+                await credits_service.update(user_credits.id, {
+                    "free_credits": user_credits.free_credits - 1,
+                    "updated_at": datetime.now()
+                }, current_user.id)
+            elif user_credits.paid_credits and user_credits.paid_credits > 0:
+                await credits_service.update(user_credits.id, {
+                    "paid_credits": user_credits.paid_credits - 1,
+                    "updated_at": datetime.now()
+                }, current_user.id)
+
+        # Update document status
+        await doc_service.update(document.id, {"status": "completed"}, current_user.id)
+
+        return AnalysisResponse(
+            success=True,
+            extraction_id=extraction.id,
+            data=extracted_data,
+            compliance=compliance_result
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Upload and analysis error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/analyze-batch", response_model=BatchAnalysisResponse)
 async def analyze_documents_batch(
