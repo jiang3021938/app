@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
+import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Crosshair,
   X,
   FileText,
-  Info,
+  ExternalLink,
 } from "lucide-react";
-import { apiCall } from "@/lib/api";
+
+const client = createClient();
 
 interface SourceLocation {
   page: number;
@@ -31,47 +33,158 @@ export default function PDFViewer({
   activeField,
   onClose,
 }: PDFViewerProps) {
-  const [sourceMap, setSourceMap] = useState<Record<string, SourceLocation[]>>({});
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [sourceMap, setSourceMap] = useState<
+    Record<string, SourceLocation[]>
+  >({});
+  const [currentPage, setCurrentPage] = useState(1);
 
+  // Load PDF URL and source map
   useEffect(() => {
+    loadPdfUrl();
     loadSourceMap();
-  }, [extractionId, documentId]);
+  }, [documentId, extractionId]);
 
-  const loadSourceMap = async () => {
+  // Navigate to page when activeField changes
+  useEffect(() => {
+    if (activeField && sourceMap[activeField]) {
+      const locations = sourceMap[activeField];
+      if (locations.length > 0) {
+        const page = locations[0].page + 1; // 0-indexed to 1-indexed
+        setCurrentPage(page);
+        // Update iframe URL to navigate to specific page
+        if (pdfUrl) {
+          const baseUrl = pdfUrl.split("#")[0];
+          setPdfUrl(`${baseUrl}#page=${page}`);
+        }
+      }
+    }
+  }, [activeField, sourceMap]);
+
+  const loadPdfUrl = async () => {
     setLoading(true);
+    setError(false);
     try {
-      const response = await apiCall({
-        url: `/api/v1/lease/source-map/${extractionId}`,
+      const response = await client.apiCall.invoke({
+        url: `/api/v1/lease/pdf-url/${documentId}`,
         method: "GET",
       });
-      const data = response.data;
-      setSourceMap(data.source_map || {});
-    } catch (error) {
-      console.error("Failed to load source map:", error);
+      if (response.data?.url) {
+        setPdfUrl(response.data.url);
+      } else {
+        setError(true);
+      }
+    } catch (err) {
+      console.error("Failed to load PDF URL:", err);
+      setError(true);
     } finally {
       setLoading(false);
     }
   };
 
-  const fieldNames = Object.keys(sourceMap);
-  const activeLocations = activeField ? (sourceMap[activeField] || []) : [];
+  const loadSourceMap = async () => {
+    try {
+      const response = await client.apiCall.invoke({
+        url: `/api/v1/lease/source-map/${extractionId}`,
+        method: "GET",
+      });
+      const data = response.data;
+      setSourceMap(data.source_map || {});
+    } catch (err) {
+      console.error("Failed to load source map:", err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex items-center justify-between px-3 py-2 border-b bg-slate-50">
+          <span className="text-sm font-medium text-slate-700 flex items-center gap-2">
+            <FileText className="h-4 w-4" /> Source Tracing
+          </span>
+          {onClose && (
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        <div className="flex-1 p-4">
+          <Skeleton className="w-full h-full min-h-[400px]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !pdfUrl) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex items-center justify-between px-3 py-2 border-b bg-slate-50">
+          <span className="text-sm font-medium text-slate-700 flex items-center gap-2">
+            <FileText className="h-4 w-4" /> Source Tracing
+          </span>
+          {onClose && (
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        <div className="flex-1 flex items-center justify-center text-center text-slate-500 p-6">
+          <div>
+            <FileText className="h-12 w-12 mx-auto mb-3 text-slate-300" />
+            <p className="text-sm font-medium">PDF preview not available</p>
+            <p className="text-xs text-slate-400 mt-1">
+              The document could not be loaded for preview.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={loadPdfUrl}
+            >
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-3 py-2 border-b bg-slate-50 rounded-t-lg">
+      <div className="flex items-center justify-between px-3 py-2 border-b bg-slate-50">
         <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-slate-500" />
-          <span className="text-sm font-medium text-slate-700">Source Tracing</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {activeField && (
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs gap-1">
+          <FileText className="h-4 w-4 text-slate-600" />
+          <span className="text-sm font-medium text-slate-700">
+            Source Tracing
+          </span>
+          {activeField && sourceMap[activeField] && (
+            <Badge
+              variant="secondary"
+              className="bg-blue-100 text-blue-700 text-xs gap-1"
+            >
               <Crosshair className="h-3 w-3" />
               {activeField.replace(/_/g, " ")}
+              {sourceMap[activeField][0] && (
+                <span className="ml-1">
+                  (p.{sourceMap[activeField][0].page + 1})
+                </span>
+              )}
             </Badge>
           )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => window.open(pdfUrl, "_blank")}
+            title="Open in new tab"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Button>
           {onClose && (
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-4 w-4" />
@@ -80,71 +193,14 @@ export default function PDFViewer({
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-auto p-4" style={{ minHeight: "400px" }}>
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 bg-slate-100 rounded-lg animate-pulse" />
-            ))}
-          </div>
-        ) : activeField && activeLocations.length > 0 ? (
-          /* Show source text for the active field */
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 mb-4">
-              <Crosshair className="h-4 w-4 text-blue-500" />
-              <span className="text-sm font-medium text-slate-700">
-                Source for: <span className="text-blue-600">{activeField.replace(/_/g, " ")}</span>
-              </span>
-            </div>
-            {activeLocations.map((location, idx) => (
-              <Card key={idx} className="p-3 border-blue-200 bg-blue-50/50">
-                <div className="flex items-start gap-2">
-                  <Badge variant="outline" className="text-xs shrink-0 mt-0.5">
-                    Page {(location.page || 0) + 1}
-                  </Badge>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-slate-700 break-words leading-relaxed">
-                      "{location.matched_text}"
-                    </p>
-                    {location.confidence && (
-                      <p className="text-xs text-slate-400 mt-1">
-                        Confidence: {Math.round(location.confidence * 100)}%
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : fieldNames.length > 0 ? (
-          /* Show all available source fields */
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 mb-3 text-slate-500">
-              <Info className="h-4 w-4" />
-              <span className="text-xs">Click a <Crosshair className="h-3 w-3 inline" /> field in the report to view its source text.</span>
-            </div>
-            {fieldNames.map((field) => (
-              <div key={field} className="flex items-center gap-2 p-2 rounded hover:bg-slate-50 text-sm">
-                <Crosshair className="h-3 w-3 text-slate-400 shrink-0" />
-                <span className="text-slate-600">{field.replace(/_/g, " ")}</span>
-                <Badge variant="outline" className="ml-auto text-xs">
-                  {sourceMap[field].length} source{sourceMap[field].length > 1 ? "s" : ""}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        ) : (
-          /* No source data available */
-          <div className="text-center py-12 text-slate-500">
-            <FileText className="h-10 w-10 mx-auto mb-3 text-slate-300" />
-            <p className="text-sm font-medium mb-1">PDF preview not available</p>
-            <p className="text-xs text-slate-400 max-w-xs mx-auto">
-              This document was analyzed in memory without storing the original PDF.
-              Source tracing data will appear here when available.
-            </p>
-          </div>
-        )}
+      {/* PDF iframe */}
+      <div className="flex-1 bg-slate-200" style={{ minHeight: "400px" }}>
+        <iframe
+          src={pdfUrl}
+          className="w-full h-full border-0"
+          style={{ minHeight: "calc(100vh - 130px)" }}
+          title="Lease Document PDF"
+        />
       </div>
     </div>
   );
