@@ -93,17 +93,11 @@ class LeaseExtractionService:
     async def extract_lease_data(self, document_text: str) -> Dict[str, Any]:
         """
         Extract structured data from lease document text using AI
-        
-        Args:
-            document_text: The text content of the lease document
-            
-        Returns:
-            Dictionary containing extracted lease data and risk flags
         """
         try:
             request = GenTxtRequest(
                 messages=[
-                    ChatMessage(role="system", content="You are a legal document analyzer specializing in residential lease agreements. Always respond with valid JSON only."),
+                    ChatMessage(role="system", content="You are a legal document analyzer specializing in residential lease agreements. Always respond with valid JSON only. Never wrap your response in markdown code blocks."),
                     ChatMessage(role="user", content=EXTRACTION_PROMPT + document_text)
                 ],
                 model="gemini-3-pro-preview"
@@ -144,54 +138,41 @@ class LeaseExtractionService:
             }
     
     async def analyze_risks(self, extracted_data: Dict[str, Any]) -> list:
-        """
-        Analyze extracted data for additional risks
-        
-        Args:
-            extracted_data: Previously extracted lease data
-            
-        Returns:
-            List of identified risk flags
-        """
+        """Analyze extracted data for additional risks"""
         risks = extracted_data.get("risk_flags", [])
         
-        # Add additional programmatic risk checks
         if not extracted_data.get("security_deposit"):
             risks.append({
                 "severity": "medium",
                 "category": "Security Deposit",
-                "description": "No security deposit amount specified in the lease"
+                "title": "No security deposit specified",
+                "description": "No security deposit amount specified in the lease",
+                "recommendation": "Clarify security deposit terms with the landlord"
             })
         
         if not extracted_data.get("lease_end_date"):
             risks.append({
                 "severity": "high",
                 "category": "Lease Term",
-                "description": "No lease end date specified - may be month-to-month or missing critical information"
+                "title": "No lease end date",
+                "description": "No lease end date specified - may be month-to-month or missing critical information",
+                "recommendation": "Confirm the lease term and get a specific end date in writing"
             })
         
         if not extracted_data.get("renewal_notice_days"):
             risks.append({
                 "severity": "medium",
                 "category": "Renewal Terms",
-                "description": "No renewal notice period specified"
+                "title": "No renewal notice period",
+                "description": "No renewal notice period specified",
+                "recommendation": "Negotiate a specific renewal notice period to avoid automatic termination"
             })
         
         return risks
 
 
-# Utility function to generate calendar events
 def generate_ics_content(extraction_data: Dict[str, Any], document_name: str) -> str:
-    """
-    Generate ICS calendar file content for lease important dates
-    
-    Args:
-        extraction_data: Extracted lease data
-        document_name: Name of the document for event titles
-        
-    Returns:
-        ICS file content as string
-    """
+    """Generate ICS calendar file content for lease important dates"""
     events = []
     
     # Lease end date reminder
