@@ -1,15 +1,21 @@
 """
-PDF Text Extraction Service with coordinate tracking.
+PDF Page Rendering Service (optional).
 
-Uses PyMuPDF (fitz) to extract text blocks with their page numbers and bounding boxes,
-enabling click-to-source functionality in the frontend.
+This service is kept for PDF viewer functionality (rendering pages as images).
+Text extraction is now handled by Gemini API (see gemini_extractor.py).
+PyMuPDF is optional - if not installed, page rendering will not be available.
 """
 
 import logging
 import json
 import re
 from typing import Dict, Any, List, Optional, Tuple
-import fitz  # PyMuPDF
+
+try:
+    import fitz  # PyMuPDF - optional for PDF rendering
+    HAS_PYMUPDF = True
+except ImportError:
+    HAS_PYMUPDF = False
 
 logger = logging.getLogger(__name__)
 

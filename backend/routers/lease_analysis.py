@@ -17,6 +17,7 @@ from schemas.auth import UserResponse
 from services.lease_extraction import LeaseExtractionService, generate_ics_content
 from services.pdf_extractor import PDFExtractor
 from services.document_extractor import DocumentExtractor
+from services.gemini_extractor import GeminiExtractor
 from services.amendment_memo import AmendmentMemoService
 from services.lease_comparison import LeaseComparisonService
 from services.rent_benchmark import RentBenchmarkService
@@ -137,55 +138,34 @@ async def analyze_document(
         # Update document status
         await doc_service.update(request.document_id, {"status": "processing"}, current_user.id)
         
-        # Extract text from document (PDF or Word) with coordinates for source tracing
-        document_text = ""
-        source_blocks = []
-        pages_meta = []
-        try:
-            storage = StorageService()
-            download = await storage.create_download_url(
-                FileUpDownRequest(bucket_name="lease-documents", object_key=document.file_key)
-            )
-            async with httpx_client.AsyncClient(timeout=120.0) as http_client:
-                file_response = await http_client.get(download.download_url)
-                file_bytes = file_response.content
+        # Download file from storage
+        storage = StorageService()
+        download = await storage.create_download_url(
+            FileUpDownRequest(bucket_name="lease-documents", object_key=document.file_key)
+        )
+        async with httpx_client.AsyncClient(timeout=120.0) as http_client:
+            file_response = await http_client.get(download.download_url)
+            file_bytes = file_response.content
 
-            doc_extractor = DocumentExtractor()
-            doc_data = doc_extractor.extract(file_bytes, document.file_name)
-            document_text = doc_data["full_text"]
-            source_blocks = doc_data["blocks"]
-            pages_meta = doc_data["pages"]
-            logger.info(f"Extracted {len(source_blocks)} text blocks from {doc_data.get('file_type', 'unknown')} ({doc_data['page_count']} pages)")
+        # Analyze PDF using Gemini API
+        try:
+            gemini_extractor = GeminiExtractor()
+            analysis_result = await gemini_extractor.analyze_pdf(file_bytes, document.file_name)
+            extracted_data = analysis_result["extracted_data"]
+            full_text = analysis_result["full_text"]
+            source_blocks = analysis_result["source_blocks"]  # Empty for Gemini
+            pages_meta = analysis_result["pages_meta"]  # Empty for Gemini
+            logger.info(f"Successfully analyzed PDF using Gemini API")
         except Exception as e:
-            logger.warning(f"Document extraction failed, using fallback: {e}")
-            document_text = f"Lease agreement document: {document.file_name}"
-            source_blocks = []
-            pages_meta = []
-        
-        if not document_text.strip():
-            document_text = f"Lease agreement document: {document.file_name}"
-        
-        # Perform AI extraction
-        extraction_service = LeaseExtractionService()
-        result = await extraction_service.extract_lease_data(document_text)
-        
-        if not result["success"]:
+            logger.error(f"Gemini analysis failed: {e}")
             await doc_service.update(request.document_id, {"status": "failed"}, current_user.id)
             return AnalysisResponse(
                 success=False,
-                error=result.get("error", "Extraction failed")
+                error=f"PDF analysis failed: {str(e)}"
             )
         
-        extracted_data = result["data"]
-        
-        # Map extracted fields to PDF source locations
+        # Source mapping is not available with Gemini (no coordinate info)
         source_map = {}
-        if source_blocks:
-            try:
-                pdf_extractor = PDFExtractor()
-                source_map = pdf_extractor.map_extraction_to_sources(source_blocks, extracted_data)
-            except Exception as e:
-                logger.warning(f"Source mapping failed: {e}")
         
         # Perform compliance check
         compliance_checker = ComplianceChecker(db)
