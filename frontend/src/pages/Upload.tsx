@@ -210,7 +210,12 @@ export default function UploadPage() {
             </Button>
             <div className="flex items-center gap-2">
               <FileText className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-slate-800">LeaseLenses</span>
+              <button 
+                onClick={() => navigate("/")} 
+                className="text-xl font-bold text-slate-800 hover:text-blue-600 transition-colors"
+              >
+                LeaseLenses
+              </button>
             </div>
           </div>
           {credits && (

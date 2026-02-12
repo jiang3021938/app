@@ -5,6 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { 
   FileText, Plus, CreditCard, LogOut, Clock, CheckCircle, 
   AlertCircle, User, Files, Download, Building2, Scale
@@ -38,6 +46,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedDocs, setSelectedDocs] = useState<number[]>([]);
   const [authType, setAuthType] = useState<"atoms" | "email" | null>(null);
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -129,6 +138,22 @@ export default function Dashboard() {
     );
   };
 
+  const handleUploadCheck = () => {
+    if (credits && credits.total_credits === 0 && !credits.is_admin) {
+      setShowNoCreditsModal(true);
+    } else {
+      navigate("/upload");
+    }
+  };
+
+  const handleBatchUploadCheck = () => {
+    if (credits && credits.total_credits === 0 && !credits.is_admin) {
+      setShowNoCreditsModal(true);
+    } else {
+      navigate("/batch-upload");
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
@@ -196,9 +221,17 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <FileText className="h-8 w-8 text-blue-600" />
-            <span className="text-xl font-bold text-slate-900">LeaseLenses</span>
+            <button 
+              onClick={() => navigate("/")} 
+              className="text-xl font-bold text-slate-900 hover:text-blue-600 transition-colors"
+            >
+              LeaseLenses
+            </button>
           </div>
           <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+              Home
+            </Button>
             <div className="flex items-center gap-2 text-sm text-slate-600">
               <User className="h-4 w-4" />
               <span>{user.email || user.name}</span>
@@ -254,11 +287,11 @@ export default function Dashboard() {
 
         {/* Actions */}
         <div className="flex flex-wrap gap-4">
-          <Button onClick={() => navigate("/upload")} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={handleUploadCheck} className="bg-blue-600 hover:bg-blue-700">
             <Plus className="h-4 w-4 mr-2" />
             Analyze New Lease
           </Button>
-          <Button onClick={() => navigate("/batch-upload")} variant="outline">
+          <Button onClick={handleBatchUploadCheck} variant="outline">
             <Files className="h-4 w-4 mr-2" />
             Batch Upload
           </Button>
@@ -283,7 +316,7 @@ export default function Dashboard() {
                 <FileText className="h-12 w-12 text-slate-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-slate-900 mb-2">No documents yet</h3>
                 <p className="text-slate-500 mb-4">Upload your first lease document to get started</p>
-                <Button onClick={() => navigate("/upload")} className="bg-blue-600 hover:bg-blue-700">
+                <Button onClick={handleUploadCheck} className="bg-blue-600 hover:bg-blue-700">
                   <Plus className="h-4 w-4 mr-2" />
                   Upload Document
                 </Button>
@@ -326,6 +359,38 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* No Credits Modal */}
+        <Dialog open={showNoCreditsModal} onOpenChange={setShowNoCreditsModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-amber-600" />
+                No Credits Remaining
+              </DialogTitle>
+              <DialogDescription className="text-base pt-2">
+                You have no credits remaining. Please purchase credits to continue analyzing documents.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowNoCreditsModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => {
+                  setShowNoCreditsModal(false);
+                  navigate("/pricing");
+                }}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Get Credits
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
