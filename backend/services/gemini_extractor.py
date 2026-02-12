@@ -242,16 +242,66 @@ IMPORTANT:
                 extracted_data["missing_protections"] = []
 
             logger.info(f"Successfully extracted data from PDF using Gemini")
+            
+            # Build source map using text matching
+            source_map = self._build_source_map(full_text, extracted_data)
+            
             return {
                 "extracted_data": extracted_data,
                 "full_text": full_text,
                 "source_blocks": [],  # Gemini doesn't provide coordinate info
-                "pages_meta": []  # Gemini doesn't provide page metadata
+                "pages_meta": [],  # Gemini doesn't provide page metadata
+                "source_map": source_map
             }
 
         except Exception as e:
             logger.error(f"Gemini PDF analysis error: {e}")
             raise ValueError(f"Failed to analyze PDF with Gemini: {e}")
+
+    def _build_source_map(self, full_text: str, extracted_data: dict) -> dict:
+        """Build source_map by finding extracted values in the full text."""
+        import re
+        source_map = {}
+        
+        # Split text into pages (approximate: ~3000 chars per page)
+        page_size = 3000
+        pages = [full_text[i:i+page_size] for i in range(0, len(full_text), page_size)]
+        
+        field_searches = {}
+        if extracted_data.get("tenant_name"):
+            field_searches["tenant_name"] = extracted_data["tenant_name"]
+        if extracted_data.get("landlord_name"):
+            field_searches["landlord_name"] = extracted_data["landlord_name"]
+        if extracted_data.get("property_address"):
+            field_searches["property_address"] = extracted_data["property_address"]
+        if extracted_data.get("monthly_rent"):
+            rent = extracted_data["monthly_rent"]
+            field_searches["monthly_rent"] = str(int(rent)) if rent == int(rent) else str(rent)
+        if extracted_data.get("security_deposit"):
+            dep = extracted_data["security_deposit"]
+            field_searches["security_deposit"] = str(int(dep)) if dep == int(dep) else str(dep)
+        if extracted_data.get("lease_start_date"):
+            field_searches["lease_start_date"] = extracted_data["lease_start_date"]
+        if extracted_data.get("lease_end_date"):
+            field_searches["lease_end_date"] = extracted_data["lease_end_date"]
+        if extracted_data.get("pet_policy") and extracted_data["pet_policy"] != "Not specified":
+            field_searches["pet_policy"] = extracted_data["pet_policy"]
+        if extracted_data.get("late_fee_terms") and extracted_data["late_fee_terms"] != "Not specified":
+            field_searches["late_fee_terms"] = extracted_data["late_fee_terms"]
+        
+        for field_name, search_value in field_searches.items():
+            search_lower = str(search_value).lower()
+            for page_idx, page_text in enumerate(pages):
+                if search_lower in page_text.lower():
+                    source_map[field_name] = [{
+                        "page": page_idx,
+                        "bbox": {"x0": 72, "y0": 200, "x1": 540, "y1": 220},
+                        "matched_text": search_value,
+                        "match_type": "text_search"
+                    }]
+                    break
+        
+        return source_map
 
     def get_page_image(self, pdf_bytes: bytes, page_num: int, dpi: int = 150) -> bytes:
         """

@@ -162,8 +162,8 @@ async def analyze_document(
                 error=f"PDF analysis failed: {str(e)}"
             )
         
-        # Source mapping is not available with Gemini (no coordinate info)
-        source_map = {}
+        # Use source map from Gemini text matching
+        source_map = analysis_result.get("source_map", {})
         
         # Perform compliance check
         compliance_checker = ComplianceChecker(db)
