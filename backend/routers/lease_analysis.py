@@ -75,6 +75,7 @@ class CalendarRequest(BaseModel):
 class AnalysisResponse(BaseModel):
     success: bool
     extraction_id: Optional[int] = None
+    document_id: Optional[int] = None
     data: Optional[dict] = None
     compliance: Optional[dict] = None
     error: Optional[str] = None
@@ -210,6 +211,7 @@ async def analyze_document(
         return AnalysisResponse(
             success=True,
             extraction_id=extraction.id,
+            document_id=request.document_id,
             data=extracted_data,
             compliance=compliance_result
         )
@@ -341,6 +343,7 @@ async def upload_and_analyze(
         return AnalysisResponse(
             success=True,
             extraction_id=extraction.id,
+            document_id=document.id,
             data=extracted_data,
             compliance=compliance_result
         )

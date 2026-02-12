@@ -411,7 +411,8 @@ export default function ReportPage() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap justify-end">
-            {/* Source Tracing Toggle */}
+            {/* Source Tracing Toggle - only show when PDF is stored */}
+            {document?.file_key && (
             <Button
               variant={showPDFViewer ? "default" : "outline"}
               size="sm"
@@ -428,6 +429,7 @@ export default function ReportPage() {
               )}
               <span className="hidden sm:inline">{showPDFViewer ? "Hide PDF" : "View PDF Source"}</span>
             </Button>
+            )}
 
             {/* Google Calendar */}
             <GoogleCalendarButton extractionId={extraction.id} />

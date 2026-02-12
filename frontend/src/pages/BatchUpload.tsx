@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { checkAuthStatus } from "@/lib/checkAuth";
-import { apiCall, documents as documentsApi, uploadFile } from "@/lib/api";
+import { apiCall } from "@/lib/api";
 
 const ACCEPTED_TYPES = [
   "application/pdf",
@@ -150,49 +150,63 @@ export default function BatchUploadPage() {
     setProcessing(true);
     setOverallProgress(0);
 
-    const documentIds: number[] = [];
-    const fileIdMap: Record<number, string> = {};
+    let completedCount = 0;
 
-    // Step 1: Upload all files
+    // Process each file individually using in-memory analysis
     for (let i = 0; i < files.length; i++) {
       const fileItem = files[i];
       
       try {
         updateFileStatus(fileItem.id, { status: "uploading", progress: 20 });
 
-        const timestamp = Date.now();
-        const fileKey = `leases/${user.id}/${timestamp}-${fileItem.file.name}`;
+        const token = localStorage.getItem("token");
+        const formData = new FormData();
+        formData.append("file", fileItem.file);
 
-        await uploadFile({
-          bucket_name: "lease-documents",
-          object_key: fileKey,
-          file: fileItem.file,
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        updateFileStatus(fileItem.id, { progress: 40, status: "analyzing" });
+
+        const response = await fetch("/api/v1/lease/upload-and-analyze", {
+          method: "POST",
+          headers,
+          body: formData,
         });
 
-        updateFileStatus(fileItem.id, { progress: 50 });
+        if (!response.ok) {
+          const errorBody = await response.json().catch(() => ({ detail: "Analysis failed" }));
+          if (response.status === 402) {
+            updateFileStatus(fileItem.id, {
+              status: "failed",
+              error: "Insufficient credits",
+            });
+            toast.error("Insufficient credits. Please purchase more credits.");
+            break; // Stop processing remaining files
+          }
+          throw new Error(errorBody.detail || "Analysis failed");
+        }
 
-        const docResponse = await documentsApi.create({
-          data: {
-            file_name: fileItem.file.name,
-            file_key: fileKey,
-            file_size: fileItem.file.size,
-            status: "pending",
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        });
+        const result = await response.json();
 
-        const docId = docResponse.data.id;
-        documentIds.push(docId);
-        fileIdMap[docId] = fileItem.id;
-        
-        updateFileStatus(fileItem.id, { 
-          documentId: docId, 
-          progress: 60,
-          status: "analyzing" 
-        });
+        if (result.success) {
+          updateFileStatus(fileItem.id, {
+            status: "completed",
+            progress: 100,
+            documentId: result.document_id,
+            extractionId: result.extraction_id,
+          });
+          completedCount++;
+        } else {
+          updateFileStatus(fileItem.id, {
+            status: "failed",
+            error: result.error || "Analysis failed",
+          });
+        }
 
-        setOverallProgress(Math.round(((i + 1) / files.length) * 50));
+        setOverallProgress(Math.round(((i + 1) / files.length) * 100));
       } catch (err: any) {
         updateFileStatus(fileItem.id, {
           status: "failed",
@@ -201,59 +215,8 @@ export default function BatchUploadPage() {
       }
     }
 
-    // Step 2: Batch analyze
-    if (documentIds.length > 0) {
-      try {
-        const analysisResponse = await apiCall({
-          url: "/api/v1/lease/analyze-batch",
-          method: "POST",
-          data: { document_ids: documentIds },
-        });
-
-        const results = analysisResponse.data.results || [];
-        
-        for (const result of results) {
-          const fileId = fileIdMap[result.document_id];
-          if (fileId) {
-            if (result.success) {
-              updateFileStatus(fileId, {
-                status: "completed",
-                progress: 100,
-                extractionId: result.extraction_id,
-              });
-            } else {
-              updateFileStatus(fileId, {
-                status: "failed",
-                error: result.error || "Analysis failed",
-              });
-            }
-          }
-        }
-
-        setOverallProgress(100);
-        
-        const completed = results.filter((r: any) => r.success).length;
-        if (completed > 0) {
-          toast.success(`Successfully analyzed ${completed} document(s)`);
-        }
-      } catch (err: any) {
-        // Handle credit errors gracefully
-        if (err?.status === 402 || err?.data?.detail?.toLowerCase().includes("credit")) {
-          toast.error("Insufficient credits. Please purchase more credits.");
-          // Mark remaining as failed
-          for (const docId of documentIds) {
-            const fileId = fileIdMap[docId];
-            if (fileId) {
-              updateFileStatus(fileId, {
-                status: "failed",
-                error: "Insufficient credits",
-              });
-            }
-          }
-        } else {
-          toast.error(err?.data?.detail || "Batch analysis failed");
-        }
-      }
+    if (completedCount > 0) {
+      toast.success(`Successfully analyzed ${completedCount} document(s)`);
     }
 
     setProcessing(false);

@@ -42,8 +42,8 @@ export default function Register() {
     try {
       const response = await fetch("/api/v1/auth/google/login");
       const data = await response.json();
-      if (data.auth_url) {
-        window.location.href = data.auth_url;
+      if (data.redirect_url) {
+        window.location.href = data.redirect_url;
       } else {
         setError("Failed to initialize Google login");
         setGoogleLoading(false);

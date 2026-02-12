@@ -173,7 +173,7 @@ export default function UploadPage() {
 
       if (result.success) {
         toast.success("Analysis complete!");
-        navigate(`/report/${result.extraction_id}?fromUpload=true`);
+        navigate(`/report/${result.document_id}`);
       } else {
         setError(result.error || "Analysis failed");
         setAnalyzing(false);

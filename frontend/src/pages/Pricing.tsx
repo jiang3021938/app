@@ -31,10 +31,14 @@ export default function PricingPage() {
 
   const loadData = async () => {
     try {
-      // Check auth (supports both email JWT and Atoms Cloud)
+      // Check auth
       const { user: authUser } = await checkAuthStatus();
       setUser(authUser);
+    } catch {
+      // Not logged in is fine for pricing page
+    }
 
+    try {
       // Load pricing
       const pricingResponse = await apiCall({
         url: "/api/v1/payment/pricing",
@@ -57,7 +61,7 @@ export default function PricingPage() {
     setPurchasing(planId);
     try {
       const response = await apiCall({
-        url: "/api/v1/payment/create_checkout_session",
+        url: "/api/v1/payment/create-checkout",
         method: "POST",
         data: {
           plan_type: planId,
@@ -66,8 +70,8 @@ export default function PricingPage() {
         }
       });
 
-      if (response.data.url) {
-        window.open(response.data.url, "_blank");
+      if (response.data.checkout_url) {
+        window.open(response.data.checkout_url, "_blank");
       }
     } catch (error: any) {
       console.error("Purchase error:", error);
@@ -115,6 +119,12 @@ export default function PricingPage() {
           </p>
         </div>
 
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          </div>
+        ) : (
+        <>
         {/* Free Tier */}
         <Card className="max-w-md mx-auto mb-8 border-green-200 bg-green-50">
           <CardContent className="py-6 text-center">
@@ -304,6 +314,8 @@ export default function PricingPage() {
             </div>
           </div>
         </div>
+        </>
+        )}
       </main>
 
       {/* Footer */}

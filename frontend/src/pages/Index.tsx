@@ -529,7 +529,7 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="text-center mt-8">
-            <Button onClick={() => navigate("/pricing")} variant="outline" className="gap-2">
+            <Button onClick={() => navigate("/features")} variant="outline" className="gap-2">
               See All Features <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
