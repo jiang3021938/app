@@ -133,7 +133,7 @@ class GeminiExtractor:
 
             # Generate content with the PDF
             response = self.client.models.generate_content(
-                model="gemini-3-pro-preview",
+                model="gemini-3-flash-preview",
                 contents=[
                     types.Content(
                         role="user",
