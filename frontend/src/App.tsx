@@ -19,6 +19,7 @@ import Templates from "./pages/Templates";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Features from "./pages/Features";
+import About from "./pages/About";
 import LogoutCallbackPage from "./pages/LogoutCallbackPage";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/features" element={<Features />} />
+          <Route path="/about" element={<About />} />
           <Route path="/logout-callback" element={<LogoutCallbackPage />} />
         </Routes>
       </BrowserRouter>
