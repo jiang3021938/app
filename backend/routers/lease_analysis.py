@@ -12,6 +12,7 @@ from typing import Optional, List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
+from core.config import settings
 from dependencies.auth import get_current_user
 from schemas.auth import UserResponse
 from services.lease_extraction import LeaseExtractionService, generate_ics_content
@@ -805,6 +806,12 @@ async def get_pdf_page_image(
     """Render a specific document page as a PNG image for the viewer.
     Supports both PDF and Word (.docx) files."""
     try:
+        if not settings.oss_service_url or not settings.oss_api_key:
+            raise HTTPException(
+                status_code=501,
+                detail="PDF preview is not available. Storage service is not configured."
+            )
+
         doc_service = DocumentsService(db)
         document = await doc_service.get_by_id(document_id, current_user.id)
 
@@ -937,6 +944,12 @@ async def get_document_page_count(
 ):
     """Get total page count for a document (PDF or Word)."""
     try:
+        if not settings.oss_service_url or not settings.oss_api_key:
+            raise HTTPException(
+                status_code=501,
+                detail="PDF preview is not available. Storage service is not configured."
+            )
+
         doc_service = DocumentsService(db)
         document = await doc_service.get_by_id(document_id, current_user.id)
 
@@ -986,6 +999,12 @@ async def get_pdf_download_url(
 ):
     """Get a temporary download URL for the original PDF (for pdfjs viewer)."""
     try:
+        if not settings.oss_service_url or not settings.oss_api_key:
+            raise HTTPException(
+                status_code=501,
+                detail="PDF preview is not available. Storage service is not configured."
+            )
+
         doc_service = DocumentsService(db)
         document = await doc_service.get_by_id(document_id, current_user.id)
 
