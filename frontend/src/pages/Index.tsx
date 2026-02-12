@@ -198,7 +198,7 @@ function DemoAnimation() {
 export default function LandingPage() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [authType, setAuthType] = useState<"email" | "atoms" | null>(null);
+  const [authType, setAuthType] = useState<"email" | null>(null);
 
   useEffect(() => {
     // Check if user is logged in (supports both email JWT and Atoms Cloud)
@@ -211,7 +211,7 @@ export default function LandingPage() {
   }, []);
 
   const handleLogout = async () => {
-    await performLogout(authType);
+    await performLogout();
     setCurrentUser(null);
     setAuthType(null);
   };

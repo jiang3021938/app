@@ -1,18 +1,12 @@
-import { createClient } from "@metagptx/web-sdk";
-
-const client = createClient();
-
 export interface AuthResult {
   user: any;
-  authType: "email" | "atoms" | null;
+  authType: "email" | null;
 }
 
 /**
- * Check authentication status by trying email JWT first, then Atoms Cloud.
- * This ensures users logged in via either method are recognized across all pages.
+ * Check authentication status using email JWT token.
  */
 export async function checkAuthStatus(): Promise<AuthResult> {
-  // First check for email JWT token
   const emailToken = localStorage.getItem("token");
   if (emailToken) {
     try {
@@ -28,36 +22,16 @@ export async function checkAuthStatus(): Promise<AuthResult> {
       // Token invalid, remove it
       localStorage.removeItem("token");
     } catch {
-      // Token check failed, continue to Atoms Cloud
+      // Token check failed
     }
-  }
-
-  // Then check Atoms Cloud auth
-  try {
-    const response = await client.auth.me();
-    if (response.data) {
-      return { user: response.data, authType: "atoms" };
-    }
-  } catch {
-    // Atoms Cloud auth failed
   }
 
   return { user: null, authType: null };
 }
 
 /**
- * Perform logout for the given auth type, cleaning up both auth methods.
+ * Perform logout by clearing the JWT token.
  */
-export async function performLogout(authType: "email" | "atoms" | null) {
-  // Always clear email JWT if present
+export async function performLogout() {
   localStorage.removeItem("token");
-
-  // If atoms auth, also logout from atoms
-  if (authType === "atoms") {
-    try {
-      await client.auth.logout();
-    } catch {
-      // Ignore logout errors
-    }
-  }
 }

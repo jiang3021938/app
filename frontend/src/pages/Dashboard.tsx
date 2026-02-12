@@ -46,7 +46,7 @@ export default function Dashboard() {
   const [credits, setCredits] = useState<Credits | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDocs, setSelectedDocs] = useState<number[]>([]);
-  const [authType, setAuthType] = useState<"atoms" | "email" | null>(null);
+  const [authType, setAuthType] = useState<"email" | null>(null);
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
 
   useEffect(() => {
@@ -96,7 +96,7 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
-    await performLogout(authType);
+    await performLogout();
     setUser(null);
     setDocuments([]);
     setCredits(null);
