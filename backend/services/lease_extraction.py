@@ -6,13 +6,14 @@ from schemas.aihub import GenTxtRequest, ChatMessage
 
 logger = logging.getLogger(__name__)
 
-EXTRACTION_PROMPT = """You are an expert lease agreement analyzer. Analyze the following lease document text and extract the key information.
+EXTRACTION_PROMPT = """You are an expert lease agreement analyzer with deep knowledge of US residential tenancy laws. Perform a comprehensive analysis of the following lease document.
 
-Return a JSON object with the following fields (use null if not found):
+Return a JSON object with ALL of the following sections (use null for any field not found in the document):
+
 {
-  "tenant_name": "Full name of the tenant(s)",
-  "landlord_name": "Full name of the landlord/property owner",
-  "property_address": "Complete property address",
+  "tenant_name": "Full legal name of the tenant(s)",
+  "landlord_name": "Full legal name of the landlord/property owner",
+  "property_address": "Complete property address including unit number",
   "monthly_rent": 0.00,
   "security_deposit": 0.00,
   "lease_start_date": "YYYY-MM-DD",
@@ -20,30 +21,113 @@ Return a JSON object with the following fields (use null if not found):
   "renewal_notice_days": 30,
   "pet_policy": "Description of pet policy or 'Not specified'",
   "late_fee_terms": "Description of late fee terms or 'Not specified'",
+
+  "financial_analysis": {
+    "annualized_rent_cost": 0.00,
+    "deposit_months_equivalent": 0.0,
+    "deposit_legal_compliance": "Compliant / Exceeds typical limit / Cannot determine — explain based on common state limits (e.g. 1-2 months rent)",
+    "rent_increase_clause": "Description of any rent escalation terms, or 'Not specified'",
+    "rent_increase_assessment": "Reasonable / Above average / Concerning — with explanation",
+    "hidden_fees": [
+      {
+        "fee_type": "e.g. Utilities, Maintenance, Insurance, Parking, Amenity, Admin",
+        "description": "What the fee covers",
+        "amount": "Amount or 'Variable'",
+        "assessment": "Standard / Unusual / Potentially excessive"
+      }
+    ],
+    "total_move_in_cost": 0.00
+  },
+
+  "rights_obligations": {
+    "landlord_obligations": ["List of landlord responsibilities stated in the lease"],
+    "tenant_obligations": ["List of tenant responsibilities stated in the lease"],
+    "maintenance_division": {
+      "landlord_responsible": ["Items landlord must maintain/repair"],
+      "tenant_responsible": ["Items tenant must maintain/repair"],
+      "unclear_items": ["Items with ambiguous responsibility"]
+    },
+    "entry_notice_requirement": "Required notice period for landlord entry, or 'Not specified'",
+    "entry_notice_legal_compliance": "Compliant / Non-compliant / Not specified — based on typical 24-48 hour requirement",
+    "subletting_policy": "Description of subletting/assignment terms, or 'Not specified'",
+    "early_termination": "Terms for early lease termination, or 'Not specified'"
+  },
+
   "risk_flags": [
     {
       "severity": "high|medium|low",
       "category": "Category name",
-      "description": "Description of the risk or missing clause"
+      "description": "Detailed description of the risk",
+      "recommendation": "Specific action the tenant should take",
+      "is_unusual": false
     }
-  ]
+  ],
+
+  "missing_protections": [
+    "List of standard lease protections/clauses that are absent from this lease"
+  ],
+
+  "health_score": {
+    "overall_score": 75,
+    "grade": "A|B|C|D|F",
+    "category_scores": {
+      "financial_fairness": { "score": 0, "max": 25, "notes": "Brief explanation" },
+      "legal_compliance": { "score": 0, "max": 25, "notes": "Brief explanation" },
+      "tenant_protection": { "score": 0, "max": 25, "notes": "Brief explanation" },
+      "completeness": { "score": 0, "max": 25, "notes": "Brief explanation" }
+    },
+    "summary": "One-paragraph overall assessment of the lease quality"
+  },
+
+  "action_items": {
+    "negotiate_points": [
+      {
+        "item": "What to negotiate",
+        "priority": "high|medium|low",
+        "suggested_language": "Suggested clause wording"
+      }
+    ],
+    "verify_before_signing": [
+      "List of things tenant should confirm or verify before signing"
+    ],
+    "recommended_additions": [
+      {
+        "clause": "Name of recommended clause",
+        "reason": "Why it should be added",
+        "suggested_language": "Suggested wording"
+      }
+    ]
+  }
 }
 
-Common risk flags to check for:
+Risk flags to check (at minimum):
 1. Missing lead-based paint disclosure (required for pre-1978 buildings)
-2. Missing security deposit return terms
-3. Unclear or missing late fee terms
-4. Missing maintenance responsibility clauses
-5. Missing entry notice requirements
+2. Missing or unclear security deposit return terms and timeline
+3. Excessive or unclear late fee terms
+4. Missing or one-sided maintenance responsibility clauses
+5. Missing or insufficient entry notice requirements
 6. Missing subletting/assignment clauses
-7. Unusual or potentially unfair terms
+7. Unusual or potentially unfair terms compared to standard leases
 8. Missing dispute resolution procedures
+9. Automatic renewal clauses with inadequate notice (auto-renew without adequate notice)
+10. Excessive penalty clauses
+11. Waiver of tenant legal rights
+12. Missing habitability guarantees
+13. Unreasonable insurance requirements
+14. Vague or overbroad landlord discretion clauses
 
-IMPORTANT: 
+Health score guidelines:
+- Financial Fairness (25 pts): Rent and fees are reasonable, no hidden costs, deposit within legal limits
+- Legal Compliance (25 pts): Meets standard legal requirements, proper disclosures included
+- Tenant Protection (25 pts): Adequate rights, proper notice periods, fair termination terms
+- Completeness (25 pts): All standard clauses present, no ambiguous terms, clear language
+
+IMPORTANT:
 - Extract exact values from the document
 - For dates, convert to YYYY-MM-DD format
 - For monetary values, extract as numbers without currency symbols
-- Identify ALL potential risks and missing standard clauses
+- Be thorough in identifying ALL risks and missing protections
+- Provide actionable, specific recommendations
 - Return ONLY valid JSON, no additional text
 
 Document text:
