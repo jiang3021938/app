@@ -8,7 +8,7 @@ import { FileText, Upload as UploadIcon, X, CheckCircle, AlertCircle, ArrowLeft,
 import { toast } from "sonner";
 import AnalysisProgress from "@/components/AnalysisProgress";
 import { checkAuthStatus } from "@/lib/checkAuth";
-import { apiCall, documents as documentsApi, uploadFile } from "@/lib/api";
+import { apiCall } from "@/lib/api";
 
 const ACCEPTED_TYPES = [
   "application/pdf",
@@ -136,54 +136,54 @@ export default function UploadPage() {
     setError(null);
 
     try {
-      const timestamp = Date.now();
-      const fileKey = `leases/${user.id}/${timestamp}-${file.name}`;
-
       setProgress(20);
-      await uploadFile({
-        bucket_name: "lease-documents",
-        object_key: fileKey,
-        file: file,
-      });
 
-      setProgress(50);
+      // Send file directly to backend for in-memory analysis
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("file", file);
 
-      const docResponse = await documentsApi.create({
-        data: {
-          file_name: file.name,
-          file_key: fileKey,
-          file_size: file.size,
-          status: "pending",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      });
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
 
-      setProgress(70);
+      setProgress(40);
       setUploading(false);
       setAnalyzing(true);
 
-      const analysisResponse = await apiCall({
-        url: "/api/v1/lease/analyze",
+      const response = await fetch("/api/v1/lease/upload-and-analyze", {
         method: "POST",
-        data: { document_id: docResponse.data.id },
+        headers,
+        body: formData,
       });
 
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({ detail: "Analysis failed" }));
+        if (response.status === 402) {
+          setError("no_credits");
+          setAnalyzing(false);
+          return;
+        }
+        throw new Error(errorBody.detail || "Analysis failed");
+      }
+
+      const result = await response.json();
       setProgress(100);
 
-      if (analysisResponse.data.success) {
+      if (result.success) {
         toast.success("Analysis complete!");
-        navigate(`/report/${docResponse.data.id}`);
+        navigate(`/report/${result.extraction_id}?fromUpload=true`);
       } else {
-        setError(analysisResponse.data.error || "Analysis failed");
+        setError(result.error || "Analysis failed");
         setAnalyzing(false);
       }
     } catch (err: any) {
       console.error("Upload error:", err);
-      if (err?.status === 402 || err?.data?.detail?.toLowerCase().includes("credit")) {
+      if (err?.status === 402 || err?.message?.toLowerCase().includes("credit")) {
         setError("no_credits");
       } else {
-        setError(err?.data?.detail || err?.message || "Upload failed. Please try again.");
+        setError(err?.message || "Upload failed. Please try again.");
       }
       setUploading(false);
       setAnalyzing(false);
@@ -393,7 +393,7 @@ export default function UploadPage() {
             <div className="bg-slate-100 rounded-lg p-4 text-sm text-slate-600">
               <p className="font-medium mb-2">What happens next?</p>
               <ol className="list-decimal list-inside space-y-1">
-                <li>Your document is securely uploaded to our servers</li>
+                <li>Your document is analyzed securely in memory</li>
                 <li>AI extracts key terms, dates, and financial details</li>
                 <li>Risk analysis identifies potential issues</li>
                 <li>You receive a detailed audit report</li>
