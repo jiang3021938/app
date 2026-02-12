@@ -89,7 +89,7 @@ class BatchAnalysisResponse(BaseModel):
     failed: int = 0
 
 
-@router.post("/upload-and-analyze", response_model=AnalysisResponse)
+@router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_document(
     request: AnalyzeRequest,
     current_user: UserResponse = Depends(get_current_user),
