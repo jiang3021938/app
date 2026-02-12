@@ -355,9 +355,13 @@ async def upload_and_analyze(
         # Upload to Supabase Storage for temporary PDF preview
         try:
             # Determine content type based on file extension
-            content_type = "application/pdf"
-            if file.filename.lower().endswith(('.docx', '.doc')):
-                content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document" if file.filename.lower().endswith('.docx') else "application/msword"
+            filename_lower = file.filename.lower()
+            if filename_lower.endswith('.docx'):
+                content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            elif filename_lower.endswith('.doc'):
+                content_type = "application/msword"
+            else:
+                content_type = "application/pdf"
             
             supabase_storage = SupabaseStorageService()
             await supabase_storage.upload_file(
