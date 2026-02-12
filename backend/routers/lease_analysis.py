@@ -271,42 +271,23 @@ async def upload_and_analyze(
                 detail="No credits remaining. Please purchase more credits or subscribe."
             )
 
-        # Upload file to storage via presigned URL
+        # Create document record (use timestamp as file_key placeholder)
         import time
         timestamp = int(time.time() * 1000)
         safe_name = file.filename.replace(" ", "-")
-        object_key = f"{timestamp}-{safe_name}"
+        file_key = f"uploads/{current_user.id}/{timestamp}-{safe_name}"
 
-        storage = StorageService()
-        upload_url_response = await storage.create_upload_url(
-            FileUpDownRequest(bucket_name="lease-documents", object_key=object_key)
-        )
-
-        # PUT file to presigned upload URL
-        import mimetypes
-        content_type = mimetypes.guess_type(file.filename)[0] or "application/octet-stream"
-        async with httpx_client.AsyncClient(timeout=120.0) as http_client:
-            put_response = await http_client.put(
-                upload_url_response.upload_url,
-                content=file_bytes,
-                headers={"Content-Type": content_type}
-            )
-            if put_response.status_code >= 400:
-                logger.error(f"Storage upload failed: {put_response.status_code} {put_response.text}")
-                raise HTTPException(status_code=500, detail="Failed to upload file to storage")
-
-        # Create document record
         doc_service = DocumentsService(db)
         document = await doc_service.create({
             "file_name": file.filename,
-            "file_key": object_key,
+            "file_key": file_key,
             "file_size": len(file_bytes),
             "status": "processing",
             "created_at": datetime.now(),
             "updated_at": datetime.now(),
         }, current_user.id)
 
-        # Analyze PDF using Gemini API
+        # Analyze PDF directly from uploaded bytes (no storage download needed)
         try:
             gemini_extractor = GeminiExtractor()
             analysis_result = await gemini_extractor.analyze_pdf(file_bytes, file.filename)
@@ -379,6 +360,7 @@ async def upload_and_analyze(
     except Exception as e:
         logger.error(f"Upload and analysis error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @router.post("/analyze-batch", response_model=BatchAnalysisResponse)
