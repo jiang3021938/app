@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
-    "@metagptx/web-sdk": "^0.0.58",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-aspect-ratio": "^1.1.0",
@@ -71,7 +70,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
-    "@metagptx/vite-plugin-source-locator": "latest",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/typography": "^0.5.15",
     "@types/node": "^22.5.5",
