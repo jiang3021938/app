@@ -247,7 +247,7 @@ export default function LandingPage() {
   const stats = [
     { value: 30, suffix: "s", label: "Average Analysis Time", icon: <Clock className="h-6 w-6" /> },
     { value: 12, suffix: "", label: "Risk Categories Checked", icon: <Target className="h-6 w-6" /> },
-    { value: 100, suffix: "%", label: "AI-Powered Accuracy", icon: <FileText className="h-6 w-6" /> },
+    { value: 4, suffix: "", label: "Health Score Dimensions", icon: <FileText className="h-6 w-6" /> },
     { value: 0, suffix: "", label: "PDFs Stored (Privacy First)", icon: <Users className="h-6 w-6" /> },
   ];
 
