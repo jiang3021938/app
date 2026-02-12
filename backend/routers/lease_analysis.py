@@ -28,6 +28,7 @@ from services.extractions import ExtractionsService
 from services.user_credits import User_creditsService
 from services.compliance_checker import ComplianceChecker
 from services.storage import StorageService
+from services.supabase_storage import SupabaseStorageService
 from schemas.storage import FileUpDownRequest
 
 logger = logging.getLogger(__name__)
@@ -140,12 +141,13 @@ async def analyze_document(
         await doc_service.update(request.document_id, {"status": "processing"}, current_user.id)
         
         # Download file from storage
-        storage = StorageService()
-        download = await storage.create_download_url(
-            FileUpDownRequest(bucket_name="lease-documents", object_key=document.file_key)
+        supabase_storage = SupabaseStorageService()
+        download_url = await supabase_storage.get_download_url(
+            bucket_name="lease-documents",
+            object_key=document.file_key
         )
         async with httpx_client.AsyncClient(timeout=120.0) as http_client:
-            file_response = await http_client.get(download.download_url)
+            file_response = await http_client.get(download_url)
             file_bytes = file_response.content
 
         # Analyze PDF using Gemini API
@@ -349,6 +351,20 @@ async def upload_and_analyze(
 
         # Update document status
         await doc_service.update(document.id, {"status": "completed"}, current_user.id)
+
+        # Upload to Supabase Storage for temporary PDF preview
+        try:
+            supabase_storage = SupabaseStorageService()
+            await supabase_storage.upload_file(
+                bucket_name="lease-documents",
+                object_key=file_key,
+                file_data=file_bytes,
+                content_type="application/pdf"
+            )
+            logger.info(f"PDF cached to Supabase Storage: {file_key}")
+        except Exception as e:
+            # Non-blocking: PDF preview won't work but analysis still succeeds
+            logger.warning(f"Failed to cache PDF to Supabase Storage: {e}")
 
         await db.flush()
         await db.refresh(document)
@@ -812,12 +828,13 @@ async def get_pdf_page_image(
             raise HTTPException(status_code=404, detail="Document not found")
 
         # Download file from storage
-        storage = StorageService()
-        download = await storage.create_download_url(
-            FileUpDownRequest(bucket_name="lease-documents", object_key=document.file_key)
+        supabase_storage = SupabaseStorageService()
+        download_url = await supabase_storage.get_download_url(
+            bucket_name="lease-documents",
+            object_key=document.file_key
         )
         async with httpx_client.AsyncClient(timeout=120.0) as http_client:
-            file_response = await http_client.get(download.download_url)
+            file_response = await http_client.get(download_url)
             file_bytes = file_response.content
 
         file_name = document.file_name.lower()
@@ -943,12 +960,13 @@ async def get_document_page_count(
         if not document:
             raise HTTPException(status_code=404, detail="Document not found")
 
-        storage = StorageService()
-        download = await storage.create_download_url(
-            FileUpDownRequest(bucket_name="lease-documents", object_key=document.file_key)
+        supabase_storage = SupabaseStorageService()
+        download_url = await supabase_storage.get_download_url(
+            bucket_name="lease-documents",
+            object_key=document.file_key
         )
         async with httpx_client.AsyncClient(timeout=120.0) as http_client:
-            file_response = await http_client.get(download.download_url)
+            file_response = await http_client.get(download_url)
             file_bytes = file_response.content
 
         file_name = document.file_name.lower()
@@ -992,12 +1010,19 @@ async def get_pdf_download_url(
         if not document:
             raise HTTPException(status_code=404, detail="Document not found")
 
-        storage = StorageService()
-        download = await storage.create_download_url(
-            FileUpDownRequest(bucket_name="lease-documents", object_key=document.file_key)
-        )
-
-        return {"url": download.download_url}
+        try:
+            supabase_storage = SupabaseStorageService()
+            url = await supabase_storage.get_download_url(
+                bucket_name="lease-documents",
+                object_key=document.file_key
+            )
+            return {"url": url}
+        except ValueError as e:
+            logger.warning(f"PDF not available in storage: {e}")
+            raise HTTPException(
+                status_code=404,
+                detail="PDF preview is not available. The original file was not stored for privacy."
+            )
 
     except HTTPException:
         raise
