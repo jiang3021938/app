@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { FileText, Upload as UploadIcon, X, CheckCircle, AlertCircle, ArrowLeft, Loader2, CreditCard, FileUp } from "lucide-react";
+import { FileText, Upload as UploadIcon, X, CheckCircle, AlertCircle, ArrowLeft, Loader2, CreditCard, FileUp, User } from "lucide-react";
 import { toast } from "sonner";
 import AnalysisProgress from "@/components/AnalysisProgress";
+import { checkAuthStatus } from "@/lib/checkAuth";
 
 const client = createClient();
 
@@ -59,11 +60,11 @@ export default function UploadPage() {
 
   const checkAuth = async () => {
     try {
-      const response = await client.auth.me();
-      if (!response.data) {
+      const { user: authUser } = await checkAuthStatus();
+      if (!authUser) {
         navigate("/dashboard");
       } else {
-        setUser(response.data);
+        setUser(authUser);
         await loadCredits();
       }
     } catch {
@@ -219,13 +220,21 @@ export default function UploadPage() {
             </div>
           </div>
           {credits && (
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <CreditCard className="h-4 w-4" />
-              {credits.is_admin ? (
-                <span className="text-green-600 font-medium">Admin (Unlimited)</span>
-              ) : (
-                <span>{credits.total_credits} credit{credits.total_credits !== 1 ? "s" : ""} remaining</span>
+            <div className="flex items-center gap-3 text-sm text-slate-500">
+              {user && (
+                <div className="flex items-center gap-1">
+                  <User className="h-4 w-4" />
+                  <span>{user.email || user.name}</span>
+                </div>
               )}
+              <div className="flex items-center gap-1">
+                <CreditCard className="h-4 w-4" />
+                {credits.is_admin ? (
+                  <span className="text-green-600 font-medium">Admin (Unlimited)</span>
+                ) : (
+                  <span>{credits.total_credits} credit{credits.total_credits !== 1 ? "s" : ""} remaining</span>
+                )}
+              </div>
             </div>
           )}
         </div>

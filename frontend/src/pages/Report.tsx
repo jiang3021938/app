@@ -21,6 +21,7 @@ import AmendmentMemoButton from "@/components/AmendmentMemoButton";
 import RentBenchmark from "@/components/RentBenchmark";
 import PaywallOverlay from "@/components/PaywallOverlay";
 import LeaseHealthScore, { calculateHealthScore } from "@/components/LeaseHealthScore";
+import { checkAuthStatus } from "@/lib/checkAuth";
 
 const client = createClient();
 
@@ -147,8 +148,8 @@ export default function ReportPage() {
 
   const loadReport = async () => {
     try {
-      const authResponse = await client.auth.me();
-      if (!authResponse.data) {
+      const { user: authUser } = await checkAuthStatus();
+      if (!authUser) {
         navigate("/dashboard");
         return;
       }

@@ -11,6 +11,7 @@ import {
   Trophy, AlertTriangle, Lightbulb
 } from "lucide-react";
 import { toast } from "sonner";
+import { checkAuthStatus } from "@/lib/checkAuth";
 
 const client = createClient();
 
@@ -35,8 +36,8 @@ export default function ComparePage() {
 
   const loadDocuments = async () => {
     try {
-      const authRes = await client.auth.me();
-      if (!authRes.data) { navigate("/dashboard"); return; }
+      const { user: authUser } = await checkAuthStatus();
+      if (!authUser) { navigate("/dashboard"); return; }
 
       const docsRes = await client.entities.documents.query({ sort: "-created_at", limit: 50 });
       const docs = (docsRes.data?.items || []).filter((d: any) => d.status === "completed");

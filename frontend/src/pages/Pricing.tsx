@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { FileText, CheckCircle, ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { checkAuthStatus } from "@/lib/checkAuth";
 
 const client = createClient();
 
@@ -32,9 +33,9 @@ export default function PricingPage() {
 
   const loadData = async () => {
     try {
-      // Check auth
-      const authResponse = await client.auth.me();
-      setUser(authResponse.data);
+      // Check auth (supports both email JWT and Atoms Cloud)
+      const { user: authUser } = await checkAuthStatus();
+      setUser(authUser);
 
       // Load pricing
       const pricingResponse = await client.apiCall.invoke({

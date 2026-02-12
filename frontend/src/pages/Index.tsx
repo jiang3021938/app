@@ -11,6 +11,7 @@ import {
   Bot, Download, Star, Lock, Users, Clock, Target, Quote, ShieldCheck,
   Globe, Database, ChevronRight, User, LogOut
 } from "lucide-react";
+import { checkAuthStatus, performLogout } from "@/lib/checkAuth";
 
 const client = createClient();
 
@@ -197,17 +198,22 @@ function DemoAnimation() {
 export default function LandingPage() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [authType, setAuthType] = useState<"email" | "atoms" | null>(null);
 
   useEffect(() => {
-    // Check if user is logged in
-    client.auth.me().then((res) => {
-      if (res.data) setCurrentUser(res.data);
-    }).catch(() => {});
+    // Check if user is logged in (supports both email JWT and Atoms Cloud)
+    checkAuthStatus().then(({ user, authType: type }) => {
+      if (user) {
+        setCurrentUser(user);
+        setAuthType(type);
+      }
+    });
   }, []);
 
   const handleLogout = async () => {
-    await client.auth.logout();
+    await performLogout(authType);
     setCurrentUser(null);
+    setAuthType(null);
   };
 
   const features = [

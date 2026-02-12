@@ -18,6 +18,7 @@ import {
   AlertCircle, User, Files, Download, Building2, Scale
 } from "lucide-react";
 import GoogleLoginButton from "@/components/GoogleLoginButton";
+import { checkAuthStatus, performLogout } from "@/lib/checkAuth";
 
 const client = createClient();
 
@@ -54,33 +55,10 @@ export default function Dashboard() {
 
   const checkAuth = async () => {
     try {
-      // First check for email JWT token
-      const emailToken = localStorage.getItem("token");
-      if (emailToken) {
-        // Verify token with backend
-        const response = await fetch("/api/v1/email-auth/me", {
-          headers: {
-            "Authorization": `Bearer ${emailToken}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.user) {
-            setUser(data.user);
-            setAuthType("email");
-            await loadData();
-            return;
-          }
-        }
-        // Token invalid, remove it
-        localStorage.removeItem("token");
-      }
-
-      // Then check Atoms Cloud auth
-      const response = await client.auth.me();
-      if (response.data) {
-        setUser(response.data);
-        setAuthType("atoms");
+      const { user: authUser, authType: type } = await checkAuthStatus();
+      if (authUser) {
+        setUser(authUser);
+        setAuthType(type);
         await loadData();
       } else {
         setLoading(false);
@@ -118,11 +96,7 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
-    if (authType === "email") {
-      localStorage.removeItem("token");
-    } else {
-      await client.auth.logout();
-    }
+    await performLogout(authType);
     setUser(null);
     setDocuments([]);
     setCredits(null);

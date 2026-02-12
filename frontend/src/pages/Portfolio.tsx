@@ -9,6 +9,7 @@ import {
   FileText, ArrowLeft, Building2, DollarSign, Calendar, AlertTriangle,
   TrendingUp, Clock, CheckCircle, BarChart3, Plus
 } from "lucide-react";
+import { checkAuthStatus } from "@/lib/checkAuth";
 
 const client = createClient();
 
@@ -53,8 +54,8 @@ export default function PortfolioPage() {
 
   const loadPortfolio = async () => {
     try {
-      const authRes = await client.auth.me();
-      if (!authRes.data) {
+      const { user: authUser } = await checkAuthStatus();
+      if (!authUser) {
         navigate("/dashboard");
         return;
       }
