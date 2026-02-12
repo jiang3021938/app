@@ -350,9 +350,14 @@ async def upload_and_analyze(
         # Update document status
         await doc_service.update(document.id, {"status": "completed"}, current_user.id)
 
+        await db.flush()
+        await db.refresh(document)
+        await db.refresh(extraction)
+
         return AnalysisResponse(
             success=True,
             extraction_id=extraction.id,
+            document_id=document.id,
             data=extracted_data,
             compliance=compliance_result
         )
