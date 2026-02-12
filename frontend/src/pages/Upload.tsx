@@ -224,7 +224,7 @@ export default function UploadPage() {
               {user && (
                 <div className="flex items-center gap-1">
                   <User className="h-4 w-4" />
-                  <span>{user.email || user.name}</span>
+                  <span>{user.email || user.name || "Account"}</span>
                 </div>
               )}
               <div className="flex items-center gap-1">
