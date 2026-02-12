@@ -97,7 +97,7 @@ export default function GoogleCalendarButton({
           Add to Google Calendar
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg" style={{ minWidth: "500px" }}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <img
@@ -134,24 +134,26 @@ export default function GoogleCalendarButton({
                 href={event.google_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 rounded-lg border hover:bg-slate-50 hover:border-blue-200 transition-colors group"
+                className="flex items-start gap-3 p-3 rounded-lg border hover:bg-slate-50 hover:border-blue-200 transition-colors group"
               >
-                {getEventIcon(event.type)}
+                <div className="mt-0.5">{getEventIcon(event.type)}</div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-slate-800 text-sm truncate">
-                    {event.title}
-                  </p>
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <p className="font-medium text-slate-800 text-sm break-words">
+                      {event.title}
+                    </p>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <Badge
+                        className={`text-xs whitespace-nowrap ${getEventBadgeColor(event.type)}`}
+                      >
+                        {event.type.replace(/_/g, " ")}
+                      </Badge>
+                      <ExternalLink className="h-3 w-3 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                    </div>
+                  </div>
                   <p className="text-xs text-slate-500">
                     {formatDate(event.date)}
                   </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`text-xs ${getEventBadgeColor(event.type)}`}
-                  >
-                    {event.type.replace(/_/g, " ")}
-                  </Badge>
-                  <ExternalLink className="h-3 w-3 text-slate-400 group-hover:text-blue-500 transition-colors" />
                 </div>
               </a>
             ))
