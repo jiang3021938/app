@@ -27,8 +27,7 @@ from services.documents import DocumentsService
 from services.extractions import ExtractionsService
 from services.user_credits import User_creditsService
 from services.compliance_checker import ComplianceChecker
-from services.storage import StorageService
-from schemas.storage import FileUpDownRequest
+from services.supabase_storage import SupabaseStorageService
 
 logger = logging.getLogger(__name__)
 
@@ -139,12 +138,10 @@ async def analyze_document(
         await doc_service.update(request.document_id, {"status": "processing"}, current_user.id)
         
         # Download file from storage
-        storage = StorageService()
-        download = await storage.create_download_url(
-            FileUpDownRequest(bucket_name="lease-documents", object_key=document.file_key)
-        )
+        storage = SupabaseStorageService()
+        download_url = await storage.get_download_url("lease-documents", document.file_key)
         async with httpx_client.AsyncClient(timeout=120.0) as http_client:
-            file_response = await http_client.get(download.download_url)
+            file_response = await http_client.get(download_url)
             file_bytes = file_response.content
 
         # Analyze PDF using Gemini API
@@ -666,12 +663,10 @@ async def get_pdf_page_image(
             raise HTTPException(status_code=404, detail="Document not found")
 
         # Download file from storage
-        storage = StorageService()
-        download = await storage.create_download_url(
-            FileUpDownRequest(bucket_name="lease-documents", object_key=document.file_key)
-        )
+        storage = SupabaseStorageService()
+        download_url = await storage.get_download_url("lease-documents", document.file_key)
         async with httpx_client.AsyncClient(timeout=120.0) as http_client:
-            file_response = await http_client.get(download.download_url)
+            file_response = await http_client.get(download_url)
             file_bytes = file_response.content
 
         file_name = document.file_name.lower()
@@ -797,12 +792,10 @@ async def get_document_page_count(
         if not document:
             raise HTTPException(status_code=404, detail="Document not found")
 
-        storage = StorageService()
-        download = await storage.create_download_url(
-            FileUpDownRequest(bucket_name="lease-documents", object_key=document.file_key)
-        )
+        storage = SupabaseStorageService()
+        download_url = await storage.get_download_url("lease-documents", document.file_key)
         async with httpx_client.AsyncClient(timeout=120.0) as http_client:
-            file_response = await http_client.get(download.download_url)
+            file_response = await http_client.get(download_url)
             file_bytes = file_response.content
 
         file_name = document.file_name.lower()
@@ -846,12 +839,10 @@ async def get_pdf_download_url(
         if not document:
             raise HTTPException(status_code=404, detail="Document not found")
 
-        storage = StorageService()
-        download = await storage.create_download_url(
-            FileUpDownRequest(bucket_name="lease-documents", object_key=document.file_key)
-        )
+        storage = SupabaseStorageService()
+        download_url = await storage.get_download_url("lease-documents", document.file_key)
 
-        return {"url": download.download_url}
+        return {"url": download_url}
 
     except HTTPException:
         raise
