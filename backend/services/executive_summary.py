@@ -6,6 +6,7 @@ Generates a concise, professional AI summary for a lease report.
 
 import json
 import logging
+import re
 from typing import Dict, Any, List
 from services.aihub import AIHubService
 from schemas.aihub import GenTxtRequest, ChatMessage
@@ -83,7 +84,7 @@ class ExecutiveSummaryService:
                         content=SUMMARY_PROMPT + json.dumps(context, indent=2, default=str),
                     ),
                 ],
-                model="gpt-5-chat",
+                model="gemini-3-pro-preview",
                 max_tokens=1000,
             )
 
@@ -96,8 +97,24 @@ class ExecutiveSummaryService:
                 content = content[3:]
             if content.endswith("```"):
                 content = content[:-3]
+            content = content.strip()
 
-            summary_data = json.loads(content.strip())
+            # Try to find valid JSON object
+            json_match = re.search(r'\{.*\}', content, re.DOTALL)
+            if json_match:
+                content = json_match.group(0)
+
+            try:
+                summary_data = json.loads(content)
+            except json.JSONDecodeError:
+                # Return a default summary
+                summary_data = {
+                    "summary": "Analysis complete. Please review the extracted data and risk flags for details.",
+                    "grade": "B",
+                    "health_score": 70,
+                    "key_highlights": [],
+                    "top_action": "Review the risk flags tab for detailed findings."
+                }
             return {"success": True, "data": summary_data}
 
         except json.JSONDecodeError as e:

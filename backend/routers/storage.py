@@ -1,8 +1,9 @@
 import logging
 
 from dependencies.auth import get_admin_user, get_current_user
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
 from schemas.auth import UserResponse
+from services.supabase_storage import SupabaseStorageService
 from schemas.storage import (
     BucketListResponse,
     BucketRequest,
@@ -157,3 +158,33 @@ async def download_file(request: FileUpDownRequest, _current_user: UserResponse 
     except Exception as e:
         logger.error(f"Failed to generate download URL: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"{e}")
+
+
+ALLOWED_BUCKETS = {"lease-documents"}
+
+
+@router.post("/upload")
+async def upload_file_direct(
+    file: UploadFile = File(...),
+    bucket_name: str = Form("lease-documents"),
+    object_key: str = Form(...),
+    _current_user: UserResponse = Depends(get_current_user),
+):
+    """
+    Direct file upload to Supabase Storage.
+    Replaces the old OSS presigned-URL workflow.
+    """
+    if bucket_name not in ALLOWED_BUCKETS:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid bucket name")
+    try:
+        storage = SupabaseStorageService()
+        file_data = await file.read()
+        content_type = file.content_type or "application/octet-stream"
+        await storage.upload_file(bucket_name, object_key, file_data, content_type)
+        return {"success": True, "object_key": object_key}
+    except ValueError as e:
+        logger.error(f"Upload failed: {e}")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        logger.error(f"Upload failed: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

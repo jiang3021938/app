@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,8 +17,8 @@ import {
   AlertCircle, User, Files, Download, Building2, Scale
 } from "lucide-react";
 import GoogleLoginButton from "@/components/GoogleLoginButton";
-
-const client = createClient();
+import { checkAuthStatus, performLogout } from "@/lib/checkAuth";
+import { apiCall, documents as documentsApi } from "@/lib/api";
 
 interface Document {
   id: number;
@@ -45,7 +44,7 @@ export default function Dashboard() {
   const [credits, setCredits] = useState<Credits | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDocs, setSelectedDocs] = useState<number[]>([]);
-  const [authType, setAuthType] = useState<"atoms" | "email" | null>(null);
+  const [authType, setAuthType] = useState<"email" | null>(null);
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
 
   useEffect(() => {
@@ -54,33 +53,10 @@ export default function Dashboard() {
 
   const checkAuth = async () => {
     try {
-      // First check for email JWT token
-      const emailToken = localStorage.getItem("token");
-      if (emailToken) {
-        // Verify token with backend
-        const response = await fetch("/api/v1/email-auth/me", {
-          headers: {
-            "Authorization": `Bearer ${emailToken}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.user) {
-            setUser(data.user);
-            setAuthType("email");
-            await loadData();
-            return;
-          }
-        }
-        // Token invalid, remove it
-        localStorage.removeItem("token");
-      }
-
-      // Then check Atoms Cloud auth
-      const response = await client.auth.me();
-      if (response.data) {
-        setUser(response.data);
-        setAuthType("atoms");
+      const { user: authUser, authType: type } = await checkAuthStatus();
+      if (authUser) {
+        setUser(authUser);
+        setAuthType(type);
         await loadData();
       } else {
         setLoading(false);
@@ -94,14 +70,14 @@ export default function Dashboard() {
   const loadData = async () => {
     try {
       // Load documents
-      const docsResponse = await client.entities.documents.query({
+      const docsResponse = await documentsApi.query({
         sort: "-created_at",
         limit: 50
       });
       setDocuments(docsResponse.data?.items || []);
 
       // Load credits
-      const creditsResponse = await client.apiCall.invoke({
+      const creditsResponse = await apiCall({
         url: "/api/v1/lease/credits",
         method: "GET"
       });
@@ -118,11 +94,7 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
-    if (authType === "email") {
-      localStorage.removeItem("token");
-    } else {
-      await client.auth.logout();
-    }
+    await performLogout();
     setUser(null);
     setDocuments([]);
     setCredits(null);

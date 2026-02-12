@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -8,11 +7,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { 
   FileText, Upload as UploadIcon, X, CheckCircle, AlertCircle, 
-  ArrowLeft, Loader2, Files, Trash2, CreditCard, Lock, FileUp
+  ArrowLeft, Loader2, Files, Trash2, CreditCard, Lock, FileUp, User
 } from "lucide-react";
 import { toast } from "sonner";
-
-const client = createClient();
+import { checkAuthStatus } from "@/lib/checkAuth";
+import { apiCall } from "@/lib/api";
 
 const ACCEPTED_TYPES = [
   "application/pdf",
@@ -62,11 +61,11 @@ export default function BatchUploadPage() {
 
   const checkAuth = async () => {
     try {
-      const response = await client.auth.me();
-      if (!response.data) {
+      const { user: authUser } = await checkAuthStatus();
+      if (!authUser) {
         navigate("/dashboard");
       } else {
-        setUser(response.data);
+        setUser(authUser);
         await loadCredits();
       }
     } catch {
@@ -76,7 +75,7 @@ export default function BatchUploadPage() {
 
   const loadCredits = async () => {
     try {
-      const creditsResponse = await client.apiCall.invoke({
+      const creditsResponse = await apiCall({
         url: "/api/v1/lease/credits",
         method: "GET",
       });
@@ -151,49 +150,63 @@ export default function BatchUploadPage() {
     setProcessing(true);
     setOverallProgress(0);
 
-    const documentIds: number[] = [];
-    const fileIdMap: Record<number, string> = {};
+    let completedCount = 0;
 
-    // Step 1: Upload all files
+    // Process each file individually using in-memory analysis
     for (let i = 0; i < files.length; i++) {
       const fileItem = files[i];
       
       try {
         updateFileStatus(fileItem.id, { status: "uploading", progress: 20 });
 
-        const timestamp = Date.now();
-        const fileKey = `leases/${user.id}/${timestamp}-${fileItem.file.name}`;
+        const token = localStorage.getItem("token");
+        const formData = new FormData();
+        formData.append("file", fileItem.file);
 
-        await client.storage.upload({
-          bucket_name: "lease-documents",
-          object_key: fileKey,
-          file: fileItem.file,
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        updateFileStatus(fileItem.id, { progress: 40, status: "analyzing" });
+
+        const response = await fetch("/api/v1/lease/upload-and-analyze", {
+          method: "POST",
+          headers,
+          body: formData,
         });
 
-        updateFileStatus(fileItem.id, { progress: 50 });
+        if (!response.ok) {
+          const errorBody = await response.json().catch(() => ({ detail: "Analysis failed" }));
+          if (response.status === 402) {
+            updateFileStatus(fileItem.id, {
+              status: "failed",
+              error: "Insufficient credits",
+            });
+            toast.error("Insufficient credits. Please purchase more credits.");
+            break; // Stop processing remaining files
+          }
+          throw new Error(errorBody.detail || "Analysis failed");
+        }
 
-        const docResponse = await client.entities.documents.create({
-          data: {
-            file_name: fileItem.file.name,
-            file_key: fileKey,
-            file_size: fileItem.file.size,
-            status: "pending",
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        });
+        const result = await response.json();
 
-        const docId = docResponse.data.id;
-        documentIds.push(docId);
-        fileIdMap[docId] = fileItem.id;
-        
-        updateFileStatus(fileItem.id, { 
-          documentId: docId, 
-          progress: 60,
-          status: "analyzing" 
-        });
+        if (result.success) {
+          updateFileStatus(fileItem.id, {
+            status: "completed",
+            progress: 100,
+            documentId: result.document_id,
+            extractionId: result.extraction_id,
+          });
+          completedCount++;
+        } else {
+          updateFileStatus(fileItem.id, {
+            status: "failed",
+            error: result.error || "Analysis failed",
+          });
+        }
 
-        setOverallProgress(Math.round(((i + 1) / files.length) * 50));
+        setOverallProgress(Math.round(((i + 1) / files.length) * 100));
       } catch (err: any) {
         updateFileStatus(fileItem.id, {
           status: "failed",
@@ -202,59 +215,8 @@ export default function BatchUploadPage() {
       }
     }
 
-    // Step 2: Batch analyze
-    if (documentIds.length > 0) {
-      try {
-        const analysisResponse = await client.apiCall.invoke({
-          url: "/api/v1/lease/analyze-batch",
-          method: "POST",
-          data: { document_ids: documentIds },
-        });
-
-        const results = analysisResponse.data.results || [];
-        
-        for (const result of results) {
-          const fileId = fileIdMap[result.document_id];
-          if (fileId) {
-            if (result.success) {
-              updateFileStatus(fileId, {
-                status: "completed",
-                progress: 100,
-                extractionId: result.extraction_id,
-              });
-            } else {
-              updateFileStatus(fileId, {
-                status: "failed",
-                error: result.error || "Analysis failed",
-              });
-            }
-          }
-        }
-
-        setOverallProgress(100);
-        
-        const completed = results.filter((r: any) => r.success).length;
-        if (completed > 0) {
-          toast.success(`Successfully analyzed ${completed} document(s)`);
-        }
-      } catch (err: any) {
-        // Handle credit errors gracefully
-        if (err?.status === 402 || err?.data?.detail?.toLowerCase().includes("credit")) {
-          toast.error("Insufficient credits. Please purchase more credits.");
-          // Mark remaining as failed
-          for (const docId of documentIds) {
-            const fileId = fileIdMap[docId];
-            if (fileId) {
-              updateFileStatus(fileId, {
-                status: "failed",
-                error: "Insufficient credits",
-              });
-            }
-          }
-        } else {
-          toast.error(err?.data?.detail || "Batch analysis failed");
-        }
-      }
+    if (completedCount > 0) {
+      toast.success(`Successfully analyzed ${completedCount} document(s)`);
     }
 
     setProcessing(false);
@@ -283,13 +245,21 @@ export default function BatchUploadPage() {
             </div>
           </div>
           {credits && (
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <CreditCard className="h-4 w-4" />
-              {credits.is_admin ? (
-                <span className="text-green-600 font-medium">Admin (Unlimited)</span>
-              ) : (
-                <span>{credits.total_credits} credit{credits.total_credits !== 1 ? "s" : ""} remaining</span>
+            <div className="flex items-center gap-3 text-sm text-slate-500">
+              {user && (
+                <div className="flex items-center gap-1">
+                  <User className="h-4 w-4" />
+                  <span>{user.email || user.name || "Account"}</span>
+                </div>
               )}
+              <div className="flex items-center gap-1">
+                <CreditCard className="h-4 w-4" />
+                {credits.is_admin ? (
+                  <span className="text-green-600 font-medium">Admin (Unlimited)</span>
+                ) : (
+                  <span>{credits.total_credits} credit{credits.total_credits !== 1 ? "s" : ""} remaining</span>
+                )}
+              </div>
             </div>
           )}
         </div>

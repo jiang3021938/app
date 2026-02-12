@@ -5,14 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { createClient } from "@metagptx/web-sdk";
 import { 
   FileText, Shield, Calendar, Zap, CheckCircle, ArrowRight, Upload, 
-  Bot, Download, Star, Lock, Users, Clock, Target, Quote, ShieldCheck,
-  Globe, Database, ChevronRight, User, LogOut
+  Bot, Download, Lock, Users, Clock, Target, ShieldCheck,
+  Globe, ChevronRight, User, LogOut
 } from "lucide-react";
-
-const client = createClient();
+import { checkAuthStatus, performLogout } from "@/lib/checkAuth";
 
 const HERO_IMAGE = "https://mgx-backend-cdn.metadl.com/generate/images/956230/2026-02-07/f642cfb9-7acb-4105-968a-f0749f554722.png";
 const AI_IMAGE = "https://mgx-backend-cdn.metadl.com/generate/images/956230/2026-02-07/c03eda08-fb18-41ad-8380-2e5ee6bec86b.png";
@@ -197,17 +195,22 @@ function DemoAnimation() {
 export default function LandingPage() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [authType, setAuthType] = useState<"email" | null>(null);
 
   useEffect(() => {
-    // Check if user is logged in
-    client.auth.me().then((res) => {
-      if (res.data) setCurrentUser(res.data);
-    }).catch(() => {});
+    // Check if user is logged in (supports both email JWT and Atoms Cloud)
+    checkAuthStatus().then(({ user, authType: type }) => {
+      if (user) {
+        setCurrentUser(user);
+        setAuthType(type);
+      }
+    });
   }, []);
 
   const handleLogout = async () => {
-    await client.auth.logout();
+    await performLogout();
     setCurrentUser(null);
+    setAuthType(null);
   };
 
   const features = [
@@ -242,38 +245,35 @@ export default function LandingPage() {
   ];
 
   const stats = [
-    { value: 10000, suffix: "+", label: "Leases Analyzed", icon: <FileText className="h-6 w-6" /> },
-    { value: 500, suffix: "+", label: "Landlords Trust Us", icon: <Users className="h-6 w-6" /> },
-    { value: 99.2, suffix: "%", label: "Accuracy Rate", icon: <Target className="h-6 w-6" /> },
-    { value: 60, suffix: "s", label: "Avg Processing Time", icon: <Clock className="h-6 w-6" /> },
+    { value: 30, suffix: "s", label: "Average Analysis Time", icon: <Clock className="h-6 w-6" /> },
+    { value: 12, suffix: "", label: "Risk Categories Checked", icon: <Target className="h-6 w-6" /> },
+    { value: 4, suffix: "", label: "Health Score Dimensions", icon: <FileText className="h-6 w-6" /> },
+    { value: 0, suffix: "", label: "PDFs Stored (Privacy First)", icon: <Users className="h-6 w-6" /> },
   ];
 
-  const testimonials = [
+  const valueProps = [
     {
-      quote: "Finally, I don't have to manually read through 20-page contracts anymore! LeaseLenses saved me hours every month.",
-      author: "Sarah M.",
-      role: "Property Manager",
-      rating: 5
+      title: "Instant Analysis",
+      description: "Upload your lease and get a comprehensive 12-point risk assessment in under 30 seconds. No waiting, no manual review.",
+      icon: <Clock className="h-8 w-8 text-blue-500" />,
     },
     {
-      quote: "Saved me from a lease that was missing crucial clauses. The risk analysis feature is worth every penny.",
-      author: "Mike T.",
-      role: "Landlord",
-      rating: 5
+      title: "Your Documents Stay Private",
+      description: "We analyze your PDF in memory and never store the original file. Only the structured results are saved to your account.",
+      icon: <Shield className="h-8 w-8 text-green-500" />,
     },
     {
-      quote: "The calendar reminders alone are worth the subscription. I never miss a renewal deadline now.",
-      author: "Jennifer L.",
-      role: "Real Estate Investor",
-      rating: 5
-    }
+      title: "Actionable Recommendations",
+      description: "Get specific negotiation points with suggested clause language. Know exactly what to ask your landlord before signing.",
+      icon: <FileText className="h-8 w-8 text-purple-500" />,
+    },
   ];
 
   const trustBadges = [
-    { icon: <Lock className="h-5 w-5" />, label: "Bank-Level Encryption" },
+    { icon: <Shield className="h-5 w-5" />, label: "Documents Never Stored" },
+    { icon: <Lock className="h-5 w-5" />, label: "256-bit Encryption" },
     { icon: <Globe className="h-5 w-5" />, label: "GDPR Compliant" },
-    { icon: <ShieldCheck className="h-5 w-5" />, label: "Your Data Never Shared" },
-    { icon: <Database className="h-5 w-5" />, label: "SOC 2 Type II" },
+    { icon: <ShieldCheck className="h-5 w-5" />, label: "No Data Sharing" },
   ];
 
   const howItWorks = [
@@ -390,7 +390,7 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" onClick={() => navigate("/register")} className="gap-2">
-                Sign Up Free <ArrowRight className="h-4 w-4" />
+                Upload Your Lease — Free Analysis <ArrowRight className="h-4 w-4" />
               </Button>
               <Button size="lg" variant="outline" onClick={() => navigate("/pricing")}>
                 View Pricing
@@ -526,7 +526,7 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="text-center mt-8">
-            <Button onClick={() => navigate("/pricing")} variant="outline" className="gap-2">
+            <Button onClick={() => navigate("/features")} variant="outline" className="gap-2">
               See All Features <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -639,9 +639,9 @@ export default function LandingPage() {
           ))}
         </div>
 
-        {/* Testimonials */}
+        {/* Why LeaseLenses */}
         <div className="grid md:grid-cols-3 gap-8 mb-16">
-          {testimonials.map((testimonial, index) => (
+          {valueProps.map((prop, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
@@ -651,17 +651,9 @@ export default function LandingPage() {
             >
               <Card className="h-full bg-white border-0 shadow-lg">
                 <CardContent className="pt-6">
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                  <Quote className="h-8 w-8 text-blue-200 mb-2" />
-                  <p className="text-slate-700 mb-4 italic">"{testimonial.quote}"</p>
-                  <div className="border-t pt-4">
-                    <p className="font-semibold text-slate-800">{testimonial.author}</p>
-                    <p className="text-sm text-slate-500">{testimonial.role}</p>
-                  </div>
+                  <div className="mb-4">{prop.icon}</div>
+                  <h3 className="text-lg font-semibold text-slate-800 mb-2">{prop.title}</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">{prop.description}</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -755,7 +747,7 @@ export default function LandingPage() {
                   <CardTitle className="text-white">Single Analysis</CardTitle>
                   <CardDescription className="text-slate-400">Perfect for one-time needs</CardDescription>
                   <div className="mt-4">
-                    <span className="text-4xl font-bold text-white">$9</span>
+                    <span className="text-4xl font-bold text-white">$4.99</span>
                     <span className="text-slate-400">/document</span>
                   </div>
                 </CardHeader>
@@ -767,11 +759,11 @@ export default function LandingPage() {
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-400" />
-                      Risk analysis report
+                      12-point risk analysis
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-400" />
-                      Calendar export
+                      Calendar reminders
                     </li>
                   </ul>
                   <Button className="w-full" variant="secondary" onClick={() => navigate("/pricing")}>
@@ -795,7 +787,7 @@ export default function LandingPage() {
                   <CardTitle className="text-white">5-Pack</CardTitle>
                   <CardDescription className="text-blue-200">Best value for landlords</CardDescription>
                   <div className="mt-4">
-                    <span className="text-4xl font-bold text-white">$29</span>
+                    <span className="text-4xl font-bold text-white">$14.99</span>
                     <span className="text-blue-200">/5 documents</span>
                   </div>
                 </CardHeader>
@@ -807,7 +799,7 @@ export default function LandingPage() {
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-300" />
-                      Save 36% vs single
+                      Save 40% vs single
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-300" />
@@ -829,10 +821,10 @@ export default function LandingPage() {
             >
               <Card className="bg-slate-800 border-slate-700 h-full">
                 <CardHeader>
-                  <CardTitle className="text-white">Monthly</CardTitle>
-                  <CardDescription className="text-slate-400">For active landlords</CardDescription>
+                  <CardTitle className="text-white">Monthly Pro</CardTitle>
+                  <CardDescription className="text-slate-400">Unlimited for active landlords</CardDescription>
                   <div className="mt-4">
-                    <span className="text-4xl font-bold text-white">$29</span>
+                    <span className="text-4xl font-bold text-white">$19.99</span>
                     <span className="text-slate-400">/month</span>
                   </div>
                 </CardHeader>
@@ -840,7 +832,7 @@ export default function LandingPage() {
                   <ul className="space-y-3 text-slate-300">
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-400" />
-                      5 analyses/month
+                      Unlimited analyses
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-400" />
@@ -917,12 +909,12 @@ export default function LandingPage() {
               Stop Reading Leases. Start Understanding Them.
             </h2>
             <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
-              Sign up free and get your first analysis on us. No credit card required. Join thousands of landlords 
-              who save hours every month with AI-powered lease analysis.
+              Sign up free and get 2 analyses on us. No credit card required. Join landlords
+              who use AI to review leases faster.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" onClick={() => navigate("/register")} className="gap-2">
-                Sign Up Free <ArrowRight className="h-4 w-4" />
+                Upload Your Lease — Free Analysis <ArrowRight className="h-4 w-4" />
               </Button>
               <Button size="lg" variant="outline" onClick={() => navigate("/pricing")} className="bg-transparent border-white text-white hover:bg-white/10">
                 View Pricing
@@ -945,6 +937,7 @@ export default function LandingPage() {
               <a href="#pricing" className="hover:text-slate-700">Pricing</a>
               <a href="#faq" className="hover:text-slate-700">FAQ</a>
               <a href="/blog/" className="hover:text-slate-700">Blog</a>
+              <a href="/about" className="hover:text-slate-700">About</a>
             </div>
             <p className="text-sm text-slate-500 text-center md:text-right">
               © 2026 LeaseLenses. All rights reserved.<br />

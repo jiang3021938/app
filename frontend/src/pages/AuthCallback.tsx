@@ -1,26 +1,19 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-
-const client = createClient();
 
 export default function AuthCallback() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    handleCallback();
-  }, []);
-
-  const handleCallback = async () => {
-    try {
-      await client.auth.login();
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Auth callback error:", error);
-      navigate("/dashboard");
+    // Handle token from Google OAuth callback
+    const token = searchParams.get("token");
+    if (token) {
+      localStorage.setItem("token", token);
     }
-  };
+    navigate("/dashboard");
+  }, [navigate, searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">

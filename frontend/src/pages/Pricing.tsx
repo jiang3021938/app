@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, CheckCircle, ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
-const client = createClient();
+import { checkAuthStatus } from "@/lib/checkAuth";
+import { apiCall } from "@/lib/api";
 
 interface PricingPlan {
   id: string;
@@ -33,11 +32,15 @@ export default function PricingPage() {
   const loadData = async () => {
     try {
       // Check auth
-      const authResponse = await client.auth.me();
-      setUser(authResponse.data);
+      const { user: authUser } = await checkAuthStatus();
+      setUser(authUser);
+    } catch {
+      // Not logged in is fine for pricing page
+    }
 
+    try {
       // Load pricing
-      const pricingResponse = await client.apiCall.invoke({
+      const pricingResponse = await apiCall({
         url: "/api/v1/payment/pricing",
         method: "GET"
       });
@@ -51,14 +54,14 @@ export default function PricingPage() {
 
   const handlePurchase = async (planId: string) => {
     if (!user) {
-      await client.auth.toLogin();
+      navigate("/login");
       return;
     }
 
     setPurchasing(planId);
     try {
-      const response = await client.apiCall.invoke({
-        url: "/api/v1/payment/create_checkout_session",
+      const response = await apiCall({
+        url: "/api/v1/payment/create-checkout",
         method: "POST",
         data: {
           plan_type: planId,
@@ -67,8 +70,8 @@ export default function PricingPage() {
         }
       });
 
-      if (response.data.url) {
-        client.utils.openUrl(response.data.url);
+      if (response.data.checkout_url) {
+        window.open(response.data.checkout_url, "_blank");
       }
     } catch (error: any) {
       console.error("Purchase error:", error);
@@ -98,7 +101,7 @@ export default function PricingPage() {
               Dashboard
             </Button>
           ) : (
-            <Button onClick={() => client.auth.toLogin()}>
+            <Button onClick={() => navigate("/login")}>
               Sign In
             </Button>
           )}
@@ -116,6 +119,12 @@ export default function PricingPage() {
           </p>
         </div>
 
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          </div>
+        ) : (
+        <>
         {/* Free Tier */}
         <Card className="max-w-md mx-auto mb-8 border-green-200 bg-green-50">
           <CardContent className="py-6 text-center">
@@ -305,6 +314,8 @@ export default function PricingPage() {
             </div>
           </div>
         </div>
+        </>
+        )}
       </main>
 
       {/* Footer */}

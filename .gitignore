@@ -2,3 +2,23 @@
 backend/app.db
 backend/.env
 backend/leaselenses.db
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Backup files
+*.bak
+*.backup
+
+# Node
+node_modules/
+frontend/dist/
+
+# Logs
+backend/logs/
+*.log
+
+# Atoms Cloud config (no longer used)
+.mgx/

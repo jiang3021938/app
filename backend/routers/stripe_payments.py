@@ -236,8 +236,18 @@ async def stripe_webhook(
 @router.get("/pricing")
 async def get_pricing():
     """Get available pricing plans."""
+    # Convert dict to array with id field for frontend
+    plans_list = []
+    for plan_id, plan_data in PRICING.items():
+        plans_list.append({
+            "id": plan_id,
+            **plan_data,
+            "price": plan_data["price"] / 100,  # Convert cents to dollars for display
+            "popular": plan_id == "pack5",
+            "recurring": plan_id == "monthly",
+        })
     return {
-        "plans": PRICING,
+        "plans": plans_list,
         "currency": "USD",
         "stripe_enabled": STRIPE_ENABLED
     }

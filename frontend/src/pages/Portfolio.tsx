@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +8,8 @@ import {
   FileText, ArrowLeft, Building2, DollarSign, Calendar, AlertTriangle,
   TrendingUp, Clock, CheckCircle, BarChart3, Plus
 } from "lucide-react";
-
-const client = createClient();
+import { checkAuthStatus } from "@/lib/checkAuth";
+import { apiCall } from "@/lib/api";
 
 interface PortfolioSummary {
   total_properties: number;
@@ -53,13 +52,13 @@ export default function PortfolioPage() {
 
   const loadPortfolio = async () => {
     try {
-      const authRes = await client.auth.me();
-      if (!authRes.data) {
+      const { user: authUser } = await checkAuthStatus();
+      if (!authUser) {
         navigate("/dashboard");
         return;
       }
 
-      const response = await client.apiCall.invoke({
+      const response = await apiCall({
         url: "/api/v1/lease/portfolio",
         method: "GET",
       });

@@ -1,15 +1,14 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { FileText, Upload as UploadIcon, X, CheckCircle, AlertCircle, ArrowLeft, Loader2, CreditCard, FileUp } from "lucide-react";
+import { FileText, Upload as UploadIcon, X, CheckCircle, AlertCircle, ArrowLeft, Loader2, CreditCard, FileUp, User } from "lucide-react";
 import { toast } from "sonner";
 import AnalysisProgress from "@/components/AnalysisProgress";
-
-const client = createClient();
+import { checkAuthStatus } from "@/lib/checkAuth";
+import { apiCall } from "@/lib/api";
 
 const ACCEPTED_TYPES = [
   "application/pdf",
@@ -59,11 +58,11 @@ export default function UploadPage() {
 
   const checkAuth = async () => {
     try {
-      const response = await client.auth.me();
-      if (!response.data) {
+      const { user: authUser } = await checkAuthStatus();
+      if (!authUser) {
         navigate("/dashboard");
       } else {
-        setUser(response.data);
+        setUser(authUser);
         await loadCredits();
       }
     } catch {
@@ -73,7 +72,7 @@ export default function UploadPage() {
 
   const loadCredits = async () => {
     try {
-      const creditsResponse = await client.apiCall.invoke({
+      const creditsResponse = await apiCall({
         url: "/api/v1/lease/credits",
         method: "GET",
       });
@@ -137,54 +136,54 @@ export default function UploadPage() {
     setError(null);
 
     try {
-      const timestamp = Date.now();
-      const fileKey = `leases/${user.id}/${timestamp}-${file.name}`;
-
       setProgress(20);
-      await client.storage.upload({
-        bucket_name: "lease-documents",
-        object_key: fileKey,
-        file: file,
-      });
 
-      setProgress(50);
+      // Send file directly to backend for in-memory analysis
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("file", file);
 
-      const docResponse = await client.entities.documents.create({
-        data: {
-          file_name: file.name,
-          file_key: fileKey,
-          file_size: file.size,
-          status: "pending",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      });
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
 
-      setProgress(70);
+      setProgress(40);
       setUploading(false);
       setAnalyzing(true);
 
-      const analysisResponse = await client.apiCall.invoke({
-        url: "/api/v1/lease/analyze",
+      const response = await fetch("/api/v1/lease/upload-and-analyze", {
         method: "POST",
-        data: { document_id: docResponse.data.id },
+        headers,
+        body: formData,
       });
 
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({ detail: "Analysis failed" }));
+        if (response.status === 402) {
+          setError("no_credits");
+          setAnalyzing(false);
+          return;
+        }
+        throw new Error(errorBody.detail || "Analysis failed");
+      }
+
+      const result = await response.json();
       setProgress(100);
 
-      if (analysisResponse.data.success) {
+      if (result.success) {
         toast.success("Analysis complete!");
-        navigate(`/report/${docResponse.data.id}`);
+        navigate(`/report/${result.document_id}`);
       } else {
-        setError(analysisResponse.data.error || "Analysis failed");
+        setError(result.error || "Analysis failed");
         setAnalyzing(false);
       }
     } catch (err: any) {
       console.error("Upload error:", err);
-      if (err?.status === 402 || err?.data?.detail?.toLowerCase().includes("credit")) {
+      if (err?.status === 402 || err?.message?.toLowerCase().includes("credit")) {
         setError("no_credits");
       } else {
-        setError(err?.data?.detail || err?.message || "Upload failed. Please try again.");
+        setError(err?.message || "Upload failed. Please try again.");
       }
       setUploading(false);
       setAnalyzing(false);
@@ -219,13 +218,21 @@ export default function UploadPage() {
             </div>
           </div>
           {credits && (
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <CreditCard className="h-4 w-4" />
-              {credits.is_admin ? (
-                <span className="text-green-600 font-medium">Admin (Unlimited)</span>
-              ) : (
-                <span>{credits.total_credits} credit{credits.total_credits !== 1 ? "s" : ""} remaining</span>
+            <div className="flex items-center gap-3 text-sm text-slate-500">
+              {user && (
+                <div className="flex items-center gap-1">
+                  <User className="h-4 w-4" />
+                  <span>{user.email || user.name || "Account"}</span>
+                </div>
               )}
+              <div className="flex items-center gap-1">
+                <CreditCard className="h-4 w-4" />
+                {credits.is_admin ? (
+                  <span className="text-green-600 font-medium">Admin (Unlimited)</span>
+                ) : (
+                  <span>{credits.total_credits} credit{credits.total_credits !== 1 ? "s" : ""} remaining</span>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -386,7 +393,7 @@ export default function UploadPage() {
             <div className="bg-slate-100 rounded-lg p-4 text-sm text-slate-600">
               <p className="font-medium mb-2">What happens next?</p>
               <ol className="list-decimal list-inside space-y-1">
-                <li>Your document is securely uploaded to our servers</li>
+                <li>Your document is analyzed securely in memory</li>
                 <li>AI extracts key terms, dates, and financial details</li>
                 <li>Risk analysis identifies potential issues</li>
                 <li>You receive a detailed audit report</li>

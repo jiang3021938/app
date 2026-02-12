@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,8 +20,8 @@ import AmendmentMemoButton from "@/components/AmendmentMemoButton";
 import RentBenchmark from "@/components/RentBenchmark";
 import PaywallOverlay from "@/components/PaywallOverlay";
 import LeaseHealthScore, { calculateHealthScore } from "@/components/LeaseHealthScore";
-
-const client = createClient();
+import { checkAuthStatus } from "@/lib/checkAuth";
+import { apiCall, documents as documentsApi, extractions } from "@/lib/api";
 
 interface Extraction {
   id: number;
@@ -139,7 +138,6 @@ export default function ReportPage() {
   // Executive summary
   const [executiveSummary, setExecutiveSummary] = useState<any>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
-  const [exportingPdf, setExportingPdf] = useState(false);
 
   useEffect(() => {
     loadReport();
@@ -147,15 +145,15 @@ export default function ReportPage() {
 
   const loadReport = async () => {
     try {
-      const authResponse = await client.auth.me();
-      if (!authResponse.data) {
+      const { user: authUser } = await checkAuthStatus();
+      if (!authUser) {
         navigate("/dashboard");
         return;
       }
 
       // Check if user has paid credits (for paywall logic)
       try {
-        const creditsRes = await client.apiCall.invoke({ url: "/api/v1/lease/credits", method: "GET" });
+        const creditsRes = await apiCall({ url: "/api/v1/lease/credits", method: "GET" });
         const c = creditsRes.data;
         // User is "paid" if admin, has paid credits, subscription, or zero free credits (used their free one)
         setIsPaidUser(c.is_admin || c.paid_credits > 0 || c.subscription_type === "monthly");
@@ -163,12 +161,12 @@ export default function ReportPage() {
         setIsPaidUser(true); // fallback to showing content
       }
 
-      const docResponse = await client.entities.documents.get({
+      const docResponse = await documentsApi.get({
         id: documentId!
       });
       setDocument(docResponse.data);
 
-      const extractionResponse = await client.entities.extractions.query({
+      const extractionResponse = await extractions.query({
         query: { document_id: parseInt(documentId!) },
         limit: 1
       });
@@ -189,7 +187,7 @@ export default function ReportPage() {
 
         // Load compliance data
         try {
-          const complianceResponse = await client.apiCall.invoke({
+          const complianceResponse = await apiCall({
             url: `/api/v1/lease/compliance/${ext.id}`,
             method: "GET"
           });
@@ -200,7 +198,7 @@ export default function ReportPage() {
 
         // Load source map to know which fields have sources
         try {
-          const sourceResponse = await client.apiCall.invoke({
+          const sourceResponse = await apiCall({
             url: `/api/v1/lease/source-map/${ext.id}`,
             method: "GET"
           });
@@ -212,7 +210,7 @@ export default function ReportPage() {
 
         // Load executive summary (async, non-blocking)
         setSummaryLoading(true);
-        client.apiCall.invoke({
+        apiCall({
           url: `/api/v1/lease/summary/${ext.id}`,
           method: "GET"
         }).then((res) => {
@@ -237,70 +235,8 @@ export default function ReportPage() {
     }
   };
 
-  const handleDownloadCalendar = async () => {
-    if (!extraction) return;
-    try {
-      const response = await client.apiCall.invoke({
-        url: `/api/v1/lease/calendar/${extraction.id}`,
-        method: "GET"
-      });
-      const blob = new Blob([response.data], { type: "text/calendar" });
-      const url = window.URL.createObjectURL(blob);
-      const a = window.document.createElement("a");
-      a.href = url;
-      a.download = `lease-reminders-${extraction.id}.ics`;
-      window.document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      window.document.body.removeChild(a);
-    } catch (error) {
-      console.error("Failed to download calendar:", error);
-    }
-  };
-
-  const handleExportPdf = async () => {
-    if (!extraction) return;
-    setExportingPdf(true);
-    try {
-      const response = await fetch(`/api/v1/lease/export-pdf/${extraction.id}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${await client.auth.getToken?.() || ""}`,
-        },
-      });
-      if (!response.ok) throw new Error("Export failed");
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = window.document.createElement("a");
-      a.href = url;
-      a.download = `LeaseLenses-Report-${extraction.id}.pdf`;
-      window.document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      window.document.body.removeChild(a);
-    } catch (error) {
-      // Fallback: try via apiCall
-      try {
-        const res = await client.apiCall.invoke({
-          url: `/api/v1/lease/export-pdf/${extraction.id}`,
-          method: "GET",
-          responseType: "blob",
-        });
-        const blob = new Blob([res.data], { type: "application/pdf" });
-        const url = window.URL.createObjectURL(blob);
-        const a = window.document.createElement("a");
-        a.href = url;
-        a.download = `LeaseLenses-Report-${extraction.id}.pdf`;
-        window.document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        window.document.body.removeChild(a);
-      } catch (e2) {
-        console.error("PDF export failed:", e2);
-      }
-    } finally {
-      setExportingPdf(false);
-    }
+  const handleExportPdf = () => {
+    window.print();
   };
 
   const formatCurrency = (amount: number | null) => {
@@ -434,16 +370,10 @@ export default function ReportPage() {
             {/* Amendment Memo */}
             {isPaidUser && <AmendmentMemoButton extractionId={extraction.id} />}
 
-            {/* ICS Download */}
-            <Button variant="outline" size="sm" onClick={handleDownloadCalendar} className="gap-2">
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">.ics</span>
-            </Button>
-
-            {/* PDF Report Export */}
+            {/* PDF Report Export (uses browser print-to-PDF) */}
             {isPaidUser && (
-              <Button variant="outline" size="sm" onClick={handleExportPdf} disabled={exportingPdf} className="gap-2">
-                {exportingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+              <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-2">
+                <FileDown className="h-4 w-4" />
                 <span className="hidden sm:inline">Export PDF</span>
               </Button>
             )}

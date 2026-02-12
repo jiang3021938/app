@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
-import { createClient } from "@metagptx/web-sdk";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, TrendingDown, Minus, MapPin, BarChart3, ArrowUpRight } from "lucide-react";
-
-const client = createClient();
+import { apiCall } from "@/lib/api";
 
 interface BenchmarkData {
   market_area: string;
@@ -43,7 +41,7 @@ export default function RentBenchmark({ extractionId }: RentBenchmarkProps) {
 
   const loadBenchmark = async () => {
     try {
-      const response = await client.apiCall.invoke({
+      const response = await apiCall({
         url: `/api/v1/lease/benchmark/${extractionId}`,
         method: "GET",
       });
