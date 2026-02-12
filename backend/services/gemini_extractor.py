@@ -38,15 +38,14 @@ class GeminiExtractor:
             Dictionary with extracted lease data and full text
         """
         try:
-            # Upload the PDF to Gemini
+            # Build PDF part (from_bytes only accepts data and mime_type)
             file_part = types.Part.from_bytes(
                 data=pdf_bytes,
-                mime_type="application/pdf",
-                filename=file_name
+                mime_type="application/pdf"
             )
 
             # Construct the prompt for lease data extraction
-            prompt = """
+            prompt_text = """
             Analyze this lease agreement document and extract the following information.
             Return the response as a JSON object with these exact keys:
             
@@ -78,14 +77,18 @@ class GeminiExtractor:
             ```
             """
 
-            # Generate content with the PDF
+            # Generate content with the PDF using proper Content/Part structure
             response = self.client.models.generate_content(
-                model="gemini-2.0-flash-exp",
-                contents=[prompt, file_part],
-                generation_config={
-                    "temperature": 0.1,
-                    "response_mime_type": "text/plain"
-                }
+                model="gemini-2.0-flash",
+                contents=[
+                    types.Content(
+                        role="user",
+                        parts=[
+                            file_part,
+                            types.Part.from_text(prompt_text)
+                        ]
+                    )
+                ]
             )
 
             # Parse the response
