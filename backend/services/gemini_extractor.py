@@ -85,7 +85,7 @@ class GeminiExtractor:
                         role="user",
                         parts=[
                             file_part,
-                            types.Part.from_text(prompt_text)
+                            types.Part.from_text(text=prompt_text)
                         ]
                     )
                 ]
