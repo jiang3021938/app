@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,8 +18,7 @@ import {
 } from "lucide-react";
 import GoogleLoginButton from "@/components/GoogleLoginButton";
 import { checkAuthStatus, performLogout } from "@/lib/checkAuth";
-
-const client = createClient();
+import { apiCall, documents as documentsApi } from "@/lib/api";
 
 interface Document {
   id: number;
@@ -72,14 +70,14 @@ export default function Dashboard() {
   const loadData = async () => {
     try {
       // Load documents
-      const docsResponse = await client.entities.documents.query({
+      const docsResponse = await documentsApi.query({
         sort: "-created_at",
         limit: 50
       });
       setDocuments(docsResponse.data?.items || []);
 
       // Load credits
-      const creditsResponse = await client.apiCall.invoke({
+      const creditsResponse = await apiCall({
         url: "/api/v1/lease/credits",
         method: "GET"
       });

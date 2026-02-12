@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,8 +10,7 @@ import {
   MessageSquare, ArrowRight, Shield
 } from "lucide-react";
 import { toast } from "sonner";
-
-const client = createClient();
+import { apiCall } from "@/lib/api";
 
 interface Amendment {
   priority: string;
@@ -49,7 +47,7 @@ export default function AmendmentMemoButton({ extractionId, disabled }: Amendmen
     
     setLoading(true);
     try {
-      const response = await client.apiCall.invoke({
+      const response = await apiCall({
         url: `/api/v1/lease/amendment-memo/${extractionId}`,
         method: "POST",
       });

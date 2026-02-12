@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,8 +11,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { checkAuthStatus } from "@/lib/checkAuth";
-
-const client = createClient();
+import { apiCall, documents as documentsApi } from "@/lib/api";
 
 interface DocOption {
   id: number;
@@ -39,14 +37,14 @@ export default function ComparePage() {
       const { user: authUser } = await checkAuthStatus();
       if (!authUser) { navigate("/dashboard"); return; }
 
-      const docsRes = await client.entities.documents.query({ sort: "-created_at", limit: 50 });
+      const docsRes = await documentsApi.query({ sort: "-created_at", limit: 50 });
       const docs = (docsRes.data?.items || []).filter((d: any) => d.status === "completed");
 
       // Get extraction IDs
       const docsWithExtractions: DocOption[] = [];
       for (const doc of docs) {
         try {
-          const extRes = await client.apiCall.invoke({
+          const extRes = await apiCall({
             url: `/api/v1/lease/source-map/${doc.id}`,
             method: "GET",
           });
@@ -79,7 +77,7 @@ export default function ComparePage() {
 
     try {
       // Use document IDs as extraction IDs (they map 1:1 in this system)
-      const response = await client.apiCall.invoke({
+      const response = await apiCall({
         url: "/api/v1/lease/compare",
         method: "POST",
         data: { extraction_ids: selected },

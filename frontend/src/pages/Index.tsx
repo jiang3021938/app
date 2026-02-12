@@ -5,15 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { createClient } from "@metagptx/web-sdk";
 import { 
   FileText, Shield, Calendar, Zap, CheckCircle, ArrowRight, Upload, 
   Bot, Download, Star, Lock, Users, Clock, Target, Quote, ShieldCheck,
   Globe, Database, ChevronRight, User, LogOut
 } from "lucide-react";
 import { checkAuthStatus, performLogout } from "@/lib/checkAuth";
-
-const client = createClient();
 
 const HERO_IMAGE = "https://mgx-backend-cdn.metadl.com/generate/images/956230/2026-02-07/f642cfb9-7acb-4105-968a-f0749f554722.png";
 const AI_IMAGE = "https://mgx-backend-cdn.metadl.com/generate/images/956230/2026-02-07/c03eda08-fb18-41ad-8380-2e5ee6bec86b.png";

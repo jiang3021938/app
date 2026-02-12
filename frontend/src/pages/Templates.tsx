@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,8 +9,7 @@ import {
   FileCheck, BookOpen, ClipboardList, Loader2
 } from "lucide-react";
 import { toast } from "sonner";
-
-const client = createClient();
+import { apiCall } from "@/lib/api";
 
 const TEMPLATES = [
   {
@@ -58,7 +56,7 @@ export default function TemplatesPage() {
 
     setSubmitting(true);
     try {
-      const response = await client.apiCall.invoke({
+      const response = await apiCall({
         url: "/api/v1/lease/lead/capture",
         method: "POST",
         data: { email, name, template_type: selectedTemplate },
@@ -81,7 +79,7 @@ export default function TemplatesPage() {
   const handleDownload = async () => {
     if (!selectedTemplate) return;
     try {
-      const response = await client.apiCall.invoke({
+      const response = await apiCall({
         url: `/api/v1/lease/template/${selectedTemplate}`,
         method: "GET",
       });

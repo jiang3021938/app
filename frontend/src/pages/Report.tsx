@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,8 +21,7 @@ import RentBenchmark from "@/components/RentBenchmark";
 import PaywallOverlay from "@/components/PaywallOverlay";
 import LeaseHealthScore, { calculateHealthScore } from "@/components/LeaseHealthScore";
 import { checkAuthStatus } from "@/lib/checkAuth";
-
-const client = createClient();
+import { apiCall, documents as documentsApi, extractions } from "@/lib/api";
 
 interface Extraction {
   id: number;
@@ -156,7 +154,7 @@ export default function ReportPage() {
 
       // Check if user has paid credits (for paywall logic)
       try {
-        const creditsRes = await client.apiCall.invoke({ url: "/api/v1/lease/credits", method: "GET" });
+        const creditsRes = await apiCall({ url: "/api/v1/lease/credits", method: "GET" });
         const c = creditsRes.data;
         // User is "paid" if admin, has paid credits, subscription, or zero free credits (used their free one)
         setIsPaidUser(c.is_admin || c.paid_credits > 0 || c.subscription_type === "monthly");
@@ -164,12 +162,12 @@ export default function ReportPage() {
         setIsPaidUser(true); // fallback to showing content
       }
 
-      const docResponse = await client.entities.documents.get({
+      const docResponse = await documentsApi.get({
         id: documentId!
       });
       setDocument(docResponse.data);
 
-      const extractionResponse = await client.entities.extractions.query({
+      const extractionResponse = await extractions.query({
         query: { document_id: parseInt(documentId!) },
         limit: 1
       });
@@ -190,7 +188,7 @@ export default function ReportPage() {
 
         // Load compliance data
         try {
-          const complianceResponse = await client.apiCall.invoke({
+          const complianceResponse = await apiCall({
             url: `/api/v1/lease/compliance/${ext.id}`,
             method: "GET"
           });
@@ -201,7 +199,7 @@ export default function ReportPage() {
 
         // Load source map to know which fields have sources
         try {
-          const sourceResponse = await client.apiCall.invoke({
+          const sourceResponse = await apiCall({
             url: `/api/v1/lease/source-map/${ext.id}`,
             method: "GET"
           });
@@ -213,7 +211,7 @@ export default function ReportPage() {
 
         // Load executive summary (async, non-blocking)
         setSummaryLoading(true);
-        client.apiCall.invoke({
+        apiCall({
           url: `/api/v1/lease/summary/${ext.id}`,
           method: "GET"
         }).then((res) => {
@@ -241,7 +239,7 @@ export default function ReportPage() {
   const handleDownloadCalendar = async () => {
     if (!extraction) return;
     try {
-      const response = await client.apiCall.invoke({
+      const response = await apiCall({
         url: `/api/v1/lease/calendar/${extraction.id}`,
         method: "GET"
       });
@@ -266,7 +264,7 @@ export default function ReportPage() {
       const response = await fetch(`/api/v1/lease/export-pdf/${extraction.id}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${await client.auth.getToken?.() || ""}`,
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
         },
       });
       if (!response.ok) throw new Error("Export failed");
@@ -280,14 +278,16 @@ export default function ReportPage() {
       window.URL.revokeObjectURL(url);
       window.document.body.removeChild(a);
     } catch (error) {
-      // Fallback: try via apiCall
+      // Fallback: retry with direct fetch for binary data
       try {
-        const res = await client.apiCall.invoke({
-          url: `/api/v1/lease/export-pdf/${extraction.id}`,
+        const res = await fetch(`/api/v1/lease/export-pdf/${extraction.id}`, {
           method: "GET",
-          responseType: "blob",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          },
         });
-        const blob = new Blob([res.data], { type: "application/pdf" });
+        if (!res.ok) throw new Error("Export failed");
+        const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
         const a = window.document.createElement("a");
         a.href = url;

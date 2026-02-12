@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,8 +9,7 @@ import {
   TrendingUp, Clock, CheckCircle, BarChart3, Plus
 } from "lucide-react";
 import { checkAuthStatus } from "@/lib/checkAuth";
-
-const client = createClient();
+import { apiCall } from "@/lib/api";
 
 interface PortfolioSummary {
   total_properties: number;
@@ -60,7 +58,7 @@ export default function PortfolioPage() {
         return;
       }
 
-      const response = await client.apiCall.invoke({
+      const response = await apiCall({
         url: "/api/v1/lease/portfolio",
         method: "GET",
       });

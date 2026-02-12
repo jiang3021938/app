@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -9,8 +8,7 @@ import { FileText, Upload as UploadIcon, X, CheckCircle, AlertCircle, ArrowLeft,
 import { toast } from "sonner";
 import AnalysisProgress from "@/components/AnalysisProgress";
 import { checkAuthStatus } from "@/lib/checkAuth";
-
-const client = createClient();
+import { apiCall, documents as documentsApi, uploadFile } from "@/lib/api";
 
 const ACCEPTED_TYPES = [
   "application/pdf",
@@ -74,7 +72,7 @@ export default function UploadPage() {
 
   const loadCredits = async () => {
     try {
-      const creditsResponse = await client.apiCall.invoke({
+      const creditsResponse = await apiCall({
         url: "/api/v1/lease/credits",
         method: "GET",
       });
@@ -142,7 +140,7 @@ export default function UploadPage() {
       const fileKey = `leases/${user.id}/${timestamp}-${file.name}`;
 
       setProgress(20);
-      await client.storage.upload({
+      await uploadFile({
         bucket_name: "lease-documents",
         object_key: fileKey,
         file: file,
@@ -150,7 +148,7 @@ export default function UploadPage() {
 
       setProgress(50);
 
-      const docResponse = await client.entities.documents.create({
+      const docResponse = await documentsApi.create({
         data: {
           file_name: file.name,
           file_key: fileKey,
@@ -165,7 +163,7 @@ export default function UploadPage() {
       setUploading(false);
       setAnalyzing(true);
 
-      const analysisResponse = await client.apiCall.invoke({
+      const analysisResponse = await apiCall({
         url: "/api/v1/lease/analyze",
         method: "POST",
         data: { document_id: docResponse.data.id },

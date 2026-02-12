@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -12,8 +11,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { checkAuthStatus } from "@/lib/checkAuth";
-
-const client = createClient();
+import { apiCall, documents as documentsApi, uploadFile } from "@/lib/api";
 
 const ACCEPTED_TYPES = [
   "application/pdf",
@@ -77,7 +75,7 @@ export default function BatchUploadPage() {
 
   const loadCredits = async () => {
     try {
-      const creditsResponse = await client.apiCall.invoke({
+      const creditsResponse = await apiCall({
         url: "/api/v1/lease/credits",
         method: "GET",
       });
@@ -165,7 +163,7 @@ export default function BatchUploadPage() {
         const timestamp = Date.now();
         const fileKey = `leases/${user.id}/${timestamp}-${fileItem.file.name}`;
 
-        await client.storage.upload({
+        await uploadFile({
           bucket_name: "lease-documents",
           object_key: fileKey,
           file: fileItem.file,
@@ -173,7 +171,7 @@ export default function BatchUploadPage() {
 
         updateFileStatus(fileItem.id, { progress: 50 });
 
-        const docResponse = await client.entities.documents.create({
+        const docResponse = await documentsApi.create({
           data: {
             file_name: fileItem.file.name,
             file_key: fileKey,
@@ -206,7 +204,7 @@ export default function BatchUploadPage() {
     // Step 2: Batch analyze
     if (documentIds.length > 0) {
       try {
-        const analysisResponse = await client.apiCall.invoke({
+        const analysisResponse = await apiCall({
           url: "/api/v1/lease/analyze-batch",
           method: "POST",
           data: { document_ids: documentIds },

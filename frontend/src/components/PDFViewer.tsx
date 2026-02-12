@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,8 +11,7 @@ import {
   Crosshair,
   X,
 } from "lucide-react";
-
-const client = createClient();
+import { apiCall } from "@/lib/api";
 
 interface BBox {
   x0: number;
@@ -92,7 +90,7 @@ export default function PDFViewer({
 
   const loadSourceMap = async () => {
     try {
-      const response = await client.apiCall.invoke({
+      const response = await apiCall({
         url: `/api/v1/lease/source-map/${extractionId}`,
         method: "GET",
       });
@@ -110,7 +108,7 @@ export default function PDFViewer({
 
   const loadPageCount = async () => {
     try {
-      const response = await client.apiCall.invoke({
+      const response = await apiCall({
         url: `/api/v1/lease/doc-page-count/${documentId}`,
         method: "GET",
       });
@@ -126,39 +124,25 @@ export default function PDFViewer({
     setLoading(true);
     setImageError(false);
     try {
-      // Method 1: Use apiCall to get binary data
-      const response = await client.apiCall.invoke({
-        url: `/api/v1/lease/pdf-page/${documentId}/${pageNum}`,
-        method: "GET",
-        responseType: "arraybuffer",
-      });
+      const token = localStorage.getItem("token");
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      if (response.data instanceof ArrayBuffer) {
-        const blob = new Blob([response.data], { type: "image/png" });
+      const response = await fetch(
+        `/api/v1/lease/pdf-page/${documentId}/${pageNum}`,
+        { headers }
+      );
+
+      if (response.ok) {
+        const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         setPageImage(url);
-      } else if (response.data && typeof response.data === "object") {
-        // Maybe the SDK returned base64 or something else
-        // Try to convert
-        try {
-          const uint8 = new Uint8Array(
-            Object.values(response.data) as number[]
-          );
-          const blob = new Blob([uint8], { type: "image/png" });
-          const url = URL.createObjectURL(blob);
-          setPageImage(url);
-        } catch {
-          // Fallback to direct URL
-          setPageImage(null);
-          setImageError(true);
-        }
       } else {
         setPageImage(null);
         setImageError(true);
       }
     } catch (error) {
-      console.error("Failed to load page image via apiCall:", error);
-      // Fallback: use direct image URL approach
+      console.error("Failed to load page image:", error);
       setPageImage(null);
       setImageError(true);
     } finally {

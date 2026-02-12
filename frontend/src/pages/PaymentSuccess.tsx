@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { createClient } from "@metagptx/web-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileText, CheckCircle, AlertCircle, ArrowRight } from "lucide-react";
-
-const client = createClient();
+import { apiCall } from "@/lib/api";
 
 export default function PaymentSuccessPage() {
   const navigate = useNavigate();
@@ -30,7 +28,7 @@ export default function PaymentSuccessPage() {
 
   const verifyPayment = async () => {
     try {
-      const response = await client.apiCall.invoke({
+      const response = await apiCall({
         url: "/api/v1/payment/verify_payment",
         method: "POST",
         data: { session_id: sessionId }
