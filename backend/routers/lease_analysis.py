@@ -5,7 +5,7 @@ import ast
 import httpx as httpx_client
 from datetime import datetime
 from urllib.parse import urlencode, quote
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from fastapi.responses import Response
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
@@ -210,6 +210,7 @@ async def analyze_document(
             "pet_policy": extracted_data.get("pet_policy"),
             "late_fee_terms": extracted_data.get("late_fee_terms"),
             "risk_flags": json.dumps(extracted_data.get("risk_flags", [])),
+            "audit_checklist": json.dumps(extracted_data.get("audit_checklist", [])),
             "compliance_data": json.dumps(compliance_result),
             "raw_extraction": json.dumps(extracted_data),
             "source_map": json.dumps(source_map) if source_map else None,
@@ -349,6 +350,7 @@ async def upload_and_analyze(
             "pet_policy": extracted_data.get("pet_policy"),
             "late_fee_terms": extracted_data.get("late_fee_terms"),
             "risk_flags": json.dumps(extracted_data.get("risk_flags", [])),
+            "audit_checklist": json.dumps(extracted_data.get("audit_checklist", [])),
             "compliance_data": json.dumps(compliance_result),
             "raw_extraction": json.dumps(extracted_data),
             "source_map": json.dumps(source_map) if source_map else None,
@@ -512,6 +514,7 @@ async def analyze_documents_batch(
                     "pet_policy": extracted_data.get("pet_policy"),
                     "late_fee_terms": extracted_data.get("late_fee_terms"),
                     "risk_flags": json.dumps(extracted_data.get("risk_flags", [])),
+                    "audit_checklist": json.dumps(extracted_data.get("audit_checklist", [])),
                     "compliance_data": json.dumps(compliance_result),
                     "raw_extraction": json.dumps(extracted_data),
                     "created_at": datetime.now()
@@ -841,14 +844,37 @@ async def get_source_map(
 async def get_pdf_page_image(
     document_id: int,
     page_num: int,
-    current_user: UserResponse = Depends(get_current_user),
+    request: Request,
+    t: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
 ):
     """Render a specific document page as a PNG image for the viewer.
-    Supports both PDF and Word (.docx) files."""
+    Supports both PDF and Word (.docx) files.
+    Auth via Authorization header or ?t= query parameter token."""
     try:
+        from core.auth import decode_access_token, AccessTokenError
+
+        # Try Authorization header first, then query parameter token
+        user_id = None
+        auth_header = request.headers.get("authorization", "")
+        token = None
+        if auth_header.lower().startswith("bearer "):
+            token = auth_header[7:]
+        elif t:
+            token = t
+
+        if token:
+            try:
+                payload = decode_access_token(token)
+                user_id = payload.get("sub")
+            except AccessTokenError:
+                pass
+
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+
         doc_service = DocumentsService(db)
-        document = await doc_service.get_by_id(document_id, current_user.id)
+        document = await doc_service.get_by_id(document_id, user_id)
 
         if not document:
             raise HTTPException(status_code=404, detail="Document not found")

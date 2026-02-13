@@ -53,6 +53,11 @@ PORT=8000
 ALTER TABLE documents ADD COLUMN IF NOT EXISTS file_data TEXT;
 ```
 
+如果 extractions 表已存在，需要添加 audit_checklist 列用于审查清单：
+```sql
+ALTER TABLE extractions ADD COLUMN IF NOT EXISTS audit_checklist TEXT;
+```
+
 ### 数据表说明：
 
 | 表名 | 用途 |

@@ -83,6 +83,7 @@ CREATE TABLE extractions (
     pet_policy VARCHAR,
     late_fee_terms VARCHAR,
     risk_flags VARCHAR,
+    audit_checklist TEXT,
     compliance_data VARCHAR,
     raw_extraction VARCHAR,
     source_map VARCHAR,

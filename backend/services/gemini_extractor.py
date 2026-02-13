@@ -38,11 +38,19 @@ Return a JSON object with the following structure (use null if not found in docu
   "utilities_included": "What utilities are included in rent, if any",
   "risk_flags": [
     {
-      "severity": "high or medium or low",
+      "severity": "high or medium",
       "category": "Category name",
-      "title": "Short title of the finding",
-      "description": "Detailed description of what was found or what is missing",
+      "title": "Short title of the risk",
+      "description": "Detailed description of the risk or concern",
       "recommendation": "Specific action the tenant/landlord should take"
+    }
+  ],
+  "audit_checklist": [
+    {
+      "category": "Category name",
+      "status": "pass or warning or issue",
+      "title": "Short title",
+      "description": "What was found or what is missing"
     }
   ],
   "health_score": {
@@ -55,14 +63,23 @@ Return a JSON object with the following structure (use null if not found in docu
 }
 
 CRITICAL INSTRUCTIONS FOR risk_flags:
-You MUST check ALL of the following categories and include EACH ONE in risk_flags, even if the clause is present and satisfactory. This serves as a complete audit checklist for the user.
+risk_flags should ONLY contain genuine risks — items with severity "medium" or "high".
+Do NOT include items that are satisfactory or present and adequate.
+A well-written lease may have 0 risk flags. Only flag real problems or missing critical clauses.
+The number of risk flags is NOT fixed — it can be 0 to 5 depending on the lease quality.
+
+CRITICAL INSTRUCTIONS FOR audit_checklist:
+You MUST check ALL 12 categories below and include EACH ONE in audit_checklist.
+This is a complete audit review — most items in a good lease should be "pass".
 
 For each category:
-- If the clause is present and adequate: severity = "low", describe what was found
-- If the clause is present but has issues: severity = "medium", explain the concern
-- If the clause is missing or seriously problematic: severity = "high", explain the risk
+- If the clause is present and adequate: status = "pass"
+- If the clause is present but has minor issues: status = "warning"
+- If the clause is missing or seriously problematic: status = "issue"
 
-Categories to ALWAYS check and include:
+If status is "warning" or "issue", ALSO add a corresponding entry to risk_flags with appropriate severity.
+
+Categories to ALWAYS include in audit_checklist:
 1. "Lead-based paint disclosure" - Required for pre-1978 buildings. Check if disclosed.
 2. "Security deposit terms" - Check amount vs state legal limits, return timeline, conditions.
 3. "Late fee terms" - Check if defined, reasonable percentage, grace period.
@@ -88,7 +105,8 @@ IMPORTANT:
 - For dates, convert to YYYY-MM-DD format
 - For monetary values, extract as numbers without currency symbols
 - Return ONLY valid JSON, no markdown code blocks, no additional text
-- ALWAYS include ALL 12 risk_flag categories listed above
+- risk_flags: only real problems (0-5 items, medium/high severity)
+- audit_checklist: always exactly 12 items (one per category)
 - Also provide the full extracted text of the document
 
 Return your response as:
@@ -177,15 +195,17 @@ class GeminiExtractor:
                 if field not in extracted_data:
                     extracted_data[field] = None
 
-            # Ensure risk_flags is a list of objects (not strings)
+            # Ensure risk_flags is a list of objects with only medium/high severity
             risk_flags = extracted_data.get("risk_flags", [])
             if isinstance(risk_flags, list):
                 cleaned_flags = []
                 for flag in risk_flags:
                     if isinstance(flag, dict):
-                        cleaned_flags.append(flag)
+                        # Only keep medium and high severity flags
+                        severity = flag.get("severity", "medium").lower()
+                        if severity in ("medium", "high"):
+                            cleaned_flags.append(flag)
                     elif isinstance(flag, str):
-                        # Convert string flags to objects
                         cleaned_flags.append({
                             "severity": "medium",
                             "category": "General",
@@ -196,6 +216,22 @@ class GeminiExtractor:
                 extracted_data["risk_flags"] = cleaned_flags
             else:
                 extracted_data["risk_flags"] = []
+
+            # Ensure audit_checklist is a list of objects
+            audit_checklist = extracted_data.get("audit_checklist", [])
+            if isinstance(audit_checklist, list):
+                cleaned_checklist = []
+                for item in audit_checklist:
+                    if isinstance(item, dict):
+                        # Normalize status
+                        status = item.get("status", "pass").lower()
+                        if status not in ("pass", "warning", "issue"):
+                            status = "pass"
+                        item["status"] = status
+                        cleaned_checklist.append(item)
+                extracted_data["audit_checklist"] = cleaned_checklist
+            else:
+                extracted_data["audit_checklist"] = []
 
             # Build source map using text matching
             source_map = self._build_source_map(full_text, extracted_data)

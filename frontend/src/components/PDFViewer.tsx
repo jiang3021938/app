@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { apiCall } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +7,10 @@ import {
   Crosshair,
   X,
   FileText,
-  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 
 interface SourceLocation {
@@ -31,17 +34,19 @@ export default function PDFViewer({
   activeField,
   onClose,
 }: PDFViewerProps) {
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pageCount, setPageCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [zoom, setZoom] = useState(1.0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [sourceMap, setSourceMap] = useState<
-    Record<string, SourceLocation[]>
-  >({});
-  const [currentPage, setCurrentPage] = useState(1);
+  const [sourceMap, setSourceMap] = useState<Record<string, SourceLocation[]>>({});
+  const [pagesMeta, setPagesMeta] = useState<{ page: number; width: number; height: number }[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
 
-  // Load PDF URL and source map
+  // Load page count and source map
   useEffect(() => {
-    loadPdfUrl();
+    loadPageCount();
     loadSourceMap();
   }, [documentId, extractionId]);
 
@@ -50,32 +55,22 @@ export default function PDFViewer({
     if (activeField && sourceMap[activeField]) {
       const locations = sourceMap[activeField];
       if (locations.length > 0) {
-        const page = locations[0].page + 1; // 0-indexed to 1-indexed
-        setCurrentPage(page);
-        // Update iframe URL to navigate to specific page
-        if (pdfUrl) {
-          const baseUrl = pdfUrl.split("#")[0];
-          setPdfUrl(`${baseUrl}#page=${page}`);
-        }
+        setCurrentPage(locations[0].page);
       }
     }
   }, [activeField, sourceMap]);
 
-  const loadPdfUrl = async () => {
+  const loadPageCount = async () => {
     setLoading(true);
     setError(false);
     try {
       const response = await apiCall({
-        url: `/api/v1/lease/pdf-url/${documentId}`,
+        url: `/api/v1/lease/doc-page-count/${documentId}`,
         method: "GET",
       });
-      if (response.data?.url) {
-        setPdfUrl(response.data.url);
-      } else {
-        setError(true);
-      }
+      setPageCount(response.data.page_count || 1);
     } catch (err) {
-      console.error("Failed to load PDF URL:", err);
+      console.error("Failed to load page count:", err);
       setError(true);
     } finally {
       setLoading(false);
@@ -90,9 +85,41 @@ export default function PDFViewer({
       });
       const data = response.data;
       setSourceMap(data.source_map || {});
+      setPagesMeta(data.pages_meta || []);
     } catch (err) {
       console.error("Failed to load source map:", err);
     }
+  };
+
+  const getPageImageUrl = (pageNum: number) => {
+    const token = localStorage.getItem("token");
+    return `/api/v1/lease/pdf-page/${documentId}/${pageNum}?t=${token}`;
+  };
+
+  // Get highlight overlay position for active field
+  const getHighlightStyle = (): React.CSSProperties | null => {
+    if (!activeField || !sourceMap[activeField]) return null;
+    const locations = sourceMap[activeField];
+    const loc = locations.find((l) => l.page === currentPage);
+    if (!loc || !imageRef.current) return null;
+
+    const pageMeta = pagesMeta[currentPage] || { width: 612, height: 792 };
+    const imgRect = imageRef.current.getBoundingClientRect();
+    const scaleX = imgRect.width / pageMeta.width;
+    const scaleY = imgRect.height / pageMeta.height;
+
+    return {
+      position: "absolute",
+      left: `${loc.bbox.x0 * scaleX}px`,
+      top: `${loc.bbox.y0 * scaleY}px`,
+      width: `${(loc.bbox.x1 - loc.bbox.x0) * scaleX}px`,
+      height: `${(loc.bbox.y1 - loc.bbox.y0) * scaleY}px`,
+      backgroundColor: "rgba(59, 130, 246, 0.25)",
+      border: "2px solid rgba(59, 130, 246, 0.6)",
+      borderRadius: "4px",
+      pointerEvents: "none",
+      animation: "pulse 2s ease-in-out infinite",
+    };
   };
 
   if (loading) {
@@ -115,7 +142,7 @@ export default function PDFViewer({
     );
   }
 
-  if (error || !pdfUrl) {
+  if (error || pageCount === 0) {
     return (
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between px-3 py-2 border-b bg-slate-50">
@@ -131,16 +158,11 @@ export default function PDFViewer({
         <div className="flex-1 flex items-center justify-center text-center text-slate-500 p-6">
           <div>
             <FileText className="h-12 w-12 mx-auto mb-3 text-slate-300" />
-            <p className="text-sm font-medium">PDF preview not available</p>
+            <p className="text-sm font-medium">Document preview not available</p>
             <p className="text-xs text-slate-400 mt-1">
               The document could not be loaded for preview.
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-3"
-              onClick={loadPdfUrl}
-            >
+            <Button variant="outline" size="sm" className="mt-3" onClick={loadPageCount}>
               Retry
             </Button>
           </div>
@@ -149,40 +171,24 @@ export default function PDFViewer({
     );
   }
 
+  const highlightStyle = getHighlightStyle();
+
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-slate-50">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-slate-600" />
-          <span className="text-sm font-medium text-slate-700">
-            Source Tracing
-          </span>
+          <span className="text-sm font-medium text-slate-700">Source Tracing</span>
           {activeField && sourceMap[activeField] && (
-            <Badge
-              variant="secondary"
-              className="bg-blue-100 text-blue-700 text-xs gap-1"
-            >
+            <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs gap-1">
               <Crosshair className="h-3 w-3" />
               {activeField.replace(/_/g, " ")}
-              {sourceMap[activeField][0] && (
-                <span className="ml-1">
-                  (p.{sourceMap[activeField][0].page + 1})
-                </span>
-              )}
+              <span className="ml-1">(p.{(sourceMap[activeField][0]?.page ?? 0) + 1})</span>
             </Badge>
           )}
         </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => window.open(pdfUrl, "_blank")}
-            title="Open in new tab"
-          >
-            <ExternalLink className="h-4 w-4" />
-          </Button>
+        <div className="flex items-center gap-1">
           {onClose && (
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-4 w-4" />
@@ -191,15 +197,79 @@ export default function PDFViewer({
         </div>
       </div>
 
-      {/* PDF iframe */}
-      <div className="flex-1 bg-slate-200" style={{ minHeight: "400px" }}>
-        <iframe
-          src={pdfUrl}
-          className="w-full h-full border-0"
-          style={{ minHeight: "calc(100vh - 130px)" }}
-          title="Lease Document PDF"
-        />
+      {/* Navigation & Zoom */}
+      <div className="flex items-center justify-between px-3 py-1.5 border-b bg-white">
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+            disabled={currentPage === 0}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-xs text-slate-600 min-w-[60px] text-center">
+            {currentPage + 1} / {pageCount}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setCurrentPage(Math.min(pageCount - 1, currentPage + 1))}
+            disabled={currentPage >= pageCount - 1}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setZoom(Math.max(0.5, zoom - 0.25))}
+            disabled={zoom <= 0.5}
+          >
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+          <span className="text-xs text-slate-500 min-w-[40px] text-center">
+            {Math.round(zoom * 100)}%
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setZoom(Math.min(3, zoom + 0.25))}
+            disabled={zoom >= 3}
+          >
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
+
+      {/* Page Image with Highlight Overlay */}
+      <div
+        ref={containerRef}
+        className="flex-1 overflow-auto bg-slate-200 p-4"
+        style={{ minHeight: "400px" }}
+      >
+        <div className="relative inline-block mx-auto" style={{ transform: `scale(${zoom})`, transformOrigin: "top center" }}>
+          <img
+            ref={imageRef}
+            src={getPageImageUrl(currentPage)}
+            alt={`Page ${currentPage + 1}`}
+            className="max-w-full shadow-lg bg-white"
+            style={{ display: "block" }}
+            onError={() => setError(true)}
+          />
+          {/* Blue highlight overlay */}
+          {highlightStyle && <div style={highlightStyle} />}
+        </div>
+      </div>
+
+      {/* Inline animation style */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 }
