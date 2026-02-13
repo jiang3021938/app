@@ -140,15 +140,25 @@ async def analyze_document(
         # Update document status
         await doc_service.update(request.document_id, {"status": "processing"}, current_user.id)
         
-        # Download file from storage
-        supabase_storage = SupabaseStorageService()
-        download_url = await supabase_storage.get_download_url(
-            bucket_name="lease-documents",
-            object_key=document.file_key
-        )
-        async with httpx_client.AsyncClient(timeout=120.0) as http_client:
-            file_response = await http_client.get(download_url)
-            file_bytes = file_response.content
+        # Download file from storage (with database fallback)
+        file_bytes = None
+        try:
+            supabase_storage = SupabaseStorageService()
+            download_url = await supabase_storage.get_download_url(
+                bucket_name="lease-documents",
+                object_key=document.file_key
+            )
+            async with httpx_client.AsyncClient(timeout=120.0) as http_client:
+                file_response = await http_client.get(download_url)
+                file_bytes = file_response.content
+        except Exception as e:
+            logger.warning(f"Supabase download failed, trying database fallback: {e}")
+
+        if not file_bytes and document.file_data:
+            file_bytes = base64.b64decode(document.file_data)
+
+        if not file_bytes:
+            raise HTTPException(status_code=404, detail="Document file not available for re-analysis")
 
         # Analyze PDF using Gemini API
         try:
@@ -349,8 +359,11 @@ async def upload_and_analyze(
                     "updated_at": datetime.now()
                 }, current_user.id)
 
-        # Update document status
-        await doc_service.update(document.id, {"status": "completed"}, current_user.id)
+        # Update document status and store file data for PDF preview fallback
+        await doc_service.update(document.id, {
+            "status": "completed",
+            "file_data": base64.b64encode(file_bytes).decode(),
+        }, current_user.id)
 
         # Upload to Supabase Storage for temporary PDF preview
         try:
@@ -372,7 +385,7 @@ async def upload_and_analyze(
             )
             logger.info(f"Document cached to Supabase Storage: {file_key}")
         except Exception as e:
-            # Non-blocking: PDF preview won't work but analysis still succeeds
+            # Non-blocking: PDF preview will fall back to database-stored file_data
             logger.warning(f"Failed to cache document to Supabase Storage: {e}")
 
         await db.flush()
@@ -836,15 +849,25 @@ async def get_pdf_page_image(
         if not document:
             raise HTTPException(status_code=404, detail="Document not found")
 
-        # Download file from storage
-        supabase_storage = SupabaseStorageService()
-        download_url = await supabase_storage.get_download_url(
-            bucket_name="lease-documents",
-            object_key=document.file_key
-        )
-        async with httpx_client.AsyncClient(timeout=120.0) as http_client:
-            file_response = await http_client.get(download_url)
-            file_bytes = file_response.content
+        # Download file from storage (with database fallback)
+        file_bytes = None
+        try:
+            supabase_storage = SupabaseStorageService()
+            download_url = await supabase_storage.get_download_url(
+                bucket_name="lease-documents",
+                object_key=document.file_key
+            )
+            async with httpx_client.AsyncClient(timeout=120.0) as http_client:
+                file_response = await http_client.get(download_url)
+                file_bytes = file_response.content
+        except Exception as e:
+            logger.warning(f"Supabase download failed, trying database fallback: {e}")
+
+        if not file_bytes and document.file_data:
+            file_bytes = base64.b64decode(document.file_data)
+
+        if not file_bytes:
+            raise HTTPException(status_code=404, detail="Document file not available")
 
         file_name = document.file_name.lower()
 
@@ -969,14 +992,25 @@ async def get_document_page_count(
         if not document:
             raise HTTPException(status_code=404, detail="Document not found")
 
-        supabase_storage = SupabaseStorageService()
-        download_url = await supabase_storage.get_download_url(
-            bucket_name="lease-documents",
-            object_key=document.file_key
-        )
-        async with httpx_client.AsyncClient(timeout=120.0) as http_client:
-            file_response = await http_client.get(download_url)
-            file_bytes = file_response.content
+        # Download file from storage (with database fallback)
+        file_bytes = None
+        try:
+            supabase_storage = SupabaseStorageService()
+            download_url = await supabase_storage.get_download_url(
+                bucket_name="lease-documents",
+                object_key=document.file_key
+            )
+            async with httpx_client.AsyncClient(timeout=120.0) as http_client:
+                file_response = await http_client.get(download_url)
+                file_bytes = file_response.content
+        except Exception as e:
+            logger.warning(f"Supabase download failed, trying database fallback: {e}")
+
+        if not file_bytes and document.file_data:
+            file_bytes = base64.b64decode(document.file_data)
+
+        if not file_bytes:
+            raise HTTPException(status_code=404, detail="Document file not available")
 
         file_name = document.file_name.lower()
 
@@ -1019,6 +1053,7 @@ async def get_pdf_download_url(
         if not document:
             raise HTTPException(status_code=404, detail="Document not found")
 
+        # Try Supabase Storage first
         try:
             supabase_storage = SupabaseStorageService()
             url = await supabase_storage.get_download_url(
@@ -1026,18 +1061,70 @@ async def get_pdf_download_url(
                 object_key=document.file_key
             )
             return {"url": url}
-        except ValueError as e:
-            logger.warning(f"PDF not available in storage: {e}")
-            raise HTTPException(
-                status_code=404,
-                detail="PDF preview is not available. The original file was not stored for privacy."
+        except Exception as e:
+            logger.warning(f"Supabase storage unavailable, trying database fallback: {e}")
+
+        # Fallback: serve from database-stored file_data
+        if document.file_data:
+            from core.auth import create_access_token
+            pdf_token = create_access_token(
+                claims={"sub": current_user.id, "purpose": "pdf_view", "doc_id": document_id},
+                expires_minutes=60,
             )
+            return {"url": f"/api/v1/lease/pdf-serve/{document_id}?token={pdf_token}"}
+
+        raise HTTPException(
+            status_code=404,
+            detail="PDF preview is not available. The original file was not stored."
+        )
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"PDF URL error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/pdf-serve/{document_id}")
+async def serve_pdf_from_database(
+    document_id: int,
+    token: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Serve a PDF directly from database-stored file_data (fallback for Supabase Storage)."""
+    from core.auth import decode_access_token, AccessTokenError
+
+    try:
+        payload = decode_access_token(token)
+    except AccessTokenError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    doc_service = DocumentsService(db)
+    document = await doc_service.get_by_id(document_id, user_id)
+
+    if not document or not document.file_data:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    file_bytes = base64.b64decode(document.file_data)
+
+    # Determine content type from file name
+    filename_lower = (document.file_name or "").lower()
+    if filename_lower.endswith(".docx"):
+        content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    elif filename_lower.endswith(".doc"):
+        content_type = "application/msword"
+    else:
+        content_type = "application/pdf"
+
+    return Response(
+        content=file_bytes,
+        media_type=content_type,
+        headers={"Content-Disposition": f"inline; filename=\"{document.file_name}\""},
+    )
 
 
 # ──────────────────────────────────────────────────────────────────────────────

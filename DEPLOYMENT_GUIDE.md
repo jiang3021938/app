@@ -47,6 +47,12 @@ PORT=8000
 5. 粘贴到 SQL Editor 中
 6. 点击 "Run" 执行 SQL
 
+### 已有数据库迁移：
+如果 documents 表已存在，需要添加 file_data 列用于 PDF 预览：
+```sql
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS file_data TEXT;
+```
+
 ### 数据表说明：
 
 | 表名 | 用途 |

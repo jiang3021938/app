@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { createClient } from "@metagptx/web-sdk";
+import { apiCall } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,8 +9,6 @@ import {
   FileText,
   ExternalLink,
 } from "lucide-react";
-
-const client = createClient();
 
 interface SourceLocation {
   page: number;
@@ -67,7 +65,7 @@ export default function PDFViewer({
     setLoading(true);
     setError(false);
     try {
-      const response = await client.apiCall.invoke({
+      const response = await apiCall({
         url: `/api/v1/lease/pdf-url/${documentId}`,
         method: "GET",
       });
@@ -86,7 +84,7 @@ export default function PDFViewer({
 
   const loadSourceMap = async () => {
     try {
-      const response = await client.apiCall.invoke({
+      const response = await apiCall({
         url: `/api/v1/lease/source-map/${extractionId}`,
         method: "GET",
       });
