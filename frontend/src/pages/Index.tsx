@@ -425,6 +425,9 @@ export default function LandingPage() {
                 <CheckCircle className="h-4 w-4 text-green-500" />
                 Register to get 1 free analysis
               </div>
+              <button onClick={() => navigate("/sample-report")} className="text-blue-600 hover:text-blue-700 underline underline-offset-2">
+                View Sample Report →
+              </button>
             </div>
           </motion.div>
           <motion.div 

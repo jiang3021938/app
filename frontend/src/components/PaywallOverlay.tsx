@@ -64,7 +64,7 @@ export default function PaywallOverlay({ previewText, riskCount, amendmentCount 
               <CreditCard className="h-4 w-4" />
               Upgrade to See Details
             </Button>
-            <p className="text-xs text-slate-400">Starting at $12 per analysis</p>
+            <p className="text-xs text-slate-400">Starting at $4.99 per analysis</p>
           </div>
         </div>
       </div>

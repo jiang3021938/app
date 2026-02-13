@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   FileText, ArrowLeft, Building2, DollarSign, Calendar, AlertTriangle,
-  TrendingUp, Clock, CheckCircle, BarChart3, Plus
+  TrendingUp, Clock, CheckCircle, BarChart3, Plus, Lock, CreditCard
 } from "lucide-react";
 import { checkAuthStatus } from "@/lib/checkAuth";
 import { apiCall } from "@/lib/api";
@@ -45,6 +45,7 @@ export default function PortfolioPage() {
   const [leases, setLeases] = useState<LeaseItem[]>([]);
   const [upcoming, setUpcoming] = useState<UpcomingDate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isProUser, setIsProUser] = useState(true); // default true to avoid flash
 
   useEffect(() => {
     loadPortfolio();
@@ -56,6 +57,15 @@ export default function PortfolioPage() {
       if (!authUser) {
         navigate("/dashboard");
         return;
+      }
+
+      // Check if user has Pro (monthly) subscription
+      try {
+        const creditsRes = await apiCall({ url: "/api/v1/lease/credits", method: "GET" });
+        const c = creditsRes.data;
+        setIsProUser(c.is_admin || c.subscription_type === "monthly");
+      } catch {
+        setIsProUser(true);
       }
 
       const response = await apiCall({
@@ -127,6 +137,24 @@ export default function PortfolioPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {!isProUser ? (
+          <Card className="max-w-lg mx-auto">
+            <CardContent className="py-12 text-center">
+              <div className="h-14 w-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Lock className="h-7 w-7 text-blue-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-2">Pro Feature</h3>
+              <p className="text-sm text-slate-600 mb-5">
+                Portfolio dashboard is available on the Pro (Monthly) plan. Upgrade to manage all your leases in one place.
+              </p>
+              <Button onClick={() => navigate("/pricing")} className="gap-2">
+                <CreditCard className="h-4 w-4" />
+                Upgrade to Pro
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+        <>
         {/* KPI Cards */}
         {summary && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -298,6 +326,8 @@ export default function PortfolioPage() {
             )}
           </div>
         </div>
+        </>
+        )}
       </main>
     </div>
   );

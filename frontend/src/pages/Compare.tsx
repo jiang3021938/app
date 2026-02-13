@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   FileText, ArrowLeft, Scale, CheckCircle, Loader2, 
-  Trophy, AlertTriangle, Lightbulb
+  Trophy, AlertTriangle, Lightbulb, Lock, CreditCard
 } from "lucide-react";
 import { toast } from "sonner";
 import { checkAuthStatus } from "@/lib/checkAuth";
@@ -27,6 +27,7 @@ export default function ComparePage() {
   const [loading, setLoading] = useState(true);
   const [comparing, setComparing] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [isProUser, setIsProUser] = useState(true); // default true to avoid flash
 
   useEffect(() => {
     loadDocuments();
@@ -36,6 +37,15 @@ export default function ComparePage() {
     try {
       const { user: authUser } = await checkAuthStatus();
       if (!authUser) { navigate("/dashboard"); return; }
+
+      // Check if user has Pro (monthly) subscription
+      try {
+        const creditsRes = await apiCall({ url: "/api/v1/lease/credits", method: "GET" });
+        const c = creditsRes.data;
+        setIsProUser(c.is_admin || c.subscription_type === "monthly");
+      } catch {
+        setIsProUser(true);
+      }
 
       const docsRes = await documentsApi.query({ sort: "-created_at", limit: 50 });
       const docs = (docsRes.data?.items || []).filter((d: any) => d.status === "completed");
@@ -116,7 +126,23 @@ export default function ComparePage() {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-5xl">
-        {!result ? (
+        {!isProUser ? (
+          <Card className="max-w-lg mx-auto">
+            <CardContent className="py-12 text-center">
+              <div className="h-14 w-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Lock className="h-7 w-7 text-blue-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-2">Pro Feature</h3>
+              <p className="text-sm text-slate-600 mb-5">
+                Lease comparison is available on the Pro (Monthly) plan. Upgrade to compare up to 3 leases side-by-side.
+              </p>
+              <Button onClick={() => navigate("/pricing")} className="gap-2">
+                <CreditCard className="h-4 w-4" />
+                Upgrade to Pro
+              </Button>
+            </CardContent>
+          </Card>
+        ) : !result ? (
           <>
             {/* Selection */}
             <Card className="mb-6">
