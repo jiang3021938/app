@@ -602,6 +602,11 @@ class GeminiExtractor:
                 # For addresses, try first two words (e.g. "123 Main")
                 if field == "property_address":
                     variants.append(words[0] + " " + words[1])
+                # For long multi-word values, try first 3-4 words
+                if len(words) >= 4:
+                    variants.append(" ".join(words[:4]))
+                if len(words) >= 3:
+                    variants.append(" ".join(words[:3]))
             field_search_variants[field] = variants
 
         # Date fields: generate multiple format variants
@@ -622,6 +627,26 @@ class GeminiExtractor:
                 continue
             field_search_variants[field] = self._generate_money_variants(val)
 
+        def _normalize_ws(s: str) -> str:
+            """Collapse multiple whitespace into single space for matching."""
+            import re as _re
+            return _re.sub(r'\s+', ' ', s).strip()
+
+        def _make_bbox(page_idx: int, line_idx: int, matched: str) -> dict:
+            y0 = margin + (line_idx * line_height)
+            y1 = y0 + line_height
+            return {
+                "page": page_idx,
+                "bbox": {
+                    "x0": float(margin),
+                    "y0": round(y0, 1),
+                    "x1": float(612 - margin),
+                    "y1": round(y1, 1)
+                },
+                "matched_text": matched,
+                "match_type": "text_search"
+            }
+
         # Search each page's lines for field values and compute SVG bbox
         for field_name, variants in field_search_variants.items():
             found = False
@@ -631,25 +656,42 @@ class GeminiExtractor:
                 search_lower = search_value.lower()
                 if not search_lower.strip():
                     continue
+                search_normalized = _normalize_ws(search_lower)
                 for page_idx, lines in enumerate(page_texts):
+                    # Pass 1: exact substring in single line
                     for line_idx, line in enumerate(lines):
                         if search_lower in line.lower():
-                            # y position matching the SVG rendering
-                            y0 = margin + (line_idx * line_height)
-                            y1 = y0 + line_height
-                            source_map[field_name] = [{
-                                "page": page_idx,
-                                "bbox": {
-                                    "x0": float(margin),
-                                    "y0": round(y0, 1),
-                                    "x1": float(612 - margin),
-                                    "y1": round(y1, 1)
-                                },
-                                "matched_text": search_value,
-                                "match_type": "text_search"
-                            }]
+                            source_map[field_name] = [_make_bbox(page_idx, line_idx, search_value)]
                             found = True
                             break
+                    if found:
+                        break
+                    # Pass 2: whitespace-normalized match in single line
+                    # (handles pypdf extracting extra spaces like "Robert   J.")
+                    for line_idx, line in enumerate(lines):
+                        if search_normalized in _normalize_ws(line.lower()):
+                            source_map[field_name] = [_make_bbox(page_idx, line_idx, search_value)]
+                            found = True
+                            break
+                    if found:
+                        break
+                    # Pass 3: search in joined page text for multi-line values
+                    # (handles values that span across wrapped line boundaries)
+                    joined = " ".join(lines)
+                    if search_normalized in _normalize_ws(joined.lower()):
+                        # Find the first line that contains the start of the match
+                        for line_idx, line in enumerate(lines):
+                            # Check if any significant part of search appears in this line
+                            first_words = " ".join(search_normalized.split()[:3])
+                            if first_words and first_words in _normalize_ws(line.lower()):
+                                source_map[field_name] = [_make_bbox(page_idx, line_idx, search_value)]
+                                found = True
+                                break
+                        if not found:
+                            # Fallback: use the middle of the page
+                            mid_line = len(lines) // 2
+                            source_map[field_name] = [_make_bbox(page_idx, mid_line, search_value)]
+                            found = True
                     if found:
                         break
 

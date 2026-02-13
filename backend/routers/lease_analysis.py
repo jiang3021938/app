@@ -945,7 +945,11 @@ async def get_pdf_page_image(
 
 
 def _escape_xml(text: str) -> str:
-    """Escape special XML characters for SVG content."""
+    """Escape special XML characters for SVG content and strip invalid XML chars."""
+    import re
+    # Remove control characters that are invalid in XML 1.0
+    # Valid: #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+    text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', text)
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace("'", "&apos;")
 
 
