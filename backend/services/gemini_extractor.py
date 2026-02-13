@@ -331,7 +331,7 @@ class GeminiExtractor:
                     line = ""
                     for word in words:
                         test = f"{line} {word}".strip()
-                        if len(test) > 85:
+                        if len(test) > 85:  # matches _render_docx_page threshold
                             all_lines.append(line)
                             line = word
                         else:
@@ -361,7 +361,7 @@ class GeminiExtractor:
                         line = ""
                         for word in words:
                             test = f"{line} {word}".strip()
-                            if len(test) > 90:
+                            if len(test) > 90:  # matches _render_pdf_page threshold
                                 lines.append(line)
                                 line = word
                             else:
@@ -398,8 +398,8 @@ class GeminiExtractor:
             for page_idx, lines in enumerate(page_texts):
                 for line_idx, line in enumerate(lines):
                     if search_lower in line.lower():
-                        # Calculate y position matching the SVG rendering
-                        y0 = margin + font_size + (line_idx * line_height) - font_size
+                        # y position matching the SVG rendering
+                        y0 = margin + (line_idx * line_height)
                         y1 = y0 + line_height
                         source_map[field_name] = [{
                             "page": page_idx,
