@@ -8,11 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { 
   FileText, ArrowLeft, Calendar, Download, AlertTriangle, 
   CheckCircle, User, Home, DollarSign, Clock, Info, Shield,
   ExternalLink, Scale, MapPin, Crosshair, PanelRightOpen, PanelRightClose, BarChart3,
-  FileDown, Loader2, Sparkles, TrendingUp
+  FileDown, Loader2, Sparkles, TrendingUp, Lock, CreditCard, FileEdit
 } from "lucide-react";
 import PDFViewer from "@/components/PDFViewer";
 import GoogleCalendarButton from "@/components/GoogleCalendarButton";
@@ -145,6 +146,7 @@ export default function ReportPage() {
 
   // Credits/paywall state
   const [isPaidUser, setIsPaidUser] = useState(true); // default to true to avoid flash
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
   // Executive summary
   const [executiveSummary, setExecutiveSummary] = useState<any>(null);
@@ -398,13 +400,27 @@ export default function ReportPage() {
             <GoogleCalendarButton extractionId={extraction.id} />
 
             {/* Amendment Memo */}
-            {isPaidUser && <AmendmentMemoButton extractionId={extraction.id} />}
+            {isPaidUser ? (
+              <AmendmentMemoButton extractionId={extraction.id} />
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => setShowUpgradeDialog(true)} className="gap-2">
+                <FileEdit className="h-4 w-4" />
+                <span className="hidden sm:inline">Amendment Memo</span>
+                <Lock className="h-3 w-3 text-slate-400" />
+              </Button>
+            )}
 
             {/* PDF Report Export (uses browser print-to-PDF) */}
-            {isPaidUser && (
+            {isPaidUser ? (
               <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-2">
                 <FileDown className="h-4 w-4" />
                 <span className="hidden sm:inline">Export PDF</span>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => setShowUpgradeDialog(true)} className="gap-2">
+                <FileDown className="h-4 w-4" />
+                <span className="hidden sm:inline">Export PDF</span>
+                <Lock className="h-3 w-3 text-slate-400" />
               </Button>
             )}
           </div>
@@ -978,6 +994,35 @@ export default function ReportPage() {
           </div>
         )}
       </div>
+
+      {/* Upgrade Dialog for free users */}
+      <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
+        <DialogContent className="sm:max-w-md">
+          <div className="text-center px-4 py-6">
+            <div className="h-14 w-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="h-7 w-7 text-blue-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-800 mb-2">
+              Unlock Full Report
+            </h3>
+            {riskFlags.length > 0 && (
+              <p className="text-sm text-red-600 font-medium mb-1">
+                {riskFlags.length} risk{riskFlags.length !== 1 ? "s" : ""} identified
+              </p>
+            )}
+            <p className="text-sm text-slate-600 mb-5">
+              Get full risk details, amendment suggestions, rent benchmarking, and more.
+            </p>
+            <div className="space-y-2">
+              <Button onClick={() => { setShowUpgradeDialog(false); navigate("/pricing"); }} className="w-full gap-2">
+                <CreditCard className="h-4 w-4" />
+                Upgrade to See Details
+              </Button>
+              <p className="text-xs text-slate-400">Starting at $4.99 per analysis</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

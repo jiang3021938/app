@@ -23,6 +23,7 @@ import About from "./pages/About";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import LogoutCallbackPage from "./pages/LogoutCallbackPage";
+import SampleReport from "./pages/SampleReport";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/sample-report" element={<SampleReport />} />
           <Route path="/logout-callback" element={<LogoutCallbackPage />} />
         </Routes>
       </BrowserRouter>
