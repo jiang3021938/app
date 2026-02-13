@@ -62,6 +62,16 @@ def safe_parse_json_or_literal(data: Any) -> Any:
     return data
 
 
+def _get_content_type(filename: str) -> str:
+    """Determine content type from file name."""
+    filename_lower = (filename or "").lower()
+    if filename_lower.endswith(".docx"):
+        return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    elif filename_lower.endswith(".doc"):
+        return "application/msword"
+    return "application/pdf"
+
+
 class AnalyzeRequest(BaseModel):
     document_id: int
 
@@ -360,21 +370,15 @@ async def upload_and_analyze(
                 }, current_user.id)
 
         # Update document status and store file data for PDF preview fallback
-        await doc_service.update(document.id, {
-            "status": "completed",
-            "file_data": base64.b64encode(file_bytes).decode(),
-        }, current_user.id)
+        # Only store file_data for files under 20MB to avoid database bloat
+        update_data = {"status": "completed"}
+        if len(file_bytes) <= 20 * 1024 * 1024:
+            update_data["file_data"] = base64.b64encode(file_bytes).decode()
+        await doc_service.update(document.id, update_data, current_user.id)
 
         # Upload to Supabase Storage for temporary PDF preview
         try:
-            # Determine content type based on file extension
-            filename_lower = file.filename.lower()
-            if filename_lower.endswith('.docx'):
-                content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            elif filename_lower.endswith('.doc'):
-                content_type = "application/msword"
-            else:
-                content_type = "application/pdf"
+            content_type = _get_content_type(file.filename)
             
             supabase_storage = SupabaseStorageService()
             await supabase_storage.upload_file(
@@ -1103,22 +1107,23 @@ async def serve_pdf_from_database(
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+    # Validate that the token was issued for this specific document
+    token_doc_id = payload.get("doc_id")
+    if token_doc_id is not None and token_doc_id != document_id:
+        raise HTTPException(status_code=403, detail="Token not valid for this document")
+
     doc_service = DocumentsService(db)
     document = await doc_service.get_by_id(document_id, user_id)
 
     if not document or not document.file_data:
         raise HTTPException(status_code=404, detail="Document not found")
 
-    file_bytes = base64.b64decode(document.file_data)
+    try:
+        file_bytes = base64.b64decode(document.file_data)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to decode stored file data")
 
-    # Determine content type from file name
-    filename_lower = (document.file_name or "").lower()
-    if filename_lower.endswith(".docx"):
-        content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    elif filename_lower.endswith(".doc"):
-        content_type = "application/msword"
-    else:
-        content_type = "application/pdf"
+    content_type = _get_content_type(document.file_name)
 
     return Response(
         content=file_bytes,
