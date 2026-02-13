@@ -233,19 +233,78 @@ class PDFExtractor:
         Returns:
             PNG image bytes
         """
-        try:
-            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-            if page_num >= len(doc):
-                raise ValueError(f"Page {page_num} does not exist (total pages: {len(doc)})")
+        if HAS_PYMUPDF:
+            try:
+                doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+                if page_num >= len(doc):
+                    raise ValueError(f"Page {page_num} does not exist (total pages: {len(doc)})")
 
-            page = doc[page_num]
-            zoom = dpi / 72  # 72 is the default DPI
-            mat = fitz.Matrix(zoom, zoom)
-            pix = page.get_pixmap(matrix=mat)
-            img_bytes = pix.tobytes("png")
-            doc.close()
-            return img_bytes
+                page = doc[page_num]
+                zoom = dpi / 72  # 72 is the default DPI
+                mat = fitz.Matrix(zoom, zoom)
+                pix = page.get_pixmap(matrix=mat)
+                img_bytes = pix.tobytes("png")
+                doc.close()
+                return img_bytes
 
-        except Exception as e:
-            logger.error(f"Page rendering error: {e}")
-            raise ValueError(f"Failed to render PDF page: {e}")
+            except Exception as e:
+                logger.error(f"Page rendering error: {e}")
+                raise ValueError(f"Failed to render PDF page: {e}")
+        else:
+            # Fallback: extract text with pypdf and render as image with Pillow
+            try:
+                import io
+                from pypdf import PdfReader
+                from PIL import Image, ImageDraw, ImageFont
+
+                reader = PdfReader(io.BytesIO(pdf_bytes))
+                if page_num >= len(reader.pages):
+                    raise ValueError(f"Page {page_num} does not exist (total pages: {len(reader.pages)})")
+
+                page = reader.pages[page_num]
+                text = page.extract_text() or ""
+
+                lines = []
+                for paragraph in text.split("\n"):
+                    if not paragraph.strip():
+                        lines.append("")
+                        continue
+                    words = paragraph.split()
+                    line = ""
+                    for word in words:
+                        test = f"{line} {word}".strip()
+                        if len(test) > 90:
+                            lines.append(line)
+                            line = word
+                        else:
+                            line = test
+                    if line:
+                        lines.append(line)
+
+                width_px = int(8.5 * dpi)
+                height_px = int(11 * dpi)
+                margin_px = int(0.75 * dpi)
+
+                img = Image.new("RGB", (width_px, height_px), "white")
+                draw = ImageDraw.Draw(img)
+
+                try:
+                    font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
+                except (IOError, OSError):
+                    font = ImageFont.load_default()
+
+                y = margin_px
+                line_height = 18
+                for line in lines:
+                    if y + line_height > height_px - margin_px:
+                        break
+                    draw.text((margin_px, y), line, fill="black", font=font)
+                    y += line_height
+
+                buf = io.BytesIO()
+                img.save(buf, format="PNG")
+                return buf.getvalue()
+
+            except Exception as e:
+                logger.error(f"Fallback page rendering error: {e}")
+                raise ValueError(f"Failed to render PDF page: {e}")

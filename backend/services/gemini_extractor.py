@@ -131,20 +131,29 @@ class GeminiExtractor:
 
     async def analyze_pdf(self, pdf_bytes: bytes, file_name: str) -> Dict[str, Any]:
         """
-        Analyze a PDF file using Gemini API to extract lease information.
+        Analyze a PDF or Word file using Gemini API to extract lease information.
 
         Args:
-            pdf_bytes: Raw PDF file bytes
-            file_name: Name of the file (for context)
+            pdf_bytes: Raw file bytes (PDF or Word)
+            file_name: Name of the file (used for MIME type detection)
 
         Returns:
             Dictionary with extracted lease data and full text
         """
         try:
-            # Upload the PDF to Gemini
+            # Determine MIME type based on file extension
+            file_name_lower = (file_name or "").lower()
+            if file_name_lower.endswith(".docx"):
+                mime_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            elif file_name_lower.endswith(".doc"):
+                mime_type = "application/msword"
+            else:
+                mime_type = "application/pdf"
+
+            # Upload the file to Gemini
             file_part = types.Part.from_bytes(
                 data=pdf_bytes,
-                mime_type="application/pdf"
+                mime_type=mime_type
             )
 
             text_part = types.Part.from_text(text=EXTRACTION_PROMPT)
@@ -188,7 +197,7 @@ class GeminiExtractor:
                 "tenant_name", "landlord_name", "property_address",
                 "monthly_rent", "security_deposit", "lease_start_date",
                 "lease_end_date", "renewal_notice_days", "pet_policy",
-                "late_fee_terms", "risk_flags"
+                "late_fee_terms", "risk_flags", "audit_checklist"
             ]
 
             for field in expected_fields:

@@ -903,12 +903,11 @@ async def get_pdf_page_image(
         file_name = document.file_name.lower()
 
         if file_name.endswith(('.docx', '.doc')):
-            # Convert Word to PDF in memory, then render page
+            # Render Word page as image
             img_bytes = _render_docx_page(file_bytes, page_num)
         else:
-            # Render PDF page
-            pdf_extractor = PDFExtractor()
-            img_bytes = pdf_extractor.get_page_image(file_bytes, page_num, dpi=150)
+            # Render PDF page as image (without PyMuPDF)
+            img_bytes = _render_pdf_page(file_bytes, page_num)
 
         return Response(
             content=img_bytes,
@@ -925,9 +924,73 @@ async def get_pdf_page_image(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+def _render_pdf_page(file_bytes: bytes, page_num: int) -> bytes:
+    """Render a PDF page as PNG image using pypdf + Pillow (no PyMuPDF needed).
+    Extracts text content and renders it as an image."""
+    import io
+    from pypdf import PdfReader
+    from PIL import Image, ImageDraw, ImageFont
+
+    reader = PdfReader(io.BytesIO(file_bytes))
+    if page_num >= len(reader.pages):
+        raise ValueError(f"Page {page_num} does not exist (total pages: {len(reader.pages)})")
+
+    page = reader.pages[page_num]
+    text = page.extract_text() or ""
+
+    # Split text into lines
+    lines = []
+    for paragraph in text.split("\n"):
+        if not paragraph.strip():
+            lines.append("")
+            continue
+        # Wrap long lines
+        words = paragraph.split()
+        line = ""
+        for word in words:
+            test = f"{line} {word}".strip()
+            if len(test) > 90:
+                lines.append(line)
+                line = word
+            else:
+                line = test
+        if line:
+            lines.append(line)
+
+    # Letter size at 150 DPI
+    dpi = 150
+    width_px = int(8.5 * dpi)
+    height_px = int(11 * dpi)
+    margin_px = int(0.75 * dpi)
+
+    img = Image.new("RGB", (width_px, height_px), "white")
+    draw = ImageDraw.Draw(img)
+
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
+    except (IOError, OSError):
+        try:
+            font = ImageFont.truetype("arial.ttf", 14)
+        except (IOError, OSError):
+            font = ImageFont.load_default()
+
+    y = margin_px
+    line_height = 18
+
+    for line in lines:
+        if y + line_height > height_px - margin_px:
+            break
+        draw.text((margin_px, y), line, fill="black", font=font)
+        y += line_height
+
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
 def _render_docx_page(file_bytes: bytes, page_num: int) -> bytes:
     """Render a Word document page as PNG by converting to PDF first via reportlab,
-    or by rendering text content as an image."""
+    then rendering as image using Pillow."""
     import io
     try:
         from docx import Document as DocxDocument
@@ -978,35 +1041,39 @@ def _render_docx_page(file_bytes: bytes, page_num: int) -> bytes:
     if page_num >= len(pages):
         raise ValueError(f"Page {page_num} does not exist (total pages: {len(pages)})")
 
-    # Render page as image using reportlab
-    from reportlab.lib.pagesizes import letter
-    from reportlab.pdfgen import canvas as rl_canvas
-    import fitz
+    # Render page as image using Pillow (no PyMuPDF needed)
+    from PIL import Image, ImageDraw, ImageFont
 
-    buf = io.BytesIO()
-    c = rl_canvas.Canvas(buf, pagesize=letter)
-    width, height = letter
-    y = height - 72  # 1 inch top margin
+    # Letter size at 150 DPI
+    dpi = 150
+    width_px = int(8.5 * dpi)   # 1275
+    height_px = int(11 * dpi)   # 1650
+    margin_px = int(1.0 * dpi)  # 150 (1 inch margin)
+
+    img = Image.new("RGB", (width_px, height_px), "white")
+    draw = ImageDraw.Draw(img)
+
+    # Try to use a built-in font, fall back to default
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16)
+    except (IOError, OSError):
+        try:
+            font = ImageFont.truetype("arial.ttf", 16)
+        except (IOError, OSError):
+            font = ImageFont.load_default()
+
+    y = margin_px
+    line_height = 22  # pixels between lines
 
     for line in pages[page_num]:
-        if y < 72:
+        if y + line_height > height_px - margin_px:
             break
-        c.setFont("Helvetica", 11)
-        c.drawString(72, y, line)
-        y -= 16
+        draw.text((margin_px, y), line, fill="black", font=font)
+        y += line_height
 
-    c.save()
-    buf.seek(0)
-
-    # Convert single-page PDF to PNG
-    pdf_doc = fitz.open(stream=buf.read(), filetype="pdf")
-    page = pdf_doc[0]
-    zoom = 150 / 72
-    mat = fitz.Matrix(zoom, zoom)
-    pix = page.get_pixmap(matrix=mat)
-    img_bytes = pix.tobytes("png")
-    pdf_doc.close()
-    return img_bytes
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
 
 
 @router.get("/doc-page-count/{document_id}")
@@ -1056,10 +1123,10 @@ async def get_document_page_count(
                 total_lines += max(1, len(para) // 85 + 1) + 1
             page_count = max(1, (total_lines + 44) // 45)
         else:
-            import fitz
-            pdf_doc = fitz.open(stream=file_bytes, filetype="pdf")
-            page_count = len(pdf_doc)
-            pdf_doc.close()
+            import io
+            from pypdf import PdfReader
+            reader = PdfReader(io.BytesIO(file_bytes))
+            page_count = len(reader.pages)
 
         return {"page_count": page_count, "file_type": "docx" if file_name.endswith(('.docx', '.doc')) else "pdf"}
 
