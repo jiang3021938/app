@@ -1791,7 +1791,7 @@ async def export_pdf_report(
 
 
 class RecordShareRequest(BaseModel):
-    platform: str  # "twitter", "facebook", "linkedin"
+    platform: str  # "twitter", "facebook", "linkedin" - validated in endpoint handler
 
 
 @router.post("/record-share")

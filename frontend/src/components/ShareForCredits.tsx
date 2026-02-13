@@ -86,11 +86,12 @@ export function ShareForCredits({
         const checkPopup = setInterval(() => {
           if (popup.closed) {
             clearInterval(checkPopup);
+            clearTimeout(safetyTimeout);
             recordShareCredit(platform);
           }
         }, 500);
         // Safety timeout: stop checking after 5 minutes
-        setTimeout(() => clearInterval(checkPopup), 300000);
+        const safetyTimeout = setTimeout(() => clearInterval(checkPopup), 300000);
       } else {
         // Popup was blocked - still record credit since user intended to share
         recordShareCredit(platform);
