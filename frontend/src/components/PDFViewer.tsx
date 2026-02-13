@@ -64,13 +64,15 @@ export default function PDFViewer({
     setLoading(true);
     setError(false);
     try {
+      console.log(`[PDFViewer] Loading page count for document ${documentId}`);
       const response = await apiCall({
         url: `/api/v1/lease/doc-page-count/${documentId}`,
         method: "GET",
       });
+      console.log(`[PDFViewer] Page count loaded:`, response.data);
       setPageCount(response.data.page_count || 1);
     } catch (err) {
-      console.error("Failed to load page count:", err);
+      console.error("[PDFViewer] Failed to load page count:", err);
       setError(true);
     } finally {
       setLoading(false);
@@ -79,21 +81,25 @@ export default function PDFViewer({
 
   const loadSourceMap = async () => {
     try {
+      console.log(`[PDFViewer] Loading source map for extraction ${extractionId}`);
       const response = await apiCall({
         url: `/api/v1/lease/source-map/${extractionId}`,
         method: "GET",
       });
       const data = response.data;
+      console.log(`[PDFViewer] Source map loaded:`, data);
       setSourceMap(data.source_map || {});
       setPagesMeta(data.pages_meta || []);
     } catch (err) {
-      console.error("Failed to load source map:", err);
+      console.error("[PDFViewer] Failed to load source map:", err);
     }
   };
 
   const getPageImageUrl = (pageNum: number) => {
     const token = localStorage.getItem("token");
-    return `/api/v1/lease/pdf-page/${documentId}/${pageNum}?t=${token}`;
+    const url = `/api/v1/lease/pdf-page/${documentId}/${pageNum}?t=${token}`;
+    console.log(`[PDFViewer] Loading page image: ${url}`);
+    return url;
   };
 
   // Get highlight overlay position for active field
@@ -256,7 +262,14 @@ export default function PDFViewer({
             alt={`Page ${currentPage + 1}`}
             className="max-w-full shadow-lg bg-white"
             style={{ display: "block" }}
-            onError={() => setError(true)}
+            onError={(e) => {
+              console.error(`[PDFViewer] Failed to load image for page ${currentPage}:`, e);
+              console.error(`[PDFViewer] Image src was:`, getPageImageUrl(currentPage));
+              setError(true);
+            }}
+            onLoad={() => {
+              console.log(`[PDFViewer] Successfully loaded page ${currentPage}`);
+            }}
           />
           {/* Blue highlight overlay */}
           {highlightStyle && <div style={highlightStyle} />}

@@ -853,6 +853,7 @@ async def get_pdf_page_image(
     Supports both PDF and Word (.docx) files.
     Auth via Authorization header or ?t= query parameter token."""
     try:
+        logger.info(f"[pdf-page] Request for document_id={document_id}, page_num={page_num}")
         from core.auth import decode_access_token, AccessTokenError
 
         # Try Authorization header first, then query parameter token
@@ -861,25 +862,32 @@ async def get_pdf_page_image(
         token = None
         if auth_header.lower().startswith("bearer "):
             token = auth_header[7:]
+            logger.debug(f"[pdf-page] Using Authorization header token")
         elif t:
             token = t
+            logger.debug(f"[pdf-page] Using query parameter token")
 
         if token:
             try:
                 payload = decode_access_token(token)
                 user_id = payload.get("sub")
-            except AccessTokenError:
+                logger.info(f"[pdf-page] Authenticated user_id={user_id}")
+            except AccessTokenError as e:
                 # Token invalid/expired — fall through to 401 below
-                logger.debug("PDF page auth token validation failed")
+                logger.warning(f"[pdf-page] Token validation failed: {e}")
 
         if not user_id:
+            logger.warning(f"[pdf-page] Authentication required - no valid token")
             raise HTTPException(status_code=401, detail="Authentication required")
 
         doc_service = DocumentsService(db)
         document = await doc_service.get_by_id(document_id, user_id)
 
         if not document:
+            logger.warning(f"[pdf-page] Document {document_id} not found for user {user_id}")
             raise HTTPException(status_code=404, detail="Document not found")
+
+        logger.info(f"[pdf-page] Document found: {document.file_name}, file_key={document.file_key}")
 
         # Download file from storage (with database fallback)
         file_bytes = None
@@ -889,27 +897,34 @@ async def get_pdf_page_image(
                 bucket_name="lease-documents",
                 object_key=document.file_key
             )
+            logger.info(f"[pdf-page] Got Supabase download URL, downloading...")
             async with httpx_client.AsyncClient(timeout=120.0) as http_client:
                 file_response = await http_client.get(download_url)
                 file_bytes = file_response.content
+            logger.info(f"[pdf-page] Downloaded {len(file_bytes)} bytes from Supabase")
         except Exception as e:
-            logger.warning(f"Supabase download failed, trying database fallback: {e}")
+            logger.warning(f"[pdf-page] Supabase download failed, trying database fallback: {e}")
 
         if not file_bytes and document.file_data:
             file_bytes = base64.b64decode(document.file_data)
+            logger.info(f"[pdf-page] Using database fallback, decoded {len(file_bytes)} bytes")
 
         if not file_bytes:
+            logger.error(f"[pdf-page] No file bytes available for document {document_id}")
             raise HTTPException(status_code=404, detail="Document file not available")
 
         file_name = document.file_name.lower()
 
         if file_name.endswith(('.docx', '.doc')):
             # Render Word page as SVG
+            logger.info(f"[pdf-page] Rendering Word document page {page_num}")
             content_bytes, media_type = _render_docx_page(file_bytes, page_num)
         else:
             # Render PDF page as SVG (without PyMuPDF/Pillow)
+            logger.info(f"[pdf-page] Rendering PDF document page {page_num}")
             content_bytes, media_type = _render_pdf_page(file_bytes, page_num)
 
+        logger.info(f"[pdf-page] Successfully rendered page {page_num}, size={len(content_bytes)} bytes, type={media_type}")
         return Response(
             content=content_bytes,
             media_type=media_type,
@@ -919,9 +934,10 @@ async def get_pdf_page_image(
     except HTTPException:
         raise
     except ValueError as e:
+        logger.error(f"[pdf-page] ValueError for document {document_id}, page {page_num}: {e}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Document page render error: {e}")
+        logger.error(f"[pdf-page] Document page render error for document {document_id}, page {page_num}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -1044,11 +1060,15 @@ async def get_document_page_count(
 ):
     """Get total page count for a document (PDF or Word)."""
     try:
+        logger.info(f"[doc-page-count] Request for document_id={document_id}, user_id={current_user.id}")
         doc_service = DocumentsService(db)
         document = await doc_service.get_by_id(document_id, current_user.id)
 
         if not document:
+            logger.warning(f"[doc-page-count] Document {document_id} not found for user {current_user.id}")
             raise HTTPException(status_code=404, detail="Document not found")
+
+        logger.info(f"[doc-page-count] Document found: {document.file_name}, file_key={document.file_key}")
 
         # Download file from storage (with database fallback)
         file_bytes = None
@@ -1058,16 +1078,20 @@ async def get_document_page_count(
                 bucket_name="lease-documents",
                 object_key=document.file_key
             )
+            logger.info(f"[doc-page-count] Got Supabase download URL, downloading...")
             async with httpx_client.AsyncClient(timeout=120.0) as http_client:
                 file_response = await http_client.get(download_url)
                 file_bytes = file_response.content
+            logger.info(f"[doc-page-count] Downloaded {len(file_bytes)} bytes from Supabase")
         except Exception as e:
-            logger.warning(f"Supabase download failed, trying database fallback: {e}")
+            logger.warning(f"[doc-page-count] Supabase download failed, trying database fallback: {e}")
 
         if not file_bytes and document.file_data:
             file_bytes = base64.b64decode(document.file_data)
+            logger.info(f"[doc-page-count] Using database fallback, decoded {len(file_bytes)} bytes")
 
         if not file_bytes:
+            logger.error(f"[doc-page-count] No file bytes available for document {document_id}")
             raise HTTPException(status_code=404, detail="Document file not available")
 
         file_name = document.file_name.lower()
@@ -1086,12 +1110,13 @@ async def get_document_page_count(
             reader = PdfReader(io.BytesIO(file_bytes))
             page_count = len(reader.pages)
 
+        logger.info(f"[doc-page-count] Calculated page_count={page_count} for document {document_id}")
         return {"page_count": page_count, "file_type": "docx" if file_name.endswith(('.docx', '.doc')) else "pdf"}
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Page count error: {e}")
+        logger.error(f"[doc-page-count] Page count error for document {document_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
