@@ -239,7 +239,7 @@ class GeminiExtractor:
                 extracted_data["risk_flags"] = []
 
             # Ensure audit_checklist is a list of objects
-            audit_checklist = extracted_data.get("audit_checklist", [])
+            audit_checklist = extracted_data.get("audit_checklist") or []
             if isinstance(audit_checklist, list):
                 cleaned_checklist = []
                 for item in audit_checklist:
@@ -254,6 +254,11 @@ class GeminiExtractor:
             else:
                 extracted_data["audit_checklist"] = []
 
+            # Fallback: generate checklist from extracted data if Gemini didn't return one
+            if not extracted_data["audit_checklist"]:
+                logger.warning("Gemini did not return audit_checklist, generating fallback from extracted data")
+                extracted_data["audit_checklist"] = self._generate_fallback_checklist(extracted_data)
+
             # Build source map and page info using actual file content
             source_map, page_count = self._build_source_map_from_file(
                 pdf_bytes, file_name, extracted_data
@@ -264,7 +269,7 @@ class GeminiExtractor:
                 for i in range(page_count)
             ]
 
-            logger.info(f"Successfully extracted data from PDF using Gemini ({len(extracted_data.get('risk_flags', []))} risks found)")
+            logger.info(f"Successfully extracted data from PDF using Gemini ({len(extracted_data.get('risk_flags', []))} risks, {len(extracted_data.get('audit_checklist', []))} checklist items)")
             return {
                 "extracted_data": extracted_data,
                 "full_text": full_text,
@@ -276,6 +281,93 @@ class GeminiExtractor:
         except Exception as e:
             logger.error(f"Gemini PDF analysis error: {e}")
             raise ValueError(f"Failed to analyze PDF with Gemini: {e}")
+
+    def _generate_fallback_checklist(self, extracted_data: dict) -> list:
+        """Generate 12 standard audit checklist items based on extracted data fields.
+        Used as fallback when Gemini does not return audit_checklist."""
+
+        def _has_value(field: str) -> bool:
+            val = extracted_data.get(field)
+            if val is None:
+                return False
+            s = str(val).strip().lower()
+            return s not in ("", "not specified", "not specified in lease", "none", "null")
+
+        checklist = [
+            {
+                "category": "Lead-based paint disclosure",
+                "title": "Lead-based paint disclosure",
+                "status": "warning",
+                "description": "Could not determine if lead-based paint disclosure is present. Required for pre-1978 buildings."
+            },
+            {
+                "category": "Security deposit terms",
+                "title": "Security deposit terms",
+                "status": "pass" if _has_value("security_deposit") else "issue",
+                "description": f"Security deposit amount: {extracted_data.get('security_deposit')}" if _has_value("security_deposit") else "Security deposit terms not found in the lease."
+            },
+            {
+                "category": "Late fee terms",
+                "title": "Late fee terms",
+                "status": "pass" if _has_value("late_fee_terms") else "warning",
+                "description": str(extracted_data.get("late_fee_terms")) if _has_value("late_fee_terms") else "Late fee terms not specified in the lease."
+            },
+            {
+                "category": "Maintenance responsibilities",
+                "title": "Maintenance responsibilities",
+                "status": "pass" if _has_value("maintenance_responsibilities") else "warning",
+                "description": "Maintenance responsibilities are defined." if _has_value("maintenance_responsibilities") else "Maintenance responsibilities not clearly specified."
+            },
+            {
+                "category": "Entry notice requirements",
+                "title": "Entry notice requirements",
+                "status": "pass" if _has_value("entry_notice_requirements") else "warning",
+                "description": "Entry notice requirements are specified." if _has_value("entry_notice_requirements") else "Entry notice requirements not specified in the lease."
+            },
+            {
+                "category": "Subletting/assignment clauses",
+                "title": "Subletting/assignment clauses",
+                "status": "pass" if _has_value("subletting_policy") else "warning",
+                "description": "Subletting policy is addressed." if _has_value("subletting_policy") else "Subletting/assignment policy not addressed in the lease."
+            },
+            {
+                "category": "Dispute resolution procedures",
+                "title": "Dispute resolution procedures",
+                "status": "warning",
+                "description": "Could not determine if dispute resolution procedures are defined."
+            },
+            {
+                "category": "Pet policy",
+                "title": "Pet policy",
+                "status": "pass" if _has_value("pet_policy") else "warning",
+                "description": str(extracted_data.get("pet_policy")) if _has_value("pet_policy") else "Pet policy not explicitly stated in the lease."
+            },
+            {
+                "category": "Early termination clause",
+                "title": "Early termination clause",
+                "status": "pass" if _has_value("early_termination") else "warning",
+                "description": "Early termination clause is present." if _has_value("early_termination") else "Early termination clause not found in the lease."
+            },
+            {
+                "category": "Rent increase provisions",
+                "title": "Rent increase provisions",
+                "status": "warning",
+                "description": "Could not determine if rent increase provisions are specified for renewal."
+            },
+            {
+                "category": "Insurance requirements",
+                "title": "Insurance requirements",
+                "status": "warning",
+                "description": "Could not determine if renter's insurance requirements are specified."
+            },
+            {
+                "category": "Habitable condition guarantee",
+                "title": "Habitable condition guarantee",
+                "status": "warning",
+                "description": "Could not determine if landlord guarantees habitable conditions."
+            },
+        ]
+        return checklist
 
     def _extract_json(self, text: str) -> str:
         """Extract JSON from response text, handling markdown code blocks and truncation."""
