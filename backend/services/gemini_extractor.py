@@ -694,7 +694,72 @@ class GeminiExtractor:
                     if found:
                         break
 
-        logger.info(f"Source map built: {len(source_map)} fields matched out of {len(field_search_variants)} searched")
+        # Risk flags: search for each risk's title/description keywords in the document
+        risk_flags = extracted_data.get("risk_flags", [])
+        if isinstance(risk_flags, list):
+            for risk_idx, risk in enumerate(risk_flags):
+                if not isinstance(risk, dict):
+                    continue
+                field_key = f"risk_{risk_idx}"
+                # Build search variants from risk title and description keywords
+                risk_variants = []
+                title = risk.get("title", "")
+                desc = risk.get("description", "")
+                category = risk.get("category", "")
+                if title and len(title) >= 4:
+                    risk_variants.append(title)
+                if category and len(category) >= 4 and category != title:
+                    risk_variants.append(category)
+                # Extract key phrases from description (first sentence or first N words)
+                if desc:
+                    # Try first sentence
+                    first_sentence = desc.split('.')[0].strip()
+                    if len(first_sentence) >= 6:
+                        risk_variants.append(first_sentence)
+                    # Try first 4-6 significant words
+                    desc_words = desc.split()
+                    if len(desc_words) >= 4:
+                        risk_variants.append(" ".join(desc_words[:5]))
+                        risk_variants.append(" ".join(desc_words[:4]))
+                    if len(desc_words) >= 3:
+                        risk_variants.append(" ".join(desc_words[:3]))
+
+                # Search using same 3-pass approach
+                found = False
+                for search_value in risk_variants:
+                    if found:
+                        break
+                    search_lower = search_value.lower()
+                    if not search_lower.strip():
+                        continue
+                    search_normalized = _normalize_ws(search_lower)
+                    for page_idx, lines in enumerate(page_texts):
+                        for line_idx, line in enumerate(lines):
+                            if search_lower in line.lower():
+                                source_map[field_key] = [_make_bbox(page_idx, line_idx, search_value)]
+                                found = True
+                                break
+                        if found:
+                            break
+                        for line_idx, line in enumerate(lines):
+                            if search_normalized in _normalize_ws(line.lower()):
+                                source_map[field_key] = [_make_bbox(page_idx, line_idx, search_value)]
+                                found = True
+                                break
+                        if found:
+                            break
+                        joined = " ".join(lines)
+                        if search_normalized in _normalize_ws(joined.lower()):
+                            for line_idx, line in enumerate(lines):
+                                first_words = " ".join(search_normalized.split()[:3])
+                                if first_words and first_words in _normalize_ws(line.lower()):
+                                    source_map[field_key] = [_make_bbox(page_idx, line_idx, search_value)]
+                                    found = True
+                                    break
+                        if found:
+                            break
+
+        logger.info(f"Source map built: {len(source_map)} fields matched out of {len(field_search_variants) + len(risk_flags if isinstance(risk_flags, list) else [])} searched")
         return source_map, page_count
 
     def get_page_count(self, pdf_bytes: bytes) -> int:

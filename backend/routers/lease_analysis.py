@@ -801,13 +801,79 @@ async def admin_set_credits(
 # ──────────────────────────────────────────────────────────────────────────────
 
 
+async def _rebuild_source_map(extraction, db: AsyncSession, user_id: str):
+    """Rebuild source_map from the original document for an extraction.
+    Returns (source_map, pages_meta) or (None, None) on failure."""
+    try:
+        doc_service = DocumentsService(db)
+        document = await doc_service.get_by_id(extraction.document_id, user_id)
+        if not document:
+            return None, None
+
+        # Get file bytes (Supabase then DB fallback)
+        file_bytes = None
+        try:
+            if document.file_key:
+                supabase_storage = SupabaseStorageService()
+                download_url = await supabase_storage.get_download_url(
+                    bucket_name="lease-documents",
+                    object_key=document.file_key
+                )
+                async with httpx_client.AsyncClient(timeout=120.0) as http_client:
+                    file_response = await http_client.get(download_url)
+                    file_response.raise_for_status()
+                    file_bytes = file_response.content
+        except Exception as e:
+            logger.warning(f"[rebuild-source-map] Supabase download failed: {e}")
+
+        if not file_bytes and document.file_data:
+            file_bytes = base64.b64decode(document.file_data)
+
+        if not file_bytes:
+            return None, None
+
+        # Reconstruct extracted_data from extraction fields
+        extracted_data = {
+            "tenant_name": extraction.tenant_name,
+            "landlord_name": extraction.landlord_name,
+            "property_address": extraction.property_address,
+            "monthly_rent": extraction.monthly_rent,
+            "security_deposit": extraction.security_deposit,
+            "lease_start_date": extraction.lease_start_date,
+            "lease_end_date": extraction.lease_end_date,
+            "pet_policy": extraction.pet_policy,
+            "late_fee_terms": extraction.late_fee_terms,
+        }
+        # Include risk_flags for risk tracing
+        if extraction.risk_flags:
+            try:
+                extracted_data["risk_flags"] = json.loads(extraction.risk_flags)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        extractor = GeminiExtractor.__new__(GeminiExtractor)
+        source_map, page_count = extractor._build_source_map_from_file(
+            file_bytes, document.file_name, extracted_data
+        )
+        pages_meta = [
+            {"page": i, "width": 612, "height": 792}
+            for i in range(page_count)
+        ]
+        return source_map, pages_meta
+    except Exception as e:
+        logger.error(f"[rebuild-source-map] Error: {e}")
+        return None, None
+
+
 @router.get("/source-map/{extraction_id}")
 async def get_source_map(
     extraction_id: int,
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get source location mapping for an extraction (field → PDF location)."""
+    """Get source location mapping for an extraction (field → PDF location).
+    If the stored source_map is sparse (<=2 fields), attempts to rebuild it
+    from the document to pick up fields that were missed by older matching logic."""
     try:
         extractions_service = ExtractionsService(db)
         extraction = await extractions_service.get_by_id(extraction_id, current_user.id)
@@ -828,6 +894,25 @@ async def get_source_map(
                 pages_meta = json.loads(extraction.pages_meta)
             except (json.JSONDecodeError, TypeError):
                 pass
+
+        # If source_map is sparse (<=2 fields), try to rebuild it on the fly
+        if len(source_map) <= 2:
+            try:
+                rebuilt_map, rebuilt_pages_meta = await _rebuild_source_map(
+                    extraction, db, current_user.id
+                )
+                if rebuilt_map and len(rebuilt_map) > len(source_map):
+                    source_map = rebuilt_map
+                    if rebuilt_pages_meta:
+                        pages_meta = rebuilt_pages_meta
+                    # Persist the improved source_map back to DB
+                    await extractions_service.update(extraction.id, {
+                        "source_map": json.dumps(source_map),
+                        "pages_meta": json.dumps(pages_meta),
+                    }, current_user.id)
+                    logger.info(f"Rebuilt source_map for extraction {extraction_id}: {len(source_map)} fields")
+            except Exception as e:
+                logger.warning(f"Failed to rebuild source_map for extraction {extraction_id}: {e}")
 
         return {
             "extraction_id": extraction_id,
