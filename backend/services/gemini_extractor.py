@@ -174,7 +174,11 @@ class GeminiExtractor:
                         role="user",
                         parts=[content_part, text_part]
                     )
-                ]
+                ],
+                config=types.GenerateContentConfig(
+                    max_output_tokens=8192,
+                    temperature=0.2,
+                )
             )
 
             # Parse the response
@@ -274,7 +278,7 @@ class GeminiExtractor:
             raise ValueError(f"Failed to analyze PDF with Gemini: {e}")
 
     def _extract_json(self, text: str) -> str:
-        """Extract JSON from response text, handling markdown code blocks."""
+        """Extract JSON from response text, handling markdown code blocks and truncation."""
         text = text.strip()
 
         # Remove markdown code blocks
@@ -289,18 +293,45 @@ class GeminiExtractor:
         # Try balanced brace matching for reliable JSON extraction
         start = text.find('{')
         if start != -1:
-            depth = 0
-            end = start
+            stack = []  # track nested openers: '}' or ']'
+            in_string = False
+            escape_next = False
             for i in range(start, len(text)):
-                if text[i] == '{':
-                    depth += 1
-                elif text[i] == '}':
-                    depth -= 1
-                    if depth == 0:
-                        end = i
-                        break
-            if depth == 0:
-                return text[start:end + 1]
+                ch = text[i]
+                if escape_next:
+                    escape_next = False
+                    continue
+                if ch == '\\' and in_string:
+                    escape_next = True
+                    continue
+                if ch == '"':
+                    in_string = not in_string
+                    continue
+                if in_string:
+                    continue
+                if ch == '{':
+                    stack.append('}')
+                elif ch == '[':
+                    stack.append(']')
+                elif ch in ('}', ']'):
+                    if stack and stack[-1] == ch:
+                        stack.pop()
+                    if not stack:
+                        return text[start:i + 1]
+
+            # Truncated JSON: try to repair by closing open structures
+            truncated = text[start:]
+            if in_string:
+                truncated += '"'
+            truncated = truncated.rstrip(', \t\n\r')
+            for closer in reversed(stack):
+                truncated += closer
+            try:
+                json.loads(truncated)
+                logger.warning("Repaired truncated JSON from Gemini response")
+                return truncated
+            except json.JSONDecodeError:
+                logger.warning("Could not repair truncated JSON")
 
         return text
 

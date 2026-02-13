@@ -103,15 +103,48 @@ class ExecutiveSummaryService:
             # Try to extract valid JSON object using balanced brace matching
             start = content.find('{')
             if start != -1:
-                depth = 0
+                stack = []  # track nested openers: '}' or ']'
+                in_string = False
+                escape_next = False
                 for i in range(start, len(content)):
-                    if content[i] == '{':
-                        depth += 1
-                    elif content[i] == '}':
-                        depth -= 1
-                        if depth == 0:
+                    ch = content[i]
+                    if escape_next:
+                        escape_next = False
+                        continue
+                    if ch == '\\' and in_string:
+                        escape_next = True
+                        continue
+                    if ch == '"':
+                        in_string = not in_string
+                        continue
+                    if in_string:
+                        continue
+                    if ch == '{':
+                        stack.append('}')
+                    elif ch == '[':
+                        stack.append(']')
+                    elif ch in ('}', ']'):
+                        if stack and stack[-1] == ch:
+                            stack.pop()
+                        if not stack:
                             content = content[start:i + 1]
                             break
+
+                if stack:
+                    # Truncated JSON: try to repair by closing open structures
+                    truncated = content[start:]
+                    if in_string:
+                        truncated += '"'
+                    truncated = truncated.rstrip(', \t\n\r')
+                    for closer in reversed(stack):
+                        truncated += closer
+                    try:
+                        summary_data = json.loads(truncated)
+                        logger.warning("Repaired truncated summary JSON")
+                        return {"success": True, "data": summary_data}
+                    except json.JSONDecodeError:
+                        logger.warning("Could not repair truncated summary JSON, using fallback")
+                        return {"success": True, "data": self._compute_fallback_summary(extraction_data, risk_flags, compliance_data)}
 
             try:
                 summary_data = json.loads(content)
