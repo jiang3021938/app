@@ -214,8 +214,8 @@ async def analyze_document(
             "audit_checklist": json.dumps(extracted_data.get("audit_checklist", [])),
             "compliance_data": json.dumps(compliance_result),
             "raw_extraction": json.dumps(extracted_data),
-            "source_map": json.dumps(source_map) if source_map else None,
-            "pages_meta": json.dumps(pages_meta) if pages_meta else None,
+            "source_map": json.dumps(source_map if source_map is not None else {}),
+            "pages_meta": json.dumps(pages_meta if pages_meta is not None else []),
             "created_at": datetime.now()
         }, current_user.id)
         
@@ -354,8 +354,8 @@ async def upload_and_analyze(
             "audit_checklist": json.dumps(extracted_data.get("audit_checklist", [])),
             "compliance_data": json.dumps(compliance_result),
             "raw_extraction": json.dumps(extracted_data),
-            "source_map": json.dumps(source_map) if source_map else None,
-            "pages_meta": json.dumps(pages_meta) if pages_meta else None,
+            "source_map": json.dumps(source_map if source_map is not None else {}),
+            "pages_meta": json.dumps(pages_meta if pages_meta is not None else []),
             "created_at": datetime.now()
         }, current_user.id)
 

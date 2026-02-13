@@ -427,6 +427,79 @@ class GeminiExtractor:
 
         return text
 
+    @staticmethod
+    def _generate_money_variants(val) -> List[str]:
+        """Generate search variants for monetary values.
+        E.g. 2500 -> ['2500', '2,500', '$2,500', '$2500', '2500.00', '$2,500.00']"""
+        variants = []
+        try:
+            num = float(val)
+            int_val = int(num)
+            is_int = num == int_val
+            plain = str(int_val) if is_int else f"{num:.2f}"
+            variants.append(plain)
+            # With commas
+            if int_val >= 1000:
+                formatted = f"{int_val:,}"
+                variants.append(formatted)
+                variants.append(f"${formatted}")
+            variants.append(f"${plain}")
+            # .00 variant
+            two_dec = f"{num:.2f}"
+            if two_dec not in variants:
+                variants.append(two_dec)
+            formatted_dec = f"{int_val:,}.{two_dec.split('.')[-1]}"
+            if formatted_dec not in variants:
+                variants.append(formatted_dec)
+                variants.append(f"${formatted_dec}")
+        except (ValueError, TypeError):
+            variants.append(str(val))
+        return variants
+
+    @staticmethod
+    def _generate_date_variants(val: str) -> List[str]:
+        """Generate search variants for date values.
+        E.g. '2024-01-15' -> ['2024-01-15', 'January 15', '01/15/2024', '1/15/2024', ...]"""
+        variants = [val]
+        try:
+            from datetime import datetime as dt
+            for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%m-%d-%Y", "%Y/%m/%d"):
+                try:
+                    d = dt.strptime(val, fmt)
+                    break
+                except ValueError:
+                    continue
+            else:
+                return variants
+            month_name = d.strftime("%B")         # January
+            month_abbr = d.strftime("%b")         # Jan
+            day = d.day
+            year = d.year
+            variants.extend([
+                f"{month_name} {day}",            # January 15
+                f"{month_name} {day}, {year}",    # January 15, 2024
+                f"{month_abbr} {day}, {year}",    # Jan 15, 2024
+                f"{month_abbr} {day}",            # Jan 15
+                f"{d.month}/{day}/{year}",         # 1/15/2024
+                f"{d.month:02d}/{day:02d}/{year}", # 01/15/2024
+                f"{day} {month_name}",             # 15 January
+                f"{day} {month_name} {year}",      # 15 January 2024
+            ])
+            # Ordinal day: 1st, 2nd, 3rd, etc.
+            if day % 10 == 1 and day != 11:
+                suf = "st"
+            elif day % 10 == 2 and day != 12:
+                suf = "nd"
+            elif day % 10 == 3 and day != 13:
+                suf = "rd"
+            else:
+                suf = "th"
+            variants.append(f"{day}{suf} day of {month_name}")
+            variants.append(f"{day}{suf} of {month_name}")
+        except Exception:
+            pass
+        return variants
+
     def _build_source_map_from_file(self, file_bytes: bytes, file_name: str, extracted_data: dict) -> tuple:
         """Build source_map with coordinates matching the SVG page rendering.
         Returns (source_map, page_count).
@@ -446,7 +519,6 @@ class GeminiExtractor:
 
         # SVG rendering constants (must match _render_text_as_svg / _render_pdf_page)
         margin = 54
-        font_size = 11
         line_height = 16
         page_height = 792
         max_lines_per_page = int((page_height - margin * 2) / line_height)
@@ -510,47 +582,78 @@ class GeminiExtractor:
 
         page_count = max(1, len(page_texts))
 
-        # Build field searches
-        field_searches = {}
+        # Build field search variants — each field maps to a list of search strings
+        field_search_variants: Dict[str, List[str]] = {}
+        invalid_values = {"not specified", "not specified in lease", "none", "null", "n/a", ""}
+
+        # Text fields: use the value itself plus individual significant words
         for field in ["tenant_name", "landlord_name", "property_address",
-                       "lease_start_date", "lease_end_date", "pet_policy", "late_fee_terms"]:
+                       "pet_policy", "late_fee_terms"]:
             val = extracted_data.get(field)
-            if val and str(val) not in ("Not specified", "Not specified in lease", "None", "null"):
-                field_searches[field] = str(val)
+            if not val or str(val).strip().lower() in invalid_values:
+                continue
+            s = str(val).strip()
+            variants = [s]
+            # Add partial word matches for multi-word values
+            words = s.split()
+            if len(words) >= 2:
+                # For names, try first+last word
+                variants.append(words[0] + " " + words[-1])
+                # For addresses, try first two words (e.g. "123 Main")
+                if field == "property_address":
+                    variants.append(words[0] + " " + words[1])
+            field_search_variants[field] = variants
+
+        # Date fields: generate multiple format variants
+        for field in ["lease_start_date", "lease_end_date"]:
+            val = extracted_data.get(field)
+            if not val or str(val).strip().lower() in invalid_values:
+                continue
+            field_search_variants[field] = self._generate_date_variants(str(val).strip())
+
+        # Monetary fields: generate numeric format variants
         for field in ["monthly_rent", "security_deposit"]:
             val = extracted_data.get(field)
-            if val:
-                try:
-                    field_searches[field] = str(int(val)) if float(val) == int(float(val)) else str(val)
-                except (ValueError, TypeError):
-                    field_searches[field] = str(val)
+            if val is None:
+                continue
+            try:
+                float(val)
+            except (ValueError, TypeError):
+                continue
+            field_search_variants[field] = self._generate_money_variants(val)
 
-        # Search each page's lines to find field values and compute SVG bbox
-        for field_name, search_value in field_searches.items():
-            search_lower = search_value.lower()
+        # Search each page's lines for field values and compute SVG bbox
+        for field_name, variants in field_search_variants.items():
             found = False
-            for page_idx, lines in enumerate(page_texts):
-                for line_idx, line in enumerate(lines):
-                    if search_lower in line.lower():
-                        # y position matching the SVG rendering
-                        y0 = margin + (line_idx * line_height)
-                        y1 = y0 + line_height
-                        source_map[field_name] = [{
-                            "page": page_idx,
-                            "bbox": {
-                                "x0": float(margin),
-                                "y0": round(y0, 1),
-                                "x1": float(612 - margin),
-                                "y1": round(y1, 1)
-                            },
-                            "matched_text": search_value,
-                            "match_type": "text_search"
-                        }]
-                        found = True
-                        break
+            for search_value in variants:
                 if found:
                     break
+                search_lower = search_value.lower()
+                if not search_lower.strip():
+                    continue
+                for page_idx, lines in enumerate(page_texts):
+                    for line_idx, line in enumerate(lines):
+                        if search_lower in line.lower():
+                            # y position matching the SVG rendering
+                            y0 = margin + (line_idx * line_height)
+                            y1 = y0 + line_height
+                            source_map[field_name] = [{
+                                "page": page_idx,
+                                "bbox": {
+                                    "x0": float(margin),
+                                    "y0": round(y0, 1),
+                                    "x1": float(612 - margin),
+                                    "y1": round(y1, 1)
+                                },
+                                "matched_text": search_value,
+                                "match_type": "text_search"
+                            }]
+                            found = True
+                            break
+                    if found:
+                        break
 
+        logger.info(f"Source map built: {len(source_map)} fields matched out of {len(field_search_variants)} searched")
         return source_map, page_count
 
     def get_page_count(self, pdf_bytes: bytes) -> int:
