@@ -1,5 +1,5 @@
 fastapi>=0.110.0
-uvicorn[standard]>=0.29.0
+uvicorn>=0.29.0
 pydantic>=2.11.0
 pydantic-settings>=2.9.0
 python-dotenv>=1.0.0
@@ -29,6 +29,9 @@ stripe>=12.0.0
 
 # PDF analysis with Gemini API
 google-genai>=0.8.0
+
+# PDF text extraction (lightweight)
+pypdf>=4.0.0
 
 # Google OAuth
 google-auth>=2.20.0

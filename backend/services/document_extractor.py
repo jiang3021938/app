@@ -7,9 +7,48 @@ This service is kept for backward compatibility and for Word documents only.
 
 import io
 import logging
+import zipfile
+import xml.etree.ElementTree as ET
 from typing import Dict, Any, List, Tuple
 
 logger = logging.getLogger(__name__)
+
+
+def _extract_docx_text(file_bytes: bytes) -> List[str]:
+    """Extract text paragraphs from a .docx file using only stdlib (zipfile + xml).
+    No python-docx or lxml needed. Returns list of paragraph strings."""
+    WORD_NS = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+    paragraphs = []
+    try:
+        with zipfile.ZipFile(io.BytesIO(file_bytes)) as zf:
+            # Main document body
+            if "word/document.xml" in zf.namelist():
+                with zf.open("word/document.xml") as f:
+                    tree = ET.parse(f)
+                    root = tree.getroot()
+                    for para in root.iter(f"{WORD_NS}p"):
+                        texts = []
+                        for run in para.iter(f"{WORD_NS}t"):
+                            if run.text:
+                                texts.append(run.text)
+                        line = "".join(texts).strip()
+                        if line:
+                            paragraphs.append(line)
+    except (zipfile.BadZipFile, ET.ParseError, KeyError) as e:
+        logger.warning(f"Failed to extract docx text with stdlib: {e}")
+        # Fallback to python-docx if available
+        try:
+            from docx import Document
+            doc = Document(io.BytesIO(file_bytes))
+            paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
+            for table in doc.tables:
+                for row in table.rows:
+                    cells = [c.text.strip() for c in row.cells if c.text.strip()]
+                    if cells:
+                        paragraphs.append(" | ".join(cells))
+        except ImportError:
+            raise ValueError("Could not extract text from Word document")
+    return paragraphs
 
 
 class DocumentExtractor:
@@ -62,30 +101,20 @@ class DocumentExtractor:
             raise
 
     def _extract_docx(self, file_bytes: bytes) -> Dict[str, Any]:
-        """Extract from Word document using python-docx."""
-        try:
-            from docx import Document
-        except ImportError:
-            logger.error("python-docx not installed. Run: pip install python-docx")
-            raise
-
-        doc = Document(io.BytesIO(file_bytes))
+        """Extract from Word document using lightweight stdlib-based extraction."""
+        paragraphs = _extract_docx_text(file_bytes)
 
         full_text_parts: List[str] = []
         blocks: List[Dict[str, Any]] = []
         paragraph_index = 0
 
-        for para in doc.paragraphs:
-            text = para.text.strip()
-            if not text:
-                continue
-
+        for text in paragraphs:
             full_text_parts.append(text)
             blocks.append({
                 "text": text,
-                "page": 0,  # Word docs don't have reliable page info
+                "page": 0,
                 "bbox": {
-                    "x0": 72.0,   # Standard margin approximation
+                    "x0": 72.0,
                     "y0": float(72 + paragraph_index * 20),
                     "x1": 540.0,
                     "y1": float(72 + paragraph_index * 20 + 16),
@@ -93,35 +122,12 @@ class DocumentExtractor:
             })
             paragraph_index += 1
 
-        # Also extract text from tables
-        for table in doc.tables:
-            for row in table.rows:
-                row_texts = []
-                for cell in row.cells:
-                    cell_text = cell.text.strip()
-                    if cell_text:
-                        row_texts.append(cell_text)
-                if row_texts:
-                    combined = " | ".join(row_texts)
-                    full_text_parts.append(combined)
-                    blocks.append({
-                        "text": combined,
-                        "page": 0,
-                        "bbox": {
-                            "x0": 72.0,
-                            "y0": float(72 + paragraph_index * 20),
-                            "x1": 540.0,
-                            "y1": float(72 + paragraph_index * 20 + 16),
-                        },
-                    })
-                    paragraph_index += 1
-
         full_text = "\n".join(full_text_parts)
 
         return {
             "full_text": full_text,
             "blocks": blocks,
             "pages": [{"width": 612, "height": 792, "page_num": 0}],
-            "page_count": 1,  # Word doesn't expose page count easily
+            "page_count": 1,
             "file_type": "docx",
         }

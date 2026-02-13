@@ -43,82 +43,76 @@ function AnimatedCounter({ end, duration = 2, suffix = "" }: { end: number; dura
 
 // Demo Animation Component
 function DemoAnimation() {
-  const [step, setStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [step, setStep] = useState(1);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   useEffect(() => {
-    if (isInView && !isPlaying) {
-      setIsPlaying(true);
-      const timer1 = setTimeout(() => setStep(1), 500);
-      const timer2 = setTimeout(() => setStep(2), 2500);
-      const timer3 = setTimeout(() => setStep(3), 4500);
-      return () => {
-        clearTimeout(timer1);
-        clearTimeout(timer2);
-        clearTimeout(timer3);
-      };
-    }
-  }, [isInView, isPlaying]);
-
-  const extractedData = [
-    { label: "Tenant Name", value: "John Smith" },
-    { label: "Monthly Rent", value: "$2,500.00" },
-    { label: "Lease End Date", value: "Dec 31, 2026" },
-    { label: "Security Deposit", value: "$5,000.00" },
-  ];
+    if (!isInView) return;
+    const interval = setInterval(() => {
+      setStep((prev) => (prev % 3) + 1);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [isInView]);
 
   return (
     <div ref={ref} className="relative h-[400px] md:h-[450px] bg-slate-100 rounded-2xl overflow-hidden">
       {/* Step 1: Upload Animation */}
-      <AnimatePresence>
-        {step >= 1 && (
+      <AnimatePresence mode="wait">
+        {step === 1 && (
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: step === 1 ? 1 : 0.3, y: 0, scale: step === 1 ? 1 : 0.8 }}
-            transition={{ duration: 0.5 }}
+            key="step1"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -30 }}
+            transition={{ duration: 0.4 }}
             className="absolute inset-0 flex items-center justify-center"
-            style={{ zIndex: step === 1 ? 10 : 1 }}
           >
-            <div className="bg-white rounded-xl shadow-lg p-8 w-64">
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ repeat: step === 1 ? Infinity : 0, duration: 1.5 }}
-                className="flex flex-col items-center"
-              >
-                <div className="h-16 w-16 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                  <FileText className="h-8 w-8 text-blue-600" />
-                </div>
-                <p className="text-sm text-slate-600">lease_agreement.pdf</p>
+            <div className="bg-white rounded-xl shadow-lg p-8 w-72">
+              <div className="border-2 border-dashed border-blue-300 rounded-lg p-6 flex flex-col items-center">
                 <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: "100%" }}
-                  transition={{ duration: 1.5, delay: 0.5 }}
-                  className="h-1 bg-blue-500 rounded-full mt-3"
-                />
-              </motion.div>
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                >
+                  <Upload className="h-10 w-10 text-blue-500 mb-3" />
+                </motion.div>
+                <p className="text-sm font-medium text-slate-700 mb-1">Drop your lease here</p>
+                <p className="text-xs text-slate-400">PDF or Word supported</p>
+              </div>
+              <div className="mt-4 flex items-center gap-2">
+                <div className="h-8 w-8 bg-blue-50 rounded flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-slate-700">lease_agreement.pdf</p>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 2.5, ease: "easeInOut" }}
+                    className="h-1 bg-blue-500 rounded-full mt-1"
+                  />
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
 
-      {/* Step 2: AI Processing Animation */}
-      <AnimatePresence>
-        {step >= 2 && (
+        {/* Step 2: AI Processing Animation */}
+        {step === 2 && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: step === 2 ? 1 : 0.3 }}
-            transition={{ duration: 0.5 }}
+            key="step2"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -30 }}
+            transition={{ duration: 0.4 }}
             className="absolute inset-0 flex items-center justify-center"
-            style={{ zIndex: step === 2 ? 10 : 1 }}
           >
             <div className="bg-white rounded-xl shadow-lg p-8 w-72">
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex items-center gap-4 mb-5">
                 <motion.div
                   animate={{ rotate: 360 }}
-                  transition={{ repeat: step === 2 ? Infinity : 0, duration: 2, ease: "linear" }}
-                  className="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center"
+                  transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                  className="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0"
                 >
                   <Bot className="h-6 w-6 text-white" />
                 </motion.div>
@@ -127,50 +121,76 @@ function DemoAnimation() {
                   <p className="text-sm text-slate-500">Extracting key terms</p>
                 </div>
               </div>
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ width: 0 }}
-                    animate={{ width: "100%" }}
-                    transition={{ duration: 0.8, delay: i * 0.3 }}
-                    className="h-2 bg-gradient-to-r from-blue-200 to-blue-400 rounded-full"
-                  />
+              <div className="space-y-3">
+                {["Parties & dates", "Financial terms", "Risk assessment"].map((label, i) => (
+                  <div key={label}>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-slate-500">{label}</span>
+                    </div>
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: "100%" }}
+                      transition={{ duration: 1.2, delay: i * 0.4 }}
+                      className="h-2 bg-gradient-to-r from-blue-300 to-blue-500 rounded-full"
+                    />
+                  </div>
                 ))}
               </div>
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
 
-      {/* Step 3: Results Animation */}
-      <AnimatePresence>
-        {step >= 3 && (
+        {/* Step 3: Results with Score, Risks, Compliance */}
+        {step === 3 && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
+            key="step3"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -30 }}
+            transition={{ duration: 0.4 }}
             className="absolute inset-0 flex items-center justify-center p-4"
-            style={{ zIndex: 10 }}
           >
             <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm">
               <div className="flex items-center gap-2 mb-4">
                 <CheckCircle className="h-5 w-5 text-green-500" />
                 <p className="font-medium text-green-700">Analysis Complete!</p>
               </div>
-              <div className="space-y-3">
-                {extractedData.map((item, index) => (
-                  <motion.div
-                    key={item.label}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.15 }}
-                    className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0"
-                  >
-                    <span className="text-sm text-slate-500">{item.label}</span>
-                    <span className="font-medium text-slate-800">{item.value}</span>
-                  </motion.div>
-                ))}
+              <div className="flex items-center gap-5 mb-4">
+                {/* Health Score Ring */}
+                <div className="relative h-20 w-20 flex-shrink-0">
+                  <svg viewBox="0 0 36 36" className="h-20 w-20 -rotate-90">
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e2e8f0" strokeWidth="3" />
+                    <motion.circle
+                      cx="18" cy="18" r="15.9" fill="none" stroke="#3b82f6" strokeWidth="3"
+                      strokeDasharray="100" strokeLinecap="round"
+                      initial={{ strokeDashoffset: 100 }}
+                      animate={{ strokeDashoffset: 24 }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-lg font-bold text-slate-800">76</span>
+                    <span className="text-[9px] text-slate-400">/ 100</span>
+                  </div>
+                </div>
+                <div className="space-y-1.5 text-sm">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-red-500" />
+                    <span className="text-slate-600">Late fee exceeds 5%</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-amber-500" />
+                    <span className="text-slate-600">No renewal clause</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-amber-500" />
+                    <span className="text-slate-600">Vague pet policy</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+                <ShieldCheck className="h-4 w-4 text-green-500" />
+                <span className="text-xs text-green-600 font-medium">10/12 compliance checks passed</span>
               </div>
             </div>
           </motion.div>
@@ -182,8 +202,8 @@ function DemoAnimation() {
         {[1, 2, 3].map((s) => (
           <div
             key={s}
-            className={`h-2 w-8 rounded-full transition-colors ${
-              step >= s ? "bg-blue-500" : "bg-slate-300"
+            className={`h-2 rounded-full transition-all duration-300 ${
+              step === s ? "w-8 bg-blue-500" : "w-2 bg-slate-300"
             }`}
           />
         ))}
@@ -938,6 +958,8 @@ export default function LandingPage() {
               <a href="#faq" className="hover:text-slate-700">FAQ</a>
               <a href="/blog/" className="hover:text-slate-700">Blog</a>
               <a href="/about" className="hover:text-slate-700">About</a>
+              <a href="/privacy" className="hover:text-slate-700">Privacy Policy</a>
+              <a href="/terms" className="hover:text-slate-700">Terms of Service</a>
             </div>
             <p className="text-sm text-slate-500 text-center md:text-right">
               © 2026 LeaseLenses. All rights reserved.<br />

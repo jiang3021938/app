@@ -5,7 +5,7 @@ import ast
 import httpx as httpx_client
 from datetime import datetime
 from urllib.parse import urlencode, quote
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from fastapi.responses import Response
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
@@ -28,6 +28,7 @@ from services.extractions import ExtractionsService
 from services.user_credits import User_creditsService
 from services.compliance_checker import ComplianceChecker
 from services.storage import StorageService
+from services.supabase_storage import SupabaseStorageService
 from schemas.storage import FileUpDownRequest
 
 logger = logging.getLogger(__name__)
@@ -59,6 +60,16 @@ def safe_parse_json_or_literal(data: Any) -> Any:
     
     # Return as-is if parsing fails
     return data
+
+
+def _get_content_type(filename: str) -> str:
+    """Determine content type from file name."""
+    filename_lower = (filename or "").lower()
+    if filename_lower.endswith(".docx"):
+        return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    elif filename_lower.endswith(".doc"):
+        return "application/msword"
+    return "application/pdf"
 
 
 class AnalyzeRequest(BaseModel):
@@ -139,14 +150,25 @@ async def analyze_document(
         # Update document status
         await doc_service.update(request.document_id, {"status": "processing"}, current_user.id)
         
-        # Download file from storage
-        storage = StorageService()
-        download = await storage.create_download_url(
-            FileUpDownRequest(bucket_name="lease-documents", object_key=document.file_key)
-        )
-        async with httpx_client.AsyncClient(timeout=120.0) as http_client:
-            file_response = await http_client.get(download.download_url)
-            file_bytes = file_response.content
+        # Download file from storage (with database fallback)
+        file_bytes = None
+        try:
+            supabase_storage = SupabaseStorageService()
+            download_url = await supabase_storage.get_download_url(
+                bucket_name="lease-documents",
+                object_key=document.file_key
+            )
+            async with httpx_client.AsyncClient(timeout=120.0) as http_client:
+                file_response = await http_client.get(download_url)
+                file_bytes = file_response.content
+        except Exception as e:
+            logger.warning(f"Supabase download failed, trying database fallback: {e}")
+
+        if not file_bytes and document.file_data:
+            file_bytes = base64.b64decode(document.file_data)
+
+        if not file_bytes:
+            raise HTTPException(status_code=404, detail="Document file not available for re-analysis")
 
         # Analyze PDF using Gemini API
         try:
@@ -188,6 +210,7 @@ async def analyze_document(
             "pet_policy": extracted_data.get("pet_policy"),
             "late_fee_terms": extracted_data.get("late_fee_terms"),
             "risk_flags": json.dumps(extracted_data.get("risk_flags", [])),
+            "audit_checklist": json.dumps(extracted_data.get("audit_checklist", [])),
             "compliance_data": json.dumps(compliance_result),
             "raw_extraction": json.dumps(extracted_data),
             "source_map": json.dumps(source_map) if source_map else None,
@@ -327,6 +350,7 @@ async def upload_and_analyze(
             "pet_policy": extracted_data.get("pet_policy"),
             "late_fee_terms": extracted_data.get("late_fee_terms"),
             "risk_flags": json.dumps(extracted_data.get("risk_flags", [])),
+            "audit_checklist": json.dumps(extracted_data.get("audit_checklist", [])),
             "compliance_data": json.dumps(compliance_result),
             "raw_extraction": json.dumps(extracted_data),
             "source_map": json.dumps(source_map) if source_map else None,
@@ -347,8 +371,28 @@ async def upload_and_analyze(
                     "updated_at": datetime.now()
                 }, current_user.id)
 
-        # Update document status
-        await doc_service.update(document.id, {"status": "completed"}, current_user.id)
+        # Update document status and store file data for PDF preview fallback
+        # Only store file_data for files under 20MB to avoid database bloat
+        update_data = {"status": "completed"}
+        if len(file_bytes) <= 20 * 1024 * 1024:
+            update_data["file_data"] = base64.b64encode(file_bytes).decode()
+        await doc_service.update(document.id, update_data, current_user.id)
+
+        # Upload to Supabase Storage for temporary PDF preview
+        try:
+            content_type = _get_content_type(file.filename)
+            
+            supabase_storage = SupabaseStorageService()
+            await supabase_storage.upload_file(
+                bucket_name="lease-documents",
+                object_key=file_key,
+                file_data=file_bytes,
+                content_type=content_type
+            )
+            logger.info(f"Document cached to Supabase Storage: {file_key}")
+        except Exception as e:
+            # Non-blocking: PDF preview will fall back to database-stored file_data
+            logger.warning(f"Failed to cache document to Supabase Storage: {e}")
 
         await db.flush()
         await db.refresh(document)
@@ -470,6 +514,7 @@ async def analyze_documents_batch(
                     "pet_policy": extracted_data.get("pet_policy"),
                     "late_fee_terms": extracted_data.get("late_fee_terms"),
                     "risk_flags": json.dumps(extracted_data.get("risk_flags", [])),
+                    "audit_checklist": json.dumps(extracted_data.get("audit_checklist", [])),
                     "compliance_data": json.dumps(compliance_result),
                     "raw_extraction": json.dumps(extracted_data),
                     "created_at": datetime.now()
@@ -799,40 +844,74 @@ async def get_source_map(
 async def get_pdf_page_image(
     document_id: int,
     page_num: int,
-    current_user: UserResponse = Depends(get_current_user),
+    request: Request,
+    t: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
 ):
     """Render a specific document page as a PNG image for the viewer.
-    Supports both PDF and Word (.docx) files."""
+    Supports both PDF and Word (.docx) files.
+    Auth via Authorization header or ?t= query parameter token."""
     try:
+        from core.auth import decode_access_token, AccessTokenError
+
+        # Try Authorization header first, then query parameter token
+        user_id = None
+        auth_header = request.headers.get("authorization", "")
+        token = None
+        if auth_header.lower().startswith("bearer "):
+            token = auth_header[7:]
+        elif t:
+            token = t
+
+        if token:
+            try:
+                payload = decode_access_token(token)
+                user_id = payload.get("sub")
+            except AccessTokenError:
+                # Token invalid/expired — fall through to 401 below
+                logger.debug("PDF page auth token validation failed")
+
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+
         doc_service = DocumentsService(db)
-        document = await doc_service.get_by_id(document_id, current_user.id)
+        document = await doc_service.get_by_id(document_id, user_id)
 
         if not document:
             raise HTTPException(status_code=404, detail="Document not found")
 
-        # Download file from storage
-        storage = StorageService()
-        download = await storage.create_download_url(
-            FileUpDownRequest(bucket_name="lease-documents", object_key=document.file_key)
-        )
-        async with httpx_client.AsyncClient(timeout=120.0) as http_client:
-            file_response = await http_client.get(download.download_url)
-            file_bytes = file_response.content
+        # Download file from storage (with database fallback)
+        file_bytes = None
+        try:
+            supabase_storage = SupabaseStorageService()
+            download_url = await supabase_storage.get_download_url(
+                bucket_name="lease-documents",
+                object_key=document.file_key
+            )
+            async with httpx_client.AsyncClient(timeout=120.0) as http_client:
+                file_response = await http_client.get(download_url)
+                file_bytes = file_response.content
+        except Exception as e:
+            logger.warning(f"Supabase download failed, trying database fallback: {e}")
+
+        if not file_bytes and document.file_data:
+            file_bytes = base64.b64decode(document.file_data)
+
+        if not file_bytes:
+            raise HTTPException(status_code=404, detail="Document file not available")
 
         file_name = document.file_name.lower()
 
         if file_name.endswith(('.docx', '.doc')):
-            # Convert Word to PDF in memory, then render page
-            img_bytes = _render_docx_page(file_bytes, page_num)
+            # Render Word page as SVG
+            content_bytes, media_type = _render_docx_page(file_bytes, page_num)
         else:
-            # Render PDF page
-            pdf_extractor = PDFExtractor()
-            img_bytes = pdf_extractor.get_page_image(file_bytes, page_num, dpi=150)
+            # Render PDF page as SVG (without PyMuPDF/Pillow)
+            content_bytes, media_type = _render_pdf_page(file_bytes, page_num)
 
         return Response(
-            content=img_bytes,
-            media_type="image/png",
+            content=content_bytes,
+            media_type=media_type,
             headers={"Cache-Control": "public, max-age=3600"},
         )
 
@@ -845,36 +924,91 @@ async def get_pdf_page_image(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def _render_docx_page(file_bytes: bytes, page_num: int) -> bytes:
-    """Render a Word document page as PNG by converting to PDF first via reportlab,
-    or by rendering text content as an image."""
+def _escape_xml(text: str) -> str:
+    """Escape special XML characters for SVG content."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace("'", "&apos;")
+
+
+def _render_text_as_svg(lines: list, page_title: str = "") -> bytes:
+    """Render text lines as an SVG image (no Pillow/PyMuPDF needed).
+    Returns SVG bytes that can be displayed in <img> tags."""
+    # Letter size in points (8.5 x 11 inches at 72 DPI)
+    width = 612
+    height = 792
+    margin = 54  # 0.75 inch margin
+    font_size = 11
+    line_height = 16
+
+    svg_lines = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        f'<rect width="{width}" height="{height}" fill="white"/>',
+    ]
+
+    y = margin + font_size
+    for line in lines:
+        if y + line_height > height - margin:
+            break
+        escaped = _escape_xml(line)
+        svg_lines.append(
+            f'<text x="{margin}" y="{y}" font-family="monospace, Courier, sans-serif" font-size="{font_size}" fill="#1a1a1a">{escaped}</text>'
+        )
+        y += line_height
+
+    svg_lines.append('</svg>')
+    return "\n".join(svg_lines).encode("utf-8")
+
+
+def _render_pdf_page(file_bytes: bytes, page_num: int) -> tuple:
+    """Render a PDF page as SVG using pypdf text extraction (no Pillow/PyMuPDF needed).
+    Returns (content_bytes, media_type)."""
     import io
-    try:
-        from docx import Document as DocxDocument
-    except ImportError:
-        raise ValueError("python-docx not installed")
+    from pypdf import PdfReader
 
-    doc = DocxDocument(io.BytesIO(file_bytes))
-    paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
+    reader = PdfReader(io.BytesIO(file_bytes))
+    if page_num >= len(reader.pages):
+        raise ValueError(f"Page {page_num} does not exist (total pages: {len(reader.pages)})")
 
-    # Also extract tables
-    for table in doc.tables:
-        for row in table.rows:
-            cells = [c.text.strip() for c in row.cells if c.text.strip()]
-            if cells:
-                paragraphs.append(" | ".join(cells))
+    page = reader.pages[page_num]
+    text = page.extract_text() or ""
+
+    # Split text into lines
+    lines = []
+    for paragraph in text.split("\n"):
+        if not paragraph.strip():
+            lines.append("")
+            continue
+        words = paragraph.split()
+        line = ""
+        for word in words:
+            test = f"{line} {word}".strip()
+            if len(test) > 90:
+                lines.append(line)
+                line = word
+            else:
+                line = test
+        if line:
+            lines.append(line)
+
+    return _render_text_as_svg(lines), "image/svg+xml"
+
+
+def _render_docx_page(file_bytes: bytes, page_num: int) -> tuple:
+    """Render a Word document page as SVG (no Pillow/PyMuPDF needed).
+    Returns (content_bytes, media_type)."""
+    from services.document_extractor import _extract_docx_text
+
+    paragraphs = _extract_docx_text(file_bytes)
 
     # Paginate: ~45 lines per page (standard letter)
     lines_per_page = 45
     pages = []
     current_page_lines = []
     for para in paragraphs:
-        # Wrap long paragraphs
         words = para.split()
         line = ""
         for word in words:
             test = f"{line} {word}".strip()
-            if len(test) > 85:  # ~85 chars per line at 11pt
+            if len(test) > 85:
                 current_page_lines.append(line)
                 line = word
                 if len(current_page_lines) >= lines_per_page:
@@ -898,35 +1032,7 @@ def _render_docx_page(file_bytes: bytes, page_num: int) -> bytes:
     if page_num >= len(pages):
         raise ValueError(f"Page {page_num} does not exist (total pages: {len(pages)})")
 
-    # Render page as image using reportlab
-    from reportlab.lib.pagesizes import letter
-    from reportlab.pdfgen import canvas as rl_canvas
-    import fitz
-
-    buf = io.BytesIO()
-    c = rl_canvas.Canvas(buf, pagesize=letter)
-    width, height = letter
-    y = height - 72  # 1 inch top margin
-
-    for line in pages[page_num]:
-        if y < 72:
-            break
-        c.setFont("Helvetica", 11)
-        c.drawString(72, y, line)
-        y -= 16
-
-    c.save()
-    buf.seek(0)
-
-    # Convert single-page PDF to PNG
-    pdf_doc = fitz.open(stream=buf.read(), filetype="pdf")
-    page = pdf_doc[0]
-    zoom = 150 / 72
-    mat = fitz.Matrix(zoom, zoom)
-    pix = page.get_pixmap(matrix=mat)
-    img_bytes = pix.tobytes("png")
-    pdf_doc.close()
-    return img_bytes
+    return _render_text_as_svg(pages[page_num]), "image/svg+xml"
 
 
 @router.get("/doc-page-count/{document_id}")
@@ -943,31 +1049,41 @@ async def get_document_page_count(
         if not document:
             raise HTTPException(status_code=404, detail="Document not found")
 
-        storage = StorageService()
-        download = await storage.create_download_url(
-            FileUpDownRequest(bucket_name="lease-documents", object_key=document.file_key)
-        )
-        async with httpx_client.AsyncClient(timeout=120.0) as http_client:
-            file_response = await http_client.get(download.download_url)
-            file_bytes = file_response.content
+        # Download file from storage (with database fallback)
+        file_bytes = None
+        try:
+            supabase_storage = SupabaseStorageService()
+            download_url = await supabase_storage.get_download_url(
+                bucket_name="lease-documents",
+                object_key=document.file_key
+            )
+            async with httpx_client.AsyncClient(timeout=120.0) as http_client:
+                file_response = await http_client.get(download_url)
+                file_bytes = file_response.content
+        except Exception as e:
+            logger.warning(f"Supabase download failed, trying database fallback: {e}")
+
+        if not file_bytes and document.file_data:
+            file_bytes = base64.b64decode(document.file_data)
+
+        if not file_bytes:
+            raise HTTPException(status_code=404, detail="Document file not available")
 
         file_name = document.file_name.lower()
 
         if file_name.endswith(('.docx', '.doc')):
-            import io
-            from docx import Document as DocxDocument
-            doc = DocxDocument(io.BytesIO(file_bytes))
-            paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
+            from services.document_extractor import _extract_docx_text
+            paragraphs = _extract_docx_text(file_bytes)
             # Estimate pages
             total_lines = 0
             for para in paragraphs:
                 total_lines += max(1, len(para) // 85 + 1) + 1
             page_count = max(1, (total_lines + 44) // 45)
         else:
-            import fitz
-            pdf_doc = fitz.open(stream=file_bytes, filetype="pdf")
-            page_count = len(pdf_doc)
-            pdf_doc.close()
+            import io
+            from pypdf import PdfReader
+            reader = PdfReader(io.BytesIO(file_bytes))
+            page_count = len(reader.pages)
 
         return {"page_count": page_count, "file_type": "docx" if file_name.endswith(('.docx', '.doc')) else "pdf"}
 
@@ -992,18 +1108,79 @@ async def get_pdf_download_url(
         if not document:
             raise HTTPException(status_code=404, detail="Document not found")
 
-        storage = StorageService()
-        download = await storage.create_download_url(
-            FileUpDownRequest(bucket_name="lease-documents", object_key=document.file_key)
-        )
+        # Try Supabase Storage first
+        try:
+            supabase_storage = SupabaseStorageService()
+            url = await supabase_storage.get_download_url(
+                bucket_name="lease-documents",
+                object_key=document.file_key
+            )
+            return {"url": url}
+        except Exception as e:
+            logger.warning(f"Supabase storage unavailable, trying database fallback: {e}")
 
-        return {"url": download.download_url}
+        # Fallback: serve from database-stored file_data
+        if document.file_data:
+            from core.auth import create_access_token
+            pdf_token = create_access_token(
+                claims={"sub": current_user.id, "purpose": "pdf_view", "doc_id": document_id},
+                expires_minutes=60,
+            )
+            return {"url": f"/api/v1/lease/pdf-serve/{document_id}?token={pdf_token}"}
+
+        raise HTTPException(
+            status_code=404,
+            detail="PDF preview is not available. The original file was not stored."
+        )
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"PDF URL error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/pdf-serve/{document_id}")
+async def serve_pdf_from_database(
+    document_id: int,
+    token: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Serve a PDF directly from database-stored file_data (fallback for Supabase Storage)."""
+    from core.auth import decode_access_token, AccessTokenError
+
+    try:
+        payload = decode_access_token(token)
+    except AccessTokenError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    # Validate that the token was issued for this specific document
+    token_doc_id = payload.get("doc_id")
+    if token_doc_id is not None and token_doc_id != document_id:
+        raise HTTPException(status_code=403, detail="Token not valid for this document")
+
+    doc_service = DocumentsService(db)
+    document = await doc_service.get_by_id(document_id, user_id)
+
+    if not document or not document.file_data:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    try:
+        file_bytes = base64.b64decode(document.file_data)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to decode stored file data")
+
+    content_type = _get_content_type(document.file_name)
+
+    return Response(
+        content=file_bytes,
+        media_type=content_type,
+        headers={"Content-Disposition": f"inline; filename=\"{document.file_name}\""},
+    )
 
 
 # ──────────────────────────────────────────────────────────────────────────────
