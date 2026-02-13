@@ -868,7 +868,8 @@ async def get_pdf_page_image(
                 payload = decode_access_token(token)
                 user_id = payload.get("sub")
             except AccessTokenError:
-                pass
+                # Token invalid/expired — fall through to 401 below
+                logger.debug("PDF page auth token validation failed")
 
         if not user_id:
             raise HTTPException(status_code=401, detail="Authentication required")
