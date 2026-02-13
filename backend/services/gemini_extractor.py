@@ -286,10 +286,21 @@ class GeminiExtractor:
             text = text[:-3]
         text = text.strip()
 
-        # Try to find JSON object
-        json_match = re.search(r'\{.*\}', text, re.DOTALL)
-        if json_match:
-            return json_match.group(0)
+        # Try balanced brace matching for reliable JSON extraction
+        start = text.find('{')
+        if start != -1:
+            depth = 0
+            end = start
+            for i in range(start, len(text)):
+                if text[i] == '{':
+                    depth += 1
+                elif text[i] == '}':
+                    depth -= 1
+                    if depth == 0:
+                        end = i
+                        break
+            if depth == 0:
+                return text[start:end + 1]
 
         return text
 

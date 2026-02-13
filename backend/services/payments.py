@@ -170,3 +170,32 @@ class PaymentsService:
         except Exception as e:
             logger.error(f"Error fetching paymentss by {field_name}: {str(e)}")
             raise
+
+    async def get_by_stripe_session_id(self, session_id: str) -> Optional[Payments]:
+        """Get a payment record by Stripe session ID."""
+        try:
+            result = await self.db.execute(
+                select(Payments).where(Payments.stripe_session_id == session_id)
+            )
+            return result.scalar_one_or_none()
+        except Exception as e:
+            logger.error(f"Error fetching payment by stripe_session_id {session_id}: {str(e)}")
+            raise
+
+    async def update_by_stripe_session_id(self, session_id: str, update_data: Dict[str, Any]) -> Optional[Payments]:
+        """Update a payment record by Stripe session ID."""
+        try:
+            payment = await self.get_by_stripe_session_id(session_id)
+            if not payment:
+                logger.warning(f"Payment with stripe_session_id {session_id} not found")
+                return None
+            for key, value in update_data.items():
+                if hasattr(payment, key):
+                    setattr(payment, key, value)
+            await self.db.commit()
+            await self.db.refresh(payment)
+            return payment
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"Error updating payment by stripe_session_id {session_id}: {str(e)}")
+            raise

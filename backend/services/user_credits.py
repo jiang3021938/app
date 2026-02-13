@@ -170,3 +170,58 @@ class User_creditsService:
         except Exception as e:
             logger.error(f"Error fetching user_creditss by {field_name}: {str(e)}")
             raise
+
+    async def add_credits(self, user_id: str, credits_to_add: int) -> Optional[User_credits]:
+        """Add paid credits to a user's account."""
+        try:
+            user_credits = await self.get_by_field("user_id", user_id)
+            if not user_credits:
+                from datetime import datetime
+                user_credits = await self.create({
+                    "user_id": user_id,
+                    "free_credits": 0,
+                    "paid_credits": credits_to_add,
+                    "subscription_type": "none",
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now(),
+                })
+            else:
+                from datetime import datetime
+                current_paid = user_credits.paid_credits or 0
+                await self.update(user_credits.id, {
+                    "paid_credits": current_paid + credits_to_add,
+                    "updated_at": datetime.now(),
+                })
+            logger.info(f"Added {credits_to_add} credits to user {user_id}")
+            return user_credits
+        except Exception as e:
+            logger.error(f"Error adding credits for user {user_id}: {str(e)}")
+            raise
+
+    async def activate_subscription(self, user_id: str, sub_type: str, days: int = 30) -> Optional[User_credits]:
+        """Activate a subscription for a user."""
+        from datetime import datetime, timedelta
+        try:
+            user_credits = await self.get_by_field("user_id", user_id)
+            expires_at = datetime.now() + timedelta(days=days)
+            if not user_credits:
+                user_credits = await self.create({
+                    "user_id": user_id,
+                    "free_credits": 0,
+                    "paid_credits": 0,
+                    "subscription_type": sub_type,
+                    "subscription_expires_at": expires_at,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now(),
+                })
+            else:
+                await self.update(user_credits.id, {
+                    "subscription_type": sub_type,
+                    "subscription_expires_at": expires_at,
+                    "updated_at": datetime.now(),
+                })
+            logger.info(f"Activated {sub_type} subscription for user {user_id} until {expires_at}")
+            return user_credits
+        except Exception as e:
+            logger.error(f"Error activating subscription for user {user_id}: {str(e)}")
+            raise

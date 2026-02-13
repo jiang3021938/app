@@ -27,22 +27,22 @@ logger = logging.getLogger(__name__)
 # Pricing configuration
 PRICING = {
     "single": {
-        "price": 900,  # $9.00 in cents
+        "price": 499,  # $4.99 in cents
         "credits": 1,
         "name": "Single Analysis",
-        "description": "One lease document analysis"
+        "description": "Perfect for one-time needs"
     },
     "pack5": {
-        "price": 2900,  # $29.00 in cents
+        "price": 1499,  # $14.99 in cents
         "credits": 5,
-        "name": "5-Pack Analysis",
-        "description": "Five lease document analyses"
+        "name": "5-Pack",
+        "description": "Best value for landlords"
     },
     "monthly": {
-        "price": 2900,  # $29.00 in cents
-        "credits": 5,
-        "name": "Monthly Subscription",
-        "description": "5 analyses per month, renews monthly"
+        "price": 1999,  # $19.99 in cents
+        "credits": 0,   # Unlimited
+        "name": "Monthly Pro",
+        "description": "Unlimited for active landlords"
     }
 }
 
@@ -86,23 +86,29 @@ async def create_checkout_session(
         raise HTTPException(status_code=400, detail="Invalid plan type")
     
     plan = PRICING[request.plan_type]
+    is_subscription = request.plan_type == 'monthly'
     
     try:
+        # Build price_data - subscriptions require 'recurring' field
+        price_data = {
+            'currency': 'usd',
+            'product_data': {
+                'name': plan['name'],
+                'description': plan['description'],
+            },
+            'unit_amount': plan['price'],
+        }
+        if is_subscription:
+            price_data['recurring'] = {'interval': 'month'}
+        
         # Create Stripe checkout session
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=[{
-                'price_data': {
-                    'currency': 'usd',
-                    'product_data': {
-                        'name': plan['name'],
-                        'description': plan['description'],
-                    },
-                    'unit_amount': plan['price'],
-                },
+                'price_data': price_data,
                 'quantity': 1,
             }],
-            mode='payment' if request.plan_type != 'monthly' else 'subscription',
+            mode='subscription' if is_subscription else 'payment',
             success_url=request.success_url + "?session_id={CHECKOUT_SESSION_ID}",
             cancel_url=request.cancel_url,
             client_reference_id=current_user.id,
@@ -118,9 +124,10 @@ async def create_checkout_session(
         await payments_service.create({
             'user_id': current_user.id,
             'stripe_session_id': checkout_session.id,
-            'amount': plan['price'],
-            'credits': plan['credits'],
-            'plan_type': request.plan_type,
+            'amount': plan['price'] / 100.0,  # Store in dollars
+            'currency': 'usd',
+            'credits_purchased': plan['credits'],
+            'payment_type': request.plan_type,
             'status': 'pending'
         })
         
@@ -160,14 +167,23 @@ async def verify_payment(
         if payment and payment.status == 'completed':
             return PaymentStatusResponse(
                 status='completed',
-                credits_added=payment.credits,
+                credits_added=payment.credits_purchased or 0,
                 message='Payment already processed'
             )
         
-        # Add credits to user
-        credits_to_add = int(session.metadata.get('credits', 1))
+        # Add credits or activate subscription
+        plan_type = session.metadata.get('plan_type', 'single')
         credits_service = User_creditsService(db)
-        await credits_service.add_credits(current_user.id, credits_to_add)
+        
+        if plan_type == 'monthly':
+            # Activate monthly subscription
+            await credits_service.activate_subscription(
+                current_user.id, 'monthly', days=30
+            )
+            credits_to_add = 0
+        else:
+            credits_to_add = int(session.metadata.get('credits', 1))
+            await credits_service.add_credits(current_user.id, credits_to_add)
         
         # Update payment status
         if payment:
@@ -236,7 +252,13 @@ async def stripe_webhook(
 @router.get("/pricing")
 async def get_pricing():
     """Get available pricing plans."""
-    # Convert dict to array with id field for frontend
+    # Feature lists matching homepage descriptions
+    plan_features = {
+        "single": ["Full AI extraction", "12-point risk analysis", "Calendar reminders"],
+        "pack5": ["5 full analyses", "Save 40% vs single", "Never expires"],
+        "monthly": ["Unlimited analyses", "Priority support", "Cancel anytime"],
+    }
+    
     plans_list = []
     for plan_id, plan_data in PRICING.items():
         plans_list.append({
@@ -245,6 +267,7 @@ async def get_pricing():
             "price": plan_data["price"] / 100,  # Convert cents to dollars for display
             "popular": plan_id == "pack5",
             "recurring": plan_id == "monthly",
+            "features": plan_features.get(plan_id, []),
         })
     return {
         "plans": plans_list,
