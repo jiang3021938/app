@@ -6,7 +6,6 @@ Generates a concise, professional AI summary for a lease report.
 
 import json
 import logging
-import re
 from typing import Dict, Any, List
 from services.aihub import AIHubService
 from schemas.aihub import GenTxtRequest, ChatMessage
@@ -85,7 +84,7 @@ class ExecutiveSummaryService:
                     ),
                 ],
                 model="gemini-3-pro-preview",
-                max_tokens=1000,
+                max_tokens=2000,
             )
 
             response = await self.ai_service.gentxt(request)
@@ -101,10 +100,18 @@ class ExecutiveSummaryService:
                 content = content[:-3]
             content = content.strip()
 
-            # Try to find valid JSON object
-            json_match = re.search(r'\{.*\}', content, re.DOTALL)
-            if json_match:
-                content = json_match.group(0)
+            # Try to extract valid JSON object using balanced brace matching
+            start = content.find('{')
+            if start != -1:
+                depth = 0
+                for i in range(start, len(content)):
+                    if content[i] == '{':
+                        depth += 1
+                    elif content[i] == '}':
+                        depth -= 1
+                        if depth == 0:
+                            content = content[start:i + 1]
+                            break
 
             try:
                 summary_data = json.loads(content)

@@ -38,11 +38,19 @@ Return a JSON object with the following structure (use null if not found in docu
   "utilities_included": "What utilities are included in rent, if any",
   "risk_flags": [
     {
-      "severity": "high or medium or low",
+      "severity": "high or medium",
       "category": "Category name",
-      "title": "Short title of the finding",
-      "description": "Detailed description of what was found or what is missing",
+      "title": "Short title of the risk",
+      "description": "Detailed description of the risk or concern",
       "recommendation": "Specific action the tenant/landlord should take"
+    }
+  ],
+  "audit_checklist": [
+    {
+      "category": "Category name",
+      "status": "pass or warning or issue",
+      "title": "Short title",
+      "description": "What was found or what is missing"
     }
   ],
   "health_score": {
@@ -55,14 +63,23 @@ Return a JSON object with the following structure (use null if not found in docu
 }
 
 CRITICAL INSTRUCTIONS FOR risk_flags:
-You MUST check ALL of the following categories and include EACH ONE in risk_flags, even if the clause is present and satisfactory. This serves as a complete audit checklist for the user.
+risk_flags should ONLY contain genuine risks — items with severity "medium" or "high".
+Do NOT include items that are satisfactory or present and adequate.
+A well-written lease may have 0 risk flags. Only flag real problems or missing critical clauses.
+The number of risk flags is NOT fixed — it can be 0 to 5 depending on the lease quality.
+
+CRITICAL INSTRUCTIONS FOR audit_checklist:
+You MUST check ALL 12 categories below and include EACH ONE in audit_checklist.
+This is a complete audit review — most items in a good lease should be "pass".
 
 For each category:
-- If the clause is present and adequate: severity = "low", describe what was found
-- If the clause is present but has issues: severity = "medium", explain the concern
-- If the clause is missing or seriously problematic: severity = "high", explain the risk
+- If the clause is present and adequate: status = "pass"
+- If the clause is present but has minor issues: status = "warning"
+- If the clause is missing or seriously problematic: status = "issue"
 
-Categories to ALWAYS check and include:
+If status is "warning" or "issue", ALSO add a corresponding entry to risk_flags with appropriate severity.
+
+Categories to ALWAYS include in audit_checklist:
 1. "Lead-based paint disclosure" - Required for pre-1978 buildings. Check if disclosed.
 2. "Security deposit terms" - Check amount vs state legal limits, return timeline, conditions.
 3. "Late fee terms" - Check if defined, reasonable percentage, grace period.
@@ -88,7 +105,8 @@ IMPORTANT:
 - For dates, convert to YYYY-MM-DD format
 - For monetary values, extract as numbers without currency symbols
 - Return ONLY valid JSON, no markdown code blocks, no additional text
-- ALWAYS include ALL 12 risk_flag categories listed above
+- risk_flags: only real problems (0-5 items, medium/high severity)
+- audit_checklist: always exactly 12 items (one per category)
 - Also provide the full extracted text of the document
 
 Return your response as:
@@ -113,31 +131,48 @@ class GeminiExtractor:
 
     async def analyze_pdf(self, pdf_bytes: bytes, file_name: str) -> Dict[str, Any]:
         """
-        Analyze a PDF file using Gemini API to extract lease information.
+        Analyze a PDF or Word file using Gemini API to extract lease information.
 
         Args:
-            pdf_bytes: Raw PDF file bytes
-            file_name: Name of the file (for context)
+            pdf_bytes: Raw file bytes (PDF or Word)
+            file_name: Name of the file (used for MIME type detection)
 
         Returns:
             Dictionary with extracted lease data and full text
         """
         try:
-            # Upload the PDF to Gemini
-            file_part = types.Part.from_bytes(
-                data=pdf_bytes,
-                mime_type="application/pdf"
-            )
+            file_name_lower = (file_name or "").lower()
+            is_word = file_name_lower.endswith((".docx", ".doc"))
+
+            if is_word:
+                # Gemini doesn't support Word MIME types directly.
+                # Extract text from Word file and send as plain text.
+                from services.document_extractor import _extract_docx_text
+                paragraphs = _extract_docx_text(pdf_bytes)
+                doc_text = "\n\n".join(paragraphs)
+                if not doc_text.strip():
+                    raise ValueError("Could not extract text from Word document")
+
+                content_part = types.Part.from_text(
+                    text=f"--- LEASE DOCUMENT TEXT ---\n\n{doc_text}\n\n--- END DOCUMENT ---"
+                )
+                logger.info(f"Extracted {len(paragraphs)} paragraphs from Word file for Gemini analysis")
+            else:
+                # PDF files can be sent directly to Gemini
+                content_part = types.Part.from_bytes(
+                    data=pdf_bytes,
+                    mime_type="application/pdf"
+                )
 
             text_part = types.Part.from_text(text=EXTRACTION_PROMPT)
 
-            # Generate content with the PDF
+            # Generate content
             response = self.client.models.generate_content(
                 model="gemini-3-flash-preview",
                 contents=[
                     types.Content(
                         role="user",
-                        parts=[file_part, text_part]
+                        parts=[content_part, text_part]
                     )
                 ]
             )
@@ -170,22 +205,24 @@ class GeminiExtractor:
                 "tenant_name", "landlord_name", "property_address",
                 "monthly_rent", "security_deposit", "lease_start_date",
                 "lease_end_date", "renewal_notice_days", "pet_policy",
-                "late_fee_terms", "risk_flags"
+                "late_fee_terms", "risk_flags", "audit_checklist"
             ]
 
             for field in expected_fields:
                 if field not in extracted_data:
                     extracted_data[field] = None
 
-            # Ensure risk_flags is a list of objects (not strings)
+            # Ensure risk_flags is a list of objects with only medium/high severity
             risk_flags = extracted_data.get("risk_flags", [])
             if isinstance(risk_flags, list):
                 cleaned_flags = []
                 for flag in risk_flags:
                     if isinstance(flag, dict):
-                        cleaned_flags.append(flag)
+                        # Only keep medium and high severity flags
+                        severity = flag.get("severity", "medium").lower()
+                        if severity in ("medium", "high"):
+                            cleaned_flags.append(flag)
                     elif isinstance(flag, str):
-                        # Convert string flags to objects
                         cleaned_flags.append({
                             "severity": "medium",
                             "category": "General",
@@ -197,11 +234,27 @@ class GeminiExtractor:
             else:
                 extracted_data["risk_flags"] = []
 
-            # Build source map using text matching
-            source_map = self._build_source_map(full_text, extracted_data)
+            # Ensure audit_checklist is a list of objects
+            audit_checklist = extracted_data.get("audit_checklist", [])
+            if isinstance(audit_checklist, list):
+                cleaned_checklist = []
+                for item in audit_checklist:
+                    if isinstance(item, dict):
+                        # Normalize status
+                        status = item.get("status", "pass").lower()
+                        if status not in ("pass", "warning", "issue"):
+                            status = "pass"
+                        item["status"] = status
+                        cleaned_checklist.append(item)
+                extracted_data["audit_checklist"] = cleaned_checklist
+            else:
+                extracted_data["audit_checklist"] = []
 
-            # Estimate page count from text length
-            page_count = max(1, len(full_text) // 3000 + 1)
+            # Build source map and page info using actual file content
+            source_map, page_count = self._build_source_map_from_file(
+                pdf_bytes, file_name, extracted_data
+            )
+
             pages_meta = [
                 {"page": i, "width": 612, "height": 792}
                 for i in range(page_count)
@@ -233,75 +286,149 @@ class GeminiExtractor:
             text = text[:-3]
         text = text.strip()
 
-        # Try to find JSON object
-        json_match = re.search(r'\{.*\}', text, re.DOTALL)
-        if json_match:
-            return json_match.group(0)
+        # Try balanced brace matching for reliable JSON extraction
+        start = text.find('{')
+        if start != -1:
+            depth = 0
+            end = start
+            for i in range(start, len(text)):
+                if text[i] == '{':
+                    depth += 1
+                elif text[i] == '}':
+                    depth -= 1
+                    if depth == 0:
+                        end = i
+                        break
+            if depth == 0:
+                return text[start:end + 1]
 
         return text
 
-    def _build_source_map(self, full_text: str, extracted_data: dict) -> dict:
-        """Build source_map by finding extracted values in the full text."""
+    def _build_source_map_from_file(self, file_bytes: bytes, file_name: str, extracted_data: dict) -> tuple:
+        """Build source_map with coordinates matching the SVG page rendering.
+        Returns (source_map, page_count).
+
+        The SVG renderer uses:
+        - Page: 612 x 792 (letter), margin: 54, font_size: 11, line_height: 16
+        - First text y = margin + font_size = 65
+        - Lines are wrapped at ~90 chars
+        - PDF: one actual page per SVG page (via pypdf)
+        - Word: ~42 lines per page (same as SVG max lines)
+        """
         source_map = {}
+        page_texts = []  # list of (page_idx, list_of_lines)
 
-        if not full_text:
-            return source_map
+        file_name_lower = (file_name or "").lower()
+        is_word = file_name_lower.endswith((".docx", ".doc"))
 
-        # Split text into pages (approximate: ~3000 chars per page)
-        page_size = 3000
-        pages = [full_text[i:i + page_size] for i in range(0, len(full_text), page_size)]
+        # SVG rendering constants (must match _render_text_as_svg / _render_pdf_page)
+        margin = 54
+        font_size = 11
+        line_height = 16
+        page_height = 792
+        max_lines_per_page = int((page_height - margin * 2) / line_height)
 
+        try:
+            if is_word:
+                # Extract text and paginate like _render_docx_page does
+                from services.document_extractor import _extract_docx_text
+                paragraphs = _extract_docx_text(file_bytes)
+                all_lines = []
+                for para in paragraphs:
+                    if not para.strip():
+                        all_lines.append("")
+                        continue
+                    words = para.split()
+                    line = ""
+                    for word in words:
+                        test = f"{line} {word}".strip()
+                        if len(test) > 85:  # matches _render_docx_page threshold
+                            all_lines.append(line)
+                            line = word
+                        else:
+                            line = test
+                    if line:
+                        all_lines.append(line)
+                    all_lines.append("")  # blank line between paragraphs
+
+                # Split into pages
+                for i in range(0, len(all_lines), max_lines_per_page):
+                    page_lines = all_lines[i:i + max_lines_per_page]
+                    page_texts.append(page_lines)
+            else:
+                # PDF: extract text per actual page
+                import io
+                from pypdf import PdfReader
+                reader = PdfReader(io.BytesIO(file_bytes))
+                for page in reader.pages:
+                    text = page.extract_text() or ""
+                    # Wrap lines the same way _render_pdf_page does
+                    lines = []
+                    for paragraph in text.split("\n"):
+                        if not paragraph.strip():
+                            lines.append("")
+                            continue
+                        words = paragraph.split()
+                        line = ""
+                        for word in words:
+                            test = f"{line} {word}".strip()
+                            if len(test) > 90:  # matches _render_pdf_page threshold
+                                lines.append(line)
+                                line = word
+                            else:
+                                line = test
+                        if line:
+                            lines.append(line)
+                    page_texts.append(lines)
+        except Exception as e:
+            logger.warning(f"Failed to extract page text for source map: {e}")
+            # Fallback: single page with full_text
+            page_texts = [["(Could not extract page text)"]]
+
+        page_count = max(1, len(page_texts))
+
+        # Build field searches
         field_searches = {}
-        if extracted_data.get("tenant_name"):
-            field_searches["tenant_name"] = extracted_data["tenant_name"]
-        if extracted_data.get("landlord_name"):
-            field_searches["landlord_name"] = extracted_data["landlord_name"]
-        if extracted_data.get("property_address"):
-            field_searches["property_address"] = extracted_data["property_address"]
-        if extracted_data.get("monthly_rent"):
-            rent = extracted_data["monthly_rent"]
-            try:
-                field_searches["monthly_rent"] = str(int(rent)) if float(rent) == int(float(rent)) else str(rent)
-            except (ValueError, TypeError):
-                field_searches["monthly_rent"] = str(rent)
-        if extracted_data.get("security_deposit"):
-            dep = extracted_data["security_deposit"]
-            try:
-                field_searches["security_deposit"] = str(int(dep)) if float(dep) == int(float(dep)) else str(dep)
-            except (ValueError, TypeError):
-                field_searches["security_deposit"] = str(dep)
-        if extracted_data.get("lease_start_date"):
-            field_searches["lease_start_date"] = extracted_data["lease_start_date"]
-        if extracted_data.get("lease_end_date"):
-            field_searches["lease_end_date"] = extracted_data["lease_end_date"]
-        if extracted_data.get("pet_policy") and extracted_data["pet_policy"] not in ("Not specified", "Not specified in lease"):
-            field_searches["pet_policy"] = extracted_data["pet_policy"]
-        if extracted_data.get("late_fee_terms") and extracted_data["late_fee_terms"] not in ("Not specified", "Not specified in lease"):
-            field_searches["late_fee_terms"] = extracted_data["late_fee_terms"]
+        for field in ["tenant_name", "landlord_name", "property_address",
+                       "lease_start_date", "lease_end_date", "pet_policy", "late_fee_terms"]:
+            val = extracted_data.get(field)
+            if val and str(val) not in ("Not specified", "Not specified in lease", "None", "null"):
+                field_searches[field] = str(val)
+        for field in ["monthly_rent", "security_deposit"]:
+            val = extracted_data.get(field)
+            if val:
+                try:
+                    field_searches[field] = str(int(val)) if float(val) == int(float(val)) else str(val)
+                except (ValueError, TypeError):
+                    field_searches[field] = str(val)
 
+        # Search each page's lines to find field values and compute SVG bbox
         for field_name, search_value in field_searches.items():
-            search_lower = str(search_value).lower()
-            for page_idx, page_text in enumerate(pages):
-                if search_lower in page_text.lower():
-                    # Estimate vertical position based on where in the page text it appears
-                    pos = page_text.lower().find(search_lower)
-                    y_ratio = pos / max(len(page_text), 1)
-                    y0 = 72 + y_ratio * 648  # 72 margin top, 648 usable height
-
-                    source_map[field_name] = [{
-                        "page": page_idx,
-                        "bbox": {
-                            "x0": 72.0,
-                            "y0": round(y0, 2),
-                            "x1": 540.0,
-                            "y1": round(y0 + 16, 2)
-                        },
-                        "matched_text": str(search_value),
-                        "match_type": "text_search"
-                    }]
+            search_lower = search_value.lower()
+            found = False
+            for page_idx, lines in enumerate(page_texts):
+                for line_idx, line in enumerate(lines):
+                    if search_lower in line.lower():
+                        # y position matching the SVG rendering
+                        y0 = margin + (line_idx * line_height)
+                        y1 = y0 + line_height
+                        source_map[field_name] = [{
+                            "page": page_idx,
+                            "bbox": {
+                                "x0": float(margin),
+                                "y0": round(y0, 1),
+                                "x1": float(612 - margin),
+                                "y1": round(y1, 1)
+                            },
+                            "matched_text": search_value,
+                            "match_type": "text_search"
+                        }]
+                        found = True
+                        break
+                if found:
                     break
 
-        return source_map
+        return source_map, page_count
 
     def get_page_count(self, pdf_bytes: bytes) -> int:
         """Get the number of pages in a PDF using pypdf."""

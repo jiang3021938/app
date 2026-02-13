@@ -1,5 +1,5 @@
 from core.database import Base
-from sqlalchemy import Column, DateTime, Float, Integer, String
+from sqlalchemy import Column, DateTime, Float, Integer, String, Text
 
 
 class Extractions(Base):
@@ -20,6 +20,7 @@ class Extractions(Base):
     pet_policy = Column(String, nullable=True)
     late_fee_terms = Column(String, nullable=True)
     risk_flags = Column(String, nullable=True)
+    audit_checklist = Column(Text, nullable=True)     # JSON: 12-item audit checklist
     compliance_data = Column(String, nullable=True)
     raw_extraction = Column(String, nullable=True)
     source_map = Column(String, nullable=True)     # JSON: field → PDF source locations

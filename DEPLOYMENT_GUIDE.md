@@ -29,6 +29,7 @@
 DATABASE_URL=postgresql://...
 SUPABASE_URL=https://zbinmdvdailctymiignm.supabase.co
 SUPABASE_KEY=sb_publishable_en0KrbZUp440Uaj4uoglGw_74muRt73
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 ENVIRONMENT=prod
 PORT=8000
 ```
@@ -45,6 +46,17 @@ PORT=8000
 4. 复制文件内容
 5. 粘贴到 SQL Editor 中
 6. 点击 "Run" 执行 SQL
+
+### 已有数据库迁移：
+如果 documents 表已存在，需要添加 file_data 列用于 PDF 预览：
+```sql
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS file_data TEXT;
+```
+
+如果 extractions 表已存在，需要添加 audit_checklist 列用于审查清单：
+```sql
+ALTER TABLE extractions ADD COLUMN IF NOT EXISTS audit_checklist TEXT;
+```
 
 ### 数据表说明：
 

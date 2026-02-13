@@ -37,6 +37,7 @@ interface Extraction {
   pet_policy: string | null;
   late_fee_terms: string | null;
   risk_flags: string | null;
+  audit_checklist: string | null;
   compliance_data: string | null;
   source_map: string | null;
   created_at: string;
@@ -45,6 +46,15 @@ interface Extraction {
 interface RiskFlag {
   severity: string;
   category: string;
+  title?: string;
+  description: string;
+  recommendation?: string;
+}
+
+interface AuditChecklistItem {
+  category: string;
+  status: "pass" | "warning" | "issue";
+  title: string;
   description: string;
 }
 
@@ -125,6 +135,7 @@ export default function ReportPage() {
   const [document, setDocument] = useState<any>(null);
   const [extraction, setExtraction] = useState<Extraction | null>(null);
   const [riskFlags, setRiskFlags] = useState<RiskFlag[]>([]);
+  const [auditChecklist, setAuditChecklist] = useState<AuditChecklistItem[]>([]);
   const [complianceData, setComplianceData] = useState<ComplianceData | null>(null);
 
   // Source tracing state
@@ -175,7 +186,7 @@ export default function ReportPage() {
         const ext = extractionResponse.data.items[0];
         setExtraction(ext);
 
-        // Parse risk flags
+        // Parse risk flags (only medium/high severity)
         if (ext.risk_flags) {
           try {
             let parsed = ext.risk_flags;
@@ -187,9 +198,22 @@ export default function ReportPage() {
               parsed = JSON.parse(parsed);
             }
             setRiskFlags(Array.isArray(parsed) ? parsed : []);
+            const parsed = typeof ext.risk_flags === 'string' ? JSON.parse(ext.risk_flags) : ext.risk_flags;
+            const flags = Array.isArray(parsed) ? parsed : [];
+            setRiskFlags(flags.filter((f: RiskFlag) => f.severity?.toLowerCase() !== 'low'));
           } catch (e) {
             console.error("Failed to parse risk flags:", e, ext.risk_flags);
             setRiskFlags([]);
+          }
+        }
+
+        // Parse audit checklist
+        if (ext.audit_checklist) {
+          try {
+            const parsed = typeof ext.audit_checklist === 'string' ? JSON.parse(ext.audit_checklist) : ext.audit_checklist;
+            setAuditChecklist(Array.isArray(parsed) ? parsed : []);
+          } catch (e) {
+            console.error("Failed to parse audit checklist:", e);
           }
         }
 
@@ -472,12 +496,27 @@ export default function ReportPage() {
                   ) : (
                     <div className="flex items-center gap-4 text-sm text-slate-600">
                       <div className="flex items-center gap-1">
-                        <AlertTriangle className="h-4 w-4 text-amber-500" />
-                        {riskFlags.length} risk{riskFlags.length !== 1 ? "s" : ""} found
+                        {riskFlags.length > 0 ? (
+                          <>
+                            <AlertTriangle className="h-4 w-4 text-red-500" />
+                            {riskFlags.length} risk{riskFlags.length !== 1 ? "s" : ""} found
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            No risks found
+                          </>
+                        )}
                       </div>
-                      {complianceData?.summary && (
+                      {auditChecklist.length > 0 && (
                         <div className="flex items-center gap-1">
                           <Shield className="h-4 w-4 text-blue-500" />
+                          {auditChecklist.filter(i => i.status === "pass").length}/{auditChecklist.length} checks passed
+                        </div>
+                      )}
+                      {complianceData?.summary && (
+                        <div className="flex items-center gap-1">
+                          <Scale className="h-4 w-4 text-blue-500" />
                           {complianceData.summary.compliant} compliant
                           {complianceData.summary.violations > 0 && (
                             <>, {complianceData.summary.violations} violation{complianceData.summary.violations !== 1 ? "s" : ""}</>
@@ -493,7 +532,7 @@ export default function ReportPage() {
 
           {/* Tabs */}
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="compliance">
                 Compliance
@@ -506,12 +545,20 @@ export default function ReportPage() {
               <TabsTrigger value="risks">
                 Risks
                 {riskFlags.length > 0 && (
-                  <Badge className="ml-2 bg-amber-100 text-amber-700 h-5 w-5 p-0 justify-center">
+                  <Badge className="ml-2 bg-red-100 text-red-700 h-5 w-5 p-0 justify-center">
                     {riskFlags.length}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="market">Market Data</TabsTrigger>
+              <TabsTrigger value="checklist">
+                Checklist
+                {auditChecklist.length > 0 && (
+                  <Badge className="ml-2 bg-slate-100 text-slate-600 h-5 w-5 p-0 justify-center">
+                    {auditChecklist.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="market">Market</TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
@@ -726,34 +773,40 @@ export default function ReportPage() {
             {/* Risks Tab */}
             <TabsContent value="risks" className="space-y-6">
               {riskFlags.length > 0 ? (
-                <Card className="border-amber-200 bg-amber-50">
+                <Card className="border-red-200 bg-red-50/50">
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2 text-amber-800">
+                    <CardTitle className="text-lg flex items-center gap-2 text-red-800">
                       <AlertTriangle className="h-5 w-5" />
-                      Risk Analysis ({riskFlags.length} item{riskFlags.length !== 1 ? "s" : ""} found)
+                      {riskFlags.length} Risk{riskFlags.length !== 1 ? "s" : ""} Found
                     </CardTitle>
+                    <CardDescription className="text-red-700/70">
+                      Only medium and high severity issues that need your attention
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {/* Free users see only summary, paid users see full details */}
                     {isPaidUser ? (
                       riskFlags.map((risk, index) => (
                         <Alert key={index} className={getSeverityColor(risk.severity)}>
                           <AlertTriangle className="h-4 w-4" />
                           <AlertTitle className="flex items-center gap-2">
-                            {risk.category}
+                            {risk.title || risk.category}
                             <Badge variant="outline" className="text-xs">{risk.severity}</Badge>
                           </AlertTitle>
-                          <AlertDescription>{risk.description}</AlertDescription>
+                          <AlertDescription>
+                            {risk.description}
+                            {risk.recommendation && (
+                              <p className="mt-2 text-sm italic opacity-80">💡 {risk.recommendation}</p>
+                            )}
+                          </AlertDescription>
                         </Alert>
                       ))
                     ) : (
                       <>
-                        {/* Show first risk as teaser */}
                         {riskFlags.slice(0, 1).map((risk, index) => (
                           <Alert key={index} className={getSeverityColor(risk.severity)}>
                             <AlertTriangle className="h-4 w-4" />
                             <AlertTitle className="flex items-center gap-2">
-                              {risk.category}
+                              {risk.title || risk.category}
                               <Badge variant="outline" className="text-xs">{risk.severity}</Badge>
                             </AlertTitle>
                             <AlertDescription>{risk.description}</AlertDescription>
@@ -767,11 +820,114 @@ export default function ReportPage() {
                   </CardContent>
                 </Card>
               ) : (
-                <Card>
+                <Card className="border-green-200 bg-green-50/50">
                   <CardContent className="py-12 text-center">
                     <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-slate-700 mb-2">No Major Risks Identified</h3>
-                    <p className="text-slate-500">Our AI analysis did not find any significant risk flags in this lease.</p>
+                    <h3 className="text-lg font-medium text-green-800 mb-2">No Risks Identified</h3>
+                    <p className="text-green-700/70">
+                      Great news! Our AI analysis did not find any significant risks in this lease.
+                      Check the Checklist tab for the full audit review.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* Audit Checklist Tab */}
+            <TabsContent value="checklist" className="space-y-6">
+              {auditChecklist.length > 0 ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-blue-600" />
+                      Lease Audit Checklist
+                    </CardTitle>
+                    <CardDescription>
+                      Complete review of {auditChecklist.length} standard lease categories
+                    </CardDescription>
+                    <div className="flex items-center gap-4 mt-2">
+                      <span className="text-sm text-green-600 font-medium">
+                        ✅ {auditChecklist.filter(i => i.status === "pass").length} Pass
+                      </span>
+                      <span className="text-sm text-amber-600 font-medium">
+                        ⚠️ {auditChecklist.filter(i => i.status === "warning").length} Warning
+                      </span>
+                      <span className="text-sm text-red-600 font-medium">
+                        ❌ {auditChecklist.filter(i => i.status === "issue").length} Issue
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {isPaidUser ? (
+                      auditChecklist.map((item, index) => (
+                        <div
+                          key={index}
+                          className={`flex items-start gap-3 p-3 rounded-lg border ${
+                            item.status === "pass"
+                              ? "bg-green-50 border-green-200"
+                              : item.status === "warning"
+                              ? "bg-amber-50 border-amber-200"
+                              : "bg-red-50 border-red-200"
+                          }`}
+                        >
+                          <span className="text-lg flex-shrink-0 mt-0.5">
+                            {item.status === "pass" ? "✅" : item.status === "warning" ? "⚠️" : "❌"}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <h4 className="font-medium text-sm">{item.title || item.category}</h4>
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${
+                                  item.status === "pass"
+                                    ? "text-green-700 border-green-300"
+                                    : item.status === "warning"
+                                    ? "text-amber-700 border-amber-300"
+                                    : "text-red-700 border-red-300"
+                                }`}
+                              >
+                                {item.status}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-slate-600">{item.description}</p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <>
+                        {auditChecklist.slice(0, 3).map((item, index) => (
+                          <div
+                            key={index}
+                            className={`flex items-start gap-3 p-3 rounded-lg border ${
+                              item.status === "pass"
+                                ? "bg-green-50 border-green-200"
+                                : item.status === "warning"
+                                ? "bg-amber-50 border-amber-200"
+                                : "bg-red-50 border-red-200"
+                            }`}
+                          >
+                            <span className="text-lg flex-shrink-0 mt-0.5">
+                              {item.status === "pass" ? "✅" : item.status === "warning" ? "⚠️" : "❌"}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-sm">{item.title || item.category}</h4>
+                              <p className="text-sm text-slate-600">{item.description}</p>
+                            </div>
+                          </div>
+                        ))}
+                        {auditChecklist.length > 3 && (
+                          <PaywallOverlay riskCount={auditChecklist.length - 3} />
+                        )}
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <Shield className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-slate-700 mb-2">Audit Checklist Not Available</h3>
+                    <p className="text-slate-500">The audit checklist was not generated for this document.</p>
                   </CardContent>
                 </Card>
               )}

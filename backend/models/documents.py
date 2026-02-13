@@ -1,5 +1,5 @@
 from core.database import Base
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Column, DateTime, Integer, String, Text
 
 
 class Documents(Base):
@@ -11,6 +11,7 @@ class Documents(Base):
     file_name = Column(String, nullable=False)
     file_key = Column(String, nullable=False)
     file_size = Column(Integer, nullable=True)
+    file_data = Column(Text, nullable=True)
     status = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), nullable=True)
     updated_at = Column(DateTime(timezone=True), nullable=True)

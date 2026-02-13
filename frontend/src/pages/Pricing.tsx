@@ -16,6 +16,7 @@ interface PricingPlan {
   credits: number;
   popular: boolean;
   recurring?: boolean;
+  features?: string[];
 }
 
 export default function PricingPage() {
@@ -160,34 +161,39 @@ export default function PricingPage() {
                 <CardDescription>{plan.description}</CardDescription>
                 <div className="mt-4">
                   <span className="text-4xl font-bold text-slate-900">${plan.price}</span>
-                  {plan.recurring && (
+                  {plan.recurring ? (
                     <span className="text-slate-500">/month</span>
+                  ) : plan.credits > 1 ? (
+                    <span className="text-slate-500">/{plan.credits} documents</span>
+                  ) : (
+                    <span className="text-slate-500">/document</span>
                   )}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <ul className="space-y-3">
-                  <li className="flex items-center gap-2 text-slate-600">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    {plan.credits} analysis credit{plan.credits > 1 ? "s" : ""}
-                  </li>
-                  <li className="flex items-center gap-2 text-slate-600">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    Full AI extraction
-                  </li>
-                  <li className="flex items-center gap-2 text-slate-600">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    Risk analysis report
-                  </li>
-                  <li className="flex items-center gap-2 text-slate-600">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    Calendar export
-                  </li>
-                  {plan.recurring && (
-                    <li className="flex items-center gap-2 text-slate-600">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      Cancel anytime
-                    </li>
+                  {plan.features && plan.features.length > 0 ? (
+                    plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-slate-600">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        {feature}
+                      </li>
+                    ))
+                  ) : (
+                    <>
+                      <li className="flex items-center gap-2 text-slate-600">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        {plan.credits > 0 ? `${plan.credits} analysis credit${plan.credits > 1 ? "s" : ""}` : "Unlimited analyses"}
+                      </li>
+                      <li className="flex items-center gap-2 text-slate-600">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        Full AI extraction
+                      </li>
+                      <li className="flex items-center gap-2 text-slate-600">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        Risk analysis report
+                      </li>
+                    </>
                   )}
                 </ul>
                 <Button 

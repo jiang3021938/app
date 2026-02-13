@@ -233,19 +233,71 @@ class PDFExtractor:
         Returns:
             PNG image bytes
         """
-        try:
-            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-            if page_num >= len(doc):
-                raise ValueError(f"Page {page_num} does not exist (total pages: {len(doc)})")
+        if HAS_PYMUPDF:
+            try:
+                doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+                if page_num >= len(doc):
+                    raise ValueError(f"Page {page_num} does not exist (total pages: {len(doc)})")
 
-            page = doc[page_num]
-            zoom = dpi / 72  # 72 is the default DPI
-            mat = fitz.Matrix(zoom, zoom)
-            pix = page.get_pixmap(matrix=mat)
-            img_bytes = pix.tobytes("png")
-            doc.close()
-            return img_bytes
+                page = doc[page_num]
+                zoom = dpi / 72  # 72 is the default DPI
+                mat = fitz.Matrix(zoom, zoom)
+                pix = page.get_pixmap(matrix=mat)
+                img_bytes = pix.tobytes("png")
+                doc.close()
+                return img_bytes
 
-        except Exception as e:
-            logger.error(f"Page rendering error: {e}")
-            raise ValueError(f"Failed to render PDF page: {e}")
+            except Exception as e:
+                logger.error(f"Page rendering error: {e}")
+                raise ValueError(f"Failed to render PDF page: {e}")
+        else:
+            # Fallback: extract text with pypdf and render as SVG (no Pillow needed)
+            try:
+                import io
+                from pypdf import PdfReader
+
+                reader = PdfReader(io.BytesIO(pdf_bytes))
+                if page_num >= len(reader.pages):
+                    raise ValueError(f"Page {page_num} does not exist (total pages: {len(reader.pages)})")
+
+                page = reader.pages[page_num]
+                text = page.extract_text() or ""
+
+                lines = []
+                for paragraph in text.split("\n"):
+                    if not paragraph.strip():
+                        lines.append("")
+                        continue
+                    words = paragraph.split()
+                    line = ""
+                    for word in words:
+                        test = f"{line} {word}".strip()
+                        if len(test) > 90:
+                            lines.append(line)
+                            line = word
+                        else:
+                            line = test
+                    if line:
+                        lines.append(line)
+
+                # Render as SVG
+                width, height, margin, font_size, line_height = 612, 792, 54, 11, 16
+                svg_parts = [
+                    f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+                    f'<rect width="{width}" height="{height}" fill="white"/>',
+                ]
+                y = margin + font_size
+                for line in lines:
+                    if y + line_height > height - margin:
+                        break
+                    escaped = line.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+                    svg_parts.append(
+                        f'<text x="{margin}" y="{y}" font-family="monospace, Courier, sans-serif" font-size="{font_size}" fill="#1a1a1a">{escaped}</text>'
+                    )
+                    y += line_height
+                svg_parts.append('</svg>')
+                return "\n".join(svg_parts).encode("utf-8")
+
+            except Exception as e:
+                logger.error(f"Fallback page rendering error: {e}")
+                raise ValueError(f"Failed to render PDF page: {e}")
