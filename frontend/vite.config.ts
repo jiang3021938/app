@@ -1,10 +1,17 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
+import { viteSourceLocator } from '@metagptx/vite-plugin-source-locator';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [
+    // Source locator plugin must be before react plugin for React projects
+    viteSourceLocator({
+      include: ['src'],
+      prefix: 'locator',
+      enable: mode === 'development', // Only enable in development mode
+    }),
     react(),
   ],
   resolve: {
