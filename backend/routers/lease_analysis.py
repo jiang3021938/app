@@ -903,15 +903,15 @@ async def get_pdf_page_image(
         file_name = document.file_name.lower()
 
         if file_name.endswith(('.docx', '.doc')):
-            # Render Word page as image
-            img_bytes = _render_docx_page(file_bytes, page_num)
+            # Render Word page as SVG
+            content_bytes, media_type = _render_docx_page(file_bytes, page_num)
         else:
-            # Render PDF page as image (without PyMuPDF)
-            img_bytes = _render_pdf_page(file_bytes, page_num)
+            # Render PDF page as SVG (without PyMuPDF/Pillow)
+            content_bytes, media_type = _render_pdf_page(file_bytes, page_num)
 
         return Response(
-            content=img_bytes,
-            media_type="image/png",
+            content=content_bytes,
+            media_type=media_type,
             headers={"Cache-Control": "public, max-age=3600"},
         )
 
@@ -924,12 +924,45 @@ async def get_pdf_page_image(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def _render_pdf_page(file_bytes: bytes, page_num: int) -> bytes:
-    """Render a PDF page as PNG image using pypdf + Pillow (no PyMuPDF needed).
-    Extracts text content and renders it as an image."""
+def _escape_xml(text: str) -> str:
+    """Escape special XML characters for SVG content."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace("'", "&apos;")
+
+
+def _render_text_as_svg(lines: list, page_title: str = "") -> bytes:
+    """Render text lines as an SVG image (no Pillow/PyMuPDF needed).
+    Returns SVG bytes that can be displayed in <img> tags."""
+    # Letter size in points (8.5 x 11 inches at 72 DPI)
+    width = 612
+    height = 792
+    margin = 54  # 0.75 inch margin
+    font_size = 11
+    line_height = 16
+
+    svg_lines = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        f'<rect width="{width}" height="{height}" fill="white"/>',
+    ]
+
+    y = margin + font_size
+    for line in lines:
+        if y + line_height > height - margin:
+            break
+        escaped = _escape_xml(line)
+        svg_lines.append(
+            f'<text x="{margin}" y="{y}" font-family="monospace, Courier, sans-serif" font-size="{font_size}" fill="#1a1a1a">{escaped}</text>'
+        )
+        y += line_height
+
+    svg_lines.append('</svg>')
+    return "\n".join(svg_lines).encode("utf-8")
+
+
+def _render_pdf_page(file_bytes: bytes, page_num: int) -> tuple:
+    """Render a PDF page as SVG using pypdf text extraction (no Pillow/PyMuPDF needed).
+    Returns (content_bytes, media_type)."""
     import io
     from pypdf import PdfReader
-    from PIL import Image, ImageDraw, ImageFont
 
     reader = PdfReader(io.BytesIO(file_bytes))
     if page_num >= len(reader.pages):
@@ -944,7 +977,6 @@ def _render_pdf_page(file_bytes: bytes, page_num: int) -> bytes:
         if not paragraph.strip():
             lines.append("")
             continue
-        # Wrap long lines
         words = paragraph.split()
         line = ""
         for word in words:
@@ -957,67 +989,26 @@ def _render_pdf_page(file_bytes: bytes, page_num: int) -> bytes:
         if line:
             lines.append(line)
 
-    # Letter size at 150 DPI
-    dpi = 150
-    width_px = int(8.5 * dpi)
-    height_px = int(11 * dpi)
-    margin_px = int(0.75 * dpi)
-
-    img = Image.new("RGB", (width_px, height_px), "white")
-    draw = ImageDraw.Draw(img)
-
-    try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
-    except (IOError, OSError):
-        try:
-            font = ImageFont.truetype("arial.ttf", 14)
-        except (IOError, OSError):
-            font = ImageFont.load_default()
-
-    y = margin_px
-    line_height = 18
-
-    for line in lines:
-        if y + line_height > height_px - margin_px:
-            break
-        draw.text((margin_px, y), line, fill="black", font=font)
-        y += line_height
-
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    return buf.getvalue()
+    return _render_text_as_svg(lines), "image/svg+xml"
 
 
-def _render_docx_page(file_bytes: bytes, page_num: int) -> bytes:
-    """Render a Word document page as PNG by converting to PDF first via reportlab,
-    then rendering as image using Pillow."""
-    import io
-    try:
-        from docx import Document as DocxDocument
-    except ImportError:
-        raise ValueError("python-docx not installed")
+def _render_docx_page(file_bytes: bytes, page_num: int) -> tuple:
+    """Render a Word document page as SVG (no Pillow/PyMuPDF needed).
+    Returns (content_bytes, media_type)."""
+    from services.document_extractor import _extract_docx_text
 
-    doc = DocxDocument(io.BytesIO(file_bytes))
-    paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
-
-    # Also extract tables
-    for table in doc.tables:
-        for row in table.rows:
-            cells = [c.text.strip() for c in row.cells if c.text.strip()]
-            if cells:
-                paragraphs.append(" | ".join(cells))
+    paragraphs = _extract_docx_text(file_bytes)
 
     # Paginate: ~45 lines per page (standard letter)
     lines_per_page = 45
     pages = []
     current_page_lines = []
     for para in paragraphs:
-        # Wrap long paragraphs
         words = para.split()
         line = ""
         for word in words:
             test = f"{line} {word}".strip()
-            if len(test) > 85:  # ~85 chars per line at 11pt
+            if len(test) > 85:
                 current_page_lines.append(line)
                 line = word
                 if len(current_page_lines) >= lines_per_page:
@@ -1041,39 +1032,7 @@ def _render_docx_page(file_bytes: bytes, page_num: int) -> bytes:
     if page_num >= len(pages):
         raise ValueError(f"Page {page_num} does not exist (total pages: {len(pages)})")
 
-    # Render page as image using Pillow (no PyMuPDF needed)
-    from PIL import Image, ImageDraw, ImageFont
-
-    # Letter size at 150 DPI
-    dpi = 150
-    width_px = int(8.5 * dpi)   # 1275
-    height_px = int(11 * dpi)   # 1650
-    margin_px = int(1.0 * dpi)  # 150 (1 inch margin)
-
-    img = Image.new("RGB", (width_px, height_px), "white")
-    draw = ImageDraw.Draw(img)
-
-    # Try to use a built-in font, fall back to default
-    try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16)
-    except (IOError, OSError):
-        try:
-            font = ImageFont.truetype("arial.ttf", 16)
-        except (IOError, OSError):
-            font = ImageFont.load_default()
-
-    y = margin_px
-    line_height = 22  # pixels between lines
-
-    for line in pages[page_num]:
-        if y + line_height > height_px - margin_px:
-            break
-        draw.text((margin_px, y), line, fill="black", font=font)
-        y += line_height
-
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    return buf.getvalue()
+    return _render_text_as_svg(pages[page_num]), "image/svg+xml"
 
 
 @router.get("/doc-page-count/{document_id}")
@@ -1113,10 +1072,8 @@ async def get_document_page_count(
         file_name = document.file_name.lower()
 
         if file_name.endswith(('.docx', '.doc')):
-            import io
-            from docx import Document as DocxDocument
-            doc = DocxDocument(io.BytesIO(file_bytes))
-            paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
+            from services.document_extractor import _extract_docx_text
+            paragraphs = _extract_docx_text(file_bytes)
             # Estimate pages
             total_lines = 0
             for para in paragraphs:

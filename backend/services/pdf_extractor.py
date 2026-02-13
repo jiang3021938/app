@@ -251,11 +251,10 @@ class PDFExtractor:
                 logger.error(f"Page rendering error: {e}")
                 raise ValueError(f"Failed to render PDF page: {e}")
         else:
-            # Fallback: extract text with pypdf and render as image with Pillow
+            # Fallback: extract text with pypdf and render as SVG (no Pillow needed)
             try:
                 import io
                 from pypdf import PdfReader
-                from PIL import Image, ImageDraw, ImageFont
 
                 reader = PdfReader(io.BytesIO(pdf_bytes))
                 if page_num >= len(reader.pages):
@@ -281,29 +280,23 @@ class PDFExtractor:
                     if line:
                         lines.append(line)
 
-                width_px = int(8.5 * dpi)
-                height_px = int(11 * dpi)
-                margin_px = int(0.75 * dpi)
-
-                img = Image.new("RGB", (width_px, height_px), "white")
-                draw = ImageDraw.Draw(img)
-
-                try:
-                    font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
-                except (IOError, OSError):
-                    font = ImageFont.load_default()
-
-                y = margin_px
-                line_height = 18
+                # Render as SVG
+                width, height, margin, font_size, line_height = 612, 792, 54, 11, 16
+                svg_parts = [
+                    f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+                    f'<rect width="{width}" height="{height}" fill="white"/>',
+                ]
+                y = margin + font_size
                 for line in lines:
-                    if y + line_height > height_px - margin_px:
+                    if y + line_height > height - margin:
                         break
-                    draw.text((margin_px, y), line, fill="black", font=font)
+                    escaped = line.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    svg_parts.append(
+                        f'<text x="{margin}" y="{y}" font-family="monospace" font-size="{font_size}" fill="#1a1a1a">{escaped}</text>'
+                    )
                     y += line_height
-
-                buf = io.BytesIO()
-                img.save(buf, format="PNG")
-                return buf.getvalue()
+                svg_parts.append('</svg>')
+                return "\n".join(svg_parts).encode("utf-8")
 
             except Exception as e:
                 logger.error(f"Fallback page rendering error: {e}")
