@@ -2,6 +2,7 @@ import logging
 import base64
 import json
 import ast
+import re
 import httpx as httpx_client
 from datetime import datetime
 from urllib.parse import urlencode, quote
@@ -946,7 +947,6 @@ async def get_pdf_page_image(
 
 def _escape_xml(text: str) -> str:
     """Escape special XML characters for SVG content and strip invalid XML chars."""
-    import re
     # Remove control characters that are invalid in XML 1.0
     # Valid: #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
     text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', text)

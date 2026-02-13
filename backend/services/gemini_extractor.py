@@ -629,8 +629,7 @@ class GeminiExtractor:
 
         def _normalize_ws(s: str) -> str:
             """Collapse multiple whitespace into single space for matching."""
-            import re as _re
-            return _re.sub(r'\s+', ' ', s).strip()
+            return re.sub(r'\s+', ' ', s).strip()
 
         def _make_bbox(page_idx: int, line_idx: int, matched: str) -> dict:
             y0 = margin + (line_idx * line_height)
