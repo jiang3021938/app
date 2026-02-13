@@ -54,6 +54,7 @@ CREATE TABLE documents (
     file_name VARCHAR NOT NULL,
     file_key VARCHAR NOT NULL,
     file_size INTEGER,
+    file_data TEXT,
     status VARCHAR NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
@@ -82,6 +83,7 @@ CREATE TABLE extractions (
     pet_policy VARCHAR,
     late_fee_terms VARCHAR,
     risk_flags VARCHAR,
+    audit_checklist TEXT,
     compliance_data VARCHAR,
     raw_extraction VARCHAR,
     source_map VARCHAR,
