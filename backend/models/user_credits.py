@@ -10,6 +10,7 @@ class User_credits(Base):
     user_id = Column(String, nullable=False)
     free_credits = Column(Integer, nullable=True)
     paid_credits = Column(Integer, nullable=True)
+    share_credits_earned = Column(Integer, nullable=True)
     subscription_type = Column(String, nullable=True)
     subscription_expires_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=True)

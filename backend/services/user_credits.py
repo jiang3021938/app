@@ -197,6 +197,57 @@ class User_creditsService:
             logger.error(f"Error adding credits for user {user_id}: {str(e)}")
             raise
 
+    async def add_share_credit(self, user_id: str, platform: str) -> dict:
+        """Add 1 free credit for social media sharing. Max 4 share credits per account."""
+        from datetime import datetime
+        MAX_SHARE_CREDITS = 4
+        try:
+            user_credits = await self.get_by_field("user_id", user_id)
+            if not user_credits:
+                user_credits = await self.create({
+                    "user_id": user_id,
+                    "free_credits": 1,
+                    "paid_credits": 0,
+                    "share_credits_earned": 1,
+                    "subscription_type": "none",
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now(),
+                })
+                logger.info(f"Created user_credits with share credit for user {user_id}")
+                return {
+                    "success": True,
+                    "credits_awarded": 1,
+                    "share_credits_earned": 1,
+                    "share_credits_remaining": MAX_SHARE_CREDITS - 1,
+                }
+            else:
+                current_share = user_credits.share_credits_earned or 0
+                if current_share >= MAX_SHARE_CREDITS:
+                    logger.info(f"User {user_id} has reached share credit limit ({MAX_SHARE_CREDITS})")
+                    return {
+                        "success": False,
+                        "credits_awarded": 0,
+                        "share_credits_earned": current_share,
+                        "share_credits_remaining": 0,
+                        "message": f"You've reached the maximum of {MAX_SHARE_CREDITS} share credits.",
+                    }
+                current_free = user_credits.free_credits or 0
+                user_credits = await self.update(user_credits.id, {
+                    "free_credits": current_free + 1,
+                    "share_credits_earned": current_share + 1,
+                    "updated_at": datetime.now(),
+                })
+                logger.info(f"Added share credit for user {user_id} on {platform}, total share credits: {current_share + 1}")
+                return {
+                    "success": True,
+                    "credits_awarded": 1,
+                    "share_credits_earned": current_share + 1,
+                    "share_credits_remaining": MAX_SHARE_CREDITS - (current_share + 1),
+                }
+        except Exception as e:
+            logger.error(f"Error adding share credit for user {user_id}: {str(e)}")
+            raise
+
     async def activate_subscription(self, user_id: str, sub_type: str, days: int = 30) -> Optional[User_credits]:
         """Activate a subscription for a user."""
         from datetime import datetime, timedelta

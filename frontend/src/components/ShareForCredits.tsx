@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Share2, Twitter, Facebook, Linkedin, Link2, Gift } from "lucide-react";
+import { apiCall } from "@/lib/api";
 
 interface ShareForCreditsProps {
   variant?: "button" | "card";
@@ -17,6 +18,38 @@ export function ShareForCredits({
   url = "https://www.leaselenses.com"
 }: ShareForCreditsProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const recordShareCredit = async (platform: string) => {
+    try {
+      setIsLoading(true);
+      const response = await apiCall({
+        url: "/api/v1/lease/record-share",
+        method: "POST",
+        data: { platform },
+      });
+      const data = response.data as {
+        success: boolean;
+        credits_awarded: number;
+        share_credits_remaining: number;
+        message?: string;
+      };
+      if (data.success) {
+        toast.success("🎉 Thanks for sharing! You've earned 1 free credit!", {
+          description: `You have ${data.share_credits_remaining} share credit(s) remaining.`,
+        });
+      } else {
+        toast.info(data.message || "You've reached the maximum share credits.", {
+          description: "You can still earn credits by inviting friends!",
+        });
+      }
+    } catch {
+      toast.error("Failed to record share credit. Please try again later.");
+    } finally {
+      setIsLoading(false);
+      setIsOpen(false);
+    }
+  };
 
   const handleShare = async (platform: string) => {
     const encodedMessage = encodeURIComponent(message);
@@ -37,30 +70,31 @@ export function ShareForCredits({
       case "copy":
         try {
           await navigator.clipboard.writeText(url);
-          toast.success("Link copied to clipboard! Share it to earn 1 free credit.");
+          toast.success("Link copied to clipboard!");
           return;
-        } catch (err) {
+        } catch {
           toast.error("Failed to copy link");
           return;
         }
     }
 
     if (shareUrl) {
-      window.open(shareUrl, "_blank", "width=600,height=400");
+      const popup = window.open(shareUrl, "_blank", "width=600,height=400");
       
-      // TODO: Backend Integration Required
-      // This simulates the credit reward. In production, implement:
-      // 1. Track share events via API endpoint (POST /api/shares)
-      // 2. Verify user authentication
-      // 3. Increment user credits in database
-      // 4. Prevent duplicate rewards (track by user + platform + timestamp)
-      // 5. Consider using social media APIs to verify actual sharing
-      setTimeout(() => {
-        toast.success("🎉 Thanks for sharing! You've earned 1 free credit!", {
-          description: "Your credit will be added to your account shortly."
-        });
-        setIsOpen(false);
-      }, 2000);
+      // Monitor popup close to confirm user interacted with the share dialog
+      if (popup) {
+        const checkPopup = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(checkPopup);
+            recordShareCredit(platform);
+          }
+        }, 500);
+        // Safety timeout: stop checking after 5 minutes
+        setTimeout(() => clearInterval(checkPopup), 300000);
+      } else {
+        // Popup was blocked - still record credit since user intended to share
+        recordShareCredit(platform);
+      }
     }
   };
 
@@ -73,7 +107,7 @@ export function ShareForCredits({
             <CardTitle className="text-lg">Earn Free Credits</CardTitle>
           </div>
           <CardDescription>
-            Share LeaseLenses on social media and get 1 free analysis credit!
+            Share LeaseLenses on social media and get 1 free analysis credit! (up to 4 credits)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -82,6 +116,7 @@ export function ShareForCredits({
               size="sm"
               variant="outline"
               className="flex-1 min-w-[100px]"
+              disabled={isLoading}
               onClick={() => handleShare("twitter")}
             >
               <Twitter className="h-4 w-4 mr-2" />
@@ -91,6 +126,7 @@ export function ShareForCredits({
               size="sm"
               variant="outline"
               className="flex-1 min-w-[100px]"
+              disabled={isLoading}
               onClick={() => handleShare("facebook")}
             >
               <Facebook className="h-4 w-4 mr-2" />
@@ -100,6 +136,7 @@ export function ShareForCredits({
               size="sm"
               variant="outline"
               className="flex-1 min-w-[100px]"
+              disabled={isLoading}
               onClick={() => handleShare("linkedin")}
             >
               <Linkedin className="h-4 w-4 mr-2" />
@@ -116,7 +153,7 @@ export function ShareForCredits({
             </Button>
           </div>
           <p className="text-xs text-muted-foreground text-center">
-            Share on any platform to earn your credit!
+            Share on any platform to earn your credit! (max 4 from sharing)
           </p>
         </CardContent>
       </Card>
@@ -135,7 +172,7 @@ export function ShareForCredits({
         <DialogHeader>
           <DialogTitle>Share & Earn Free Credit</DialogTitle>
           <DialogDescription>
-            Share LeaseLenses on social media and get 1 free analysis credit!
+            Share LeaseLenses on social media and get 1 free analysis credit! (up to 4 credits)
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 pt-4">
@@ -143,6 +180,7 @@ export function ShareForCredits({
             <Button
               variant="outline"
               className="w-full justify-start"
+              disabled={isLoading}
               onClick={() => handleShare("twitter")}
             >
               <Twitter className="h-4 w-4 mr-2" />
@@ -151,6 +189,7 @@ export function ShareForCredits({
             <Button
               variant="outline"
               className="w-full justify-start"
+              disabled={isLoading}
               onClick={() => handleShare("facebook")}
             >
               <Facebook className="h-4 w-4 mr-2" />
@@ -159,6 +198,7 @@ export function ShareForCredits({
             <Button
               variant="outline"
               className="w-full justify-start"
+              disabled={isLoading}
               onClick={() => handleShare("linkedin")}
             >
               <Linkedin className="h-4 w-4 mr-2" />
@@ -175,7 +215,7 @@ export function ShareForCredits({
           </div>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-900">
-              💡 <strong>Pro tip:</strong> Earned credits never expire and can be used anytime!
+              💡 <strong>Pro tip:</strong> Earned credits never expire and can be used anytime! You can earn up to 4 credits from sharing.
             </p>
           </div>
         </div>

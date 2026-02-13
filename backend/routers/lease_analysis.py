@@ -892,6 +892,8 @@ async def get_pdf_page_image(
         # Download file from storage (with database fallback)
         file_bytes = None
         try:
+            if not document.file_key:
+                raise ValueError("Document has no file_key")
             supabase_storage = SupabaseStorageService()
             download_url = await supabase_storage.get_download_url(
                 bucket_name="lease-documents",
@@ -900,6 +902,7 @@ async def get_pdf_page_image(
             logger.info(f"[pdf-page] Got Supabase download URL, downloading...")
             async with httpx_client.AsyncClient(timeout=120.0) as http_client:
                 file_response = await http_client.get(download_url)
+                file_response.raise_for_status()
                 file_bytes = file_response.content
             logger.info(f"[pdf-page] Downloaded {len(file_bytes)} bytes from Supabase")
         except Exception as e:
@@ -1073,6 +1076,8 @@ async def get_document_page_count(
         # Download file from storage (with database fallback)
         file_bytes = None
         try:
+            if not document.file_key:
+                raise ValueError("Document has no file_key")
             supabase_storage = SupabaseStorageService()
             download_url = await supabase_storage.get_download_url(
                 bucket_name="lease-documents",
@@ -1081,6 +1086,7 @@ async def get_document_page_count(
             logger.info(f"[doc-page-count] Got Supabase download URL, downloading...")
             async with httpx_client.AsyncClient(timeout=120.0) as http_client:
                 file_response = await http_client.get(download_url)
+                file_response.raise_for_status()
                 file_bytes = file_response.content
             logger.info(f"[doc-page-count] Downloaded {len(file_bytes)} bytes from Supabase")
         except Exception as e:
@@ -1781,4 +1787,31 @@ async def export_pdf_report(
         raise
     except Exception as e:
         logger.error(f"PDF export error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class RecordShareRequest(BaseModel):
+    platform: str  # "twitter", "facebook", "linkedin"
+
+
+@router.post("/record-share")
+async def record_share_credit(
+    req: RecordShareRequest,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Record a social media share and award 1 free credit (max 4 per account)."""
+    try:
+        allowed_platforms = {"twitter", "facebook", "linkedin"}
+        if req.platform not in allowed_platforms:
+            raise HTTPException(status_code=400, detail=f"Invalid platform: {req.platform}")
+
+        credits_service = User_creditsService(db)
+        result = await credits_service.add_share_credit(current_user.id, req.platform)
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Record share error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
