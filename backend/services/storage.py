@@ -25,21 +25,34 @@ logger = logging.getLogger(__name__)
 
 
 class StorageService:
-    """Service for handling file upload and display with ObjectStorage service integration."""
+    """Service for handling file upload and display with ObjectStorage service integration.
+    
+    Note: This service is for the legacy OSS storage system. 
+    New code should use SupabaseStorageService instead.
+    """
 
     def __init__(self):
-        if not settings.oss_service_url or not settings.oss_api_key:
+        # Check if OSS is configured - allow initialization but methods will fail if not configured
+        self.is_configured = bool(settings.oss_service_url and settings.oss_api_key)
+        
+        if self.is_configured:
+            self.headers = {
+                "Authorization": f"Bearer {settings.oss_api_key}",
+                "Content-Type": "application/json",
+            }
+        else:
+            self.headers = {}
+    
+    def _check_configured(self):
+        """Check if OSS is configured before performing operations."""
+        if not self.is_configured:
             raise ValueError("OSS service not configured. Set OSS_SERVICE_URL and OSS_API_KEY.")
-
-        self.headers = {
-            "Authorization": f"Bearer {settings.oss_api_key}",
-            "Content-Type": "application/json",
-        }
 
     async def create_bucket(self, request: BucketRequest) -> BucketResponse:
         """
         Create a bucket name
         """
+        self._check_configured()
         endpoint = "api/v1/infra/client/oss/buckets"
         payload = {"bucket_name": request.bucket_name, "visibility": request.visibility}
         try:
@@ -53,6 +66,7 @@ class StorageService:
         """
         List buckets of the user
         """
+        self._check_configured()
         endpoint = "api/v1/infra/client/oss/buckets"
         try:
             result = await self._aget_oss_service(endpoint=endpoint, params={})
@@ -68,6 +82,7 @@ class StorageService:
         """
         List objests from the bucket
         """
+        self._check_configured()
         endpoint = f"api/v1/infra/client/oss/buckets/{request.bucket_name}/objects"
         try:
             result = await self._aget_oss_service(endpoint=endpoint, params={})
@@ -91,6 +106,7 @@ class StorageService:
         """
         Get object metadata from the bucket
         """
+        self._check_configured()
         try:
             endpoint = f"api/v1/infra/client/oss/buckets/{request.bucket_name}/objects/metadata"
             params = {"object_key": request.object_key}
@@ -107,6 +123,7 @@ class StorageService:
             raise
 
     async def rename_object(self, request: RenameRequest) -> dict:
+        self._check_configured()
         endpoint = f"api/v1/infra/client/oss/buckets/{request.bucket_name}/objects/rename"
         payload = {
             "overwrite_key": request.overwrite_key,
@@ -121,6 +138,7 @@ class StorageService:
             raise
 
     async def delete_object(self, request: ObjectRequest) -> DeleteResponse:
+        self._check_configured()
         endpoint = f"api/v1/infra/client/oss/buckets/{request.bucket_name}/objects"
         payload = {"object_keys": [request.object_key]}
         try:
@@ -134,6 +152,7 @@ class StorageService:
         """
         Create presigned URL for file upload with access URL.
         """
+        self._check_configured()
         endpoint = f"/api/v1/infra/client/oss/buckets/{request.bucket_name}/objects/upload_url"
         payload = {"expires_in": 0, "object_key": request.object_key}
         try:
@@ -151,6 +170,7 @@ class StorageService:
         """
         Create presigned URL for file download with access URL.
         """
+        self._check_configured()
         endpoint = f"/api/v1/infra/client/oss/buckets/{request.bucket_name}/objects/download_url"
         content_type, _ = mimetypes.guess_type(str(request.object_key))
         if not content_type:
