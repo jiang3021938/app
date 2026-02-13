@@ -7,6 +7,8 @@ import { viteSourceLocator } from '@metagptx/vite-plugin-source-locator';
 export default defineConfig(({ mode }) => ({
   plugins: [
     // Source locator plugin must be before react plugin for React projects
+    // Note: Plugin is configured but may require additional setup or browser extension
+    // for the "right-side preview" feature to work properly
     viteSourceLocator({
       include: ['src'],
       prefix: 'locator',
