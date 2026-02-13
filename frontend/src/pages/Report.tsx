@@ -178,8 +178,8 @@ export default function ReportPage() {
         // Parse risk flags
         if (ext.risk_flags) {
           try {
-            const flags = JSON.parse(ext.risk_flags.replace(/'/g, '"'));
-            setRiskFlags(Array.isArray(flags) ? flags : []);
+            const parsed = typeof ext.risk_flags === 'string' ? JSON.parse(ext.risk_flags) : ext.risk_flags;
+            setRiskFlags(Array.isArray(parsed) ? parsed : []);
           } catch (e) {
             console.error("Failed to parse risk flags:", e);
           }

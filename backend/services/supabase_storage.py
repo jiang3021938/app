@@ -17,13 +17,15 @@ class SupabaseStorageService:
     def __init__(self):
         self.supabase_url = os.environ.get("SUPABASE_URL", "")
         self.supabase_key = os.environ.get("SUPABASE_KEY", "")
+        self.supabase_service_role_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
         if not self.supabase_url or not self.supabase_key:
             raise ValueError("SUPABASE_URL and SUPABASE_KEY environment variables must be set")
 
-    def _headers(self, content_type: Optional[str] = None) -> dict:
+    def _headers(self, content_type: Optional[str] = None, use_service_role: bool = False) -> dict:
+        key = self.supabase_service_role_key if (use_service_role and self.supabase_service_role_key) else self.supabase_key
         headers = {
-            "apikey": self.supabase_key,
-            "Authorization": f"Bearer {self.supabase_key}",
+            "apikey": key,
+            "Authorization": f"Bearer {key}",
         }
         if content_type:
             headers["Content-Type"] = content_type
@@ -36,7 +38,7 @@ class SupabaseStorageService:
         async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(
                 url,
-                headers=self._headers(content_type),
+                headers=self._headers(content_type, use_service_role=True),
                 content=file_data,
             )
 
@@ -44,7 +46,7 @@ class SupabaseStorageService:
                 # File might already exist, try upsert via PUT
                 response = await client.put(
                     url,
-                    headers=self._headers(content_type),
+                    headers=self._headers(content_type, use_service_role=True),
                     content=file_data,
                 )
 
@@ -62,7 +64,7 @@ class SupabaseStorageService:
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
                 url,
-                headers={**self._headers("application/json")},
+                headers={**self._headers("application/json", use_service_role=True)},
                 json={"expiresIn": expires_in},
             )
 
@@ -83,7 +85,7 @@ class SupabaseStorageService:
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.delete(
                 url,
-                headers={**self._headers("application/json")},
+                headers={**self._headers("application/json", use_service_role=True)},
                 json={"prefixes": [object_key]},
             )
 

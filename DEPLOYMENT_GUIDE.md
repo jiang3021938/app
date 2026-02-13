@@ -29,6 +29,7 @@
 DATABASE_URL=postgresql://...
 SUPABASE_URL=https://zbinmdvdailctymiignm.supabase.co
 SUPABASE_KEY=sb_publishable_en0KrbZUp440Uaj4uoglGw_74muRt73
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 ENVIRONMENT=prod
 PORT=8000
 ```
