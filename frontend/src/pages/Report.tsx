@@ -189,11 +189,21 @@ export default function ReportPage() {
         // Parse risk flags (only medium/high severity)
         if (ext.risk_flags) {
           try {
+            let parsed = ext.risk_flags;
+            if (typeof parsed === 'string') {
+              parsed = JSON.parse(parsed);
+            }
+            // Handle double serialization case
+            if (typeof parsed === 'string') {
+              parsed = JSON.parse(parsed);
+            }
+            setRiskFlags(Array.isArray(parsed) ? parsed : []);
             const parsed = typeof ext.risk_flags === 'string' ? JSON.parse(ext.risk_flags) : ext.risk_flags;
             const flags = Array.isArray(parsed) ? parsed : [];
             setRiskFlags(flags.filter((f: RiskFlag) => f.severity?.toLowerCase() !== 'low'));
           } catch (e) {
-            console.error("Failed to parse risk flags:", e);
+            console.error("Failed to parse risk flags:", e, ext.risk_flags);
+            setRiskFlags([]);
           }
         }
 
