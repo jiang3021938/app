@@ -197,8 +197,6 @@ export default function ReportPage() {
             if (typeof parsed === 'string') {
               parsed = JSON.parse(parsed);
             }
-            setRiskFlags(Array.isArray(parsed) ? parsed : []);
-            const parsed = typeof ext.risk_flags === 'string' ? JSON.parse(ext.risk_flags) : ext.risk_flags;
             const flags = Array.isArray(parsed) ? parsed : [];
             setRiskFlags(flags.filter((f: RiskFlag) => f.severity?.toLowerCase() !== 'low'));
           } catch (e) {
