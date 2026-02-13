@@ -20,9 +20,11 @@ class SupabaseStorageService:
         self.supabase_service_role_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
         if not self.supabase_url or not self.supabase_key:
             raise ValueError("SUPABASE_URL and SUPABASE_KEY environment variables must be set")
+        if not self.supabase_service_role_key:
+            logger.warning("SUPABASE_SERVICE_ROLE_KEY not set; storage operations may fail due to RLS policies")
 
     def _headers(self, content_type: Optional[str] = None, use_service_role: bool = False) -> dict:
-        key = self.supabase_service_role_key if (use_service_role and self.supabase_service_role_key) else self.supabase_key
+        key = self.supabase_service_role_key if use_service_role and self.supabase_service_role_key else self.supabase_key
         headers = {
             "apikey": key,
             "Authorization": f"Bearer {key}",
