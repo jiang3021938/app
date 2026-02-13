@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 def _extract_docx_text(file_bytes: bytes) -> List[str]:
     """Extract text paragraphs from a .docx file using only stdlib (zipfile + xml).
     No python-docx or lxml needed. Returns list of paragraph strings."""
+    WORD_NS = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
     paragraphs = []
     try:
         with zipfile.ZipFile(io.BytesIO(file_bytes)) as zf:
@@ -25,11 +26,9 @@ def _extract_docx_text(file_bytes: bytes) -> List[str]:
                 with zf.open("word/document.xml") as f:
                     tree = ET.parse(f)
                     root = tree.getroot()
-                    # Word XML namespace
-                    ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
-                    for para in root.iter("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p"):
+                    for para in root.iter(f"{WORD_NS}p"):
                         texts = []
-                        for run in para.iter("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}t"):
+                        for run in para.iter(f"{WORD_NS}t"):
                             if run.text:
                                 texts.append(run.text)
                         line = "".join(texts).strip()

@@ -290,9 +290,9 @@ class PDFExtractor:
                 for line in lines:
                     if y + line_height > height - margin:
                         break
-                    escaped = line.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    escaped = line.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
                     svg_parts.append(
-                        f'<text x="{margin}" y="{y}" font-family="monospace" font-size="{font_size}" fill="#1a1a1a">{escaped}</text>'
+                        f'<text x="{margin}" y="{y}" font-family="monospace, Courier, sans-serif" font-size="{font_size}" fill="#1a1a1a">{escaped}</text>'
                     )
                     y += line_height
                 svg_parts.append('</svg>')
