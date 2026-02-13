@@ -34,6 +34,7 @@ class ExtractionsData(BaseModel):
     pet_policy: str = None
     late_fee_terms: str = None
     risk_flags: str = None
+    audit_checklist: str = None
     compliance_data: str = None
     raw_extraction: str = None
     source_map: str = None
@@ -55,6 +56,7 @@ class ExtractionsUpdateData(BaseModel):
     pet_policy: Optional[str] = None
     late_fee_terms: Optional[str] = None
     risk_flags: Optional[str] = None
+    audit_checklist: Optional[str] = None
     compliance_data: Optional[str] = None
     raw_extraction: Optional[str] = None
     source_map: Optional[str] = None
@@ -78,6 +80,7 @@ class ExtractionsResponse(BaseModel):
     pet_policy: Optional[str] = None
     late_fee_terms: Optional[str] = None
     risk_flags: Optional[str] = None
+    audit_checklist: Optional[str] = None
     compliance_data: Optional[str] = None
     raw_extraction: Optional[str] = None
     source_map: Optional[str] = None
