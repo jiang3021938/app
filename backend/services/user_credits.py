@@ -173,10 +173,10 @@ class User_creditsService:
 
     async def add_credits(self, user_id: str, credits_to_add: int) -> Optional[User_credits]:
         """Add paid credits to a user's account."""
+        from datetime import datetime
         try:
             user_credits = await self.get_by_field("user_id", user_id)
             if not user_credits:
-                from datetime import datetime
                 user_credits = await self.create({
                     "user_id": user_id,
                     "free_credits": 0,
@@ -186,9 +186,8 @@ class User_creditsService:
                     "updated_at": datetime.now(),
                 })
             else:
-                from datetime import datetime
                 current_paid = user_credits.paid_credits or 0
-                await self.update(user_credits.id, {
+                user_credits = await self.update(user_credits.id, {
                     "paid_credits": current_paid + credits_to_add,
                     "updated_at": datetime.now(),
                 })

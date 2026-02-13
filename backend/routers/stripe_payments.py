@@ -24,6 +24,8 @@ router = APIRouter(prefix="/api/v1/payment", tags=["payment"])
 
 logger = logging.getLogger(__name__)
 
+CENTS_PER_DOLLAR = 100
+
 # Pricing configuration
 PRICING = {
     "single": {
@@ -124,7 +126,7 @@ async def create_checkout_session(
         await payments_service.create({
             'user_id': current_user.id,
             'stripe_session_id': checkout_session.id,
-            'amount': plan['price'] / 100.0,  # Store in dollars
+            'amount': plan['price'] / CENTS_PER_DOLLAR,  # Store in dollars
             'currency': 'usd',
             'credits_purchased': plan['credits'],
             'payment_type': request.plan_type,
@@ -264,7 +266,7 @@ async def get_pricing():
         plans_list.append({
             "id": plan_id,
             **plan_data,
-            "price": plan_data["price"] / 100,  # Convert cents to dollars for display
+            "price": plan_data["price"] / CENTS_PER_DOLLAR,  # Convert cents to dollars for display
             "popular": plan_id == "pack5",
             "recurring": plan_id == "monthly",
             "features": plan_features.get(plan_id, []),
