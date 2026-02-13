@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, ArrowLeft, Clock, ArrowRight } from "lucide-react";
+import { ShareForCredits } from "@/components/ShareForCredits";
+import { LeaseChecklistDownload } from "@/components/EmailCaptureForm";
 
 const ARTICLES: Record<string, { title: string; category: string; readTime: string; date: string; sections: { heading: string; content: string }[]; }> = {
   "california-lease-clauses": {
@@ -89,9 +91,50 @@ export default function BlogPostPage() {
             <div key={idx} className="mb-8">
               <h2 className="text-xl font-semibold text-slate-800 mb-3">{section.heading}</h2>
               <p className="text-slate-600 leading-relaxed">{section.content}</p>
+              
+              {/* Insert CTA after 2nd section */}
+              {idx === 1 && (
+                <Card className="my-6 bg-blue-50 border-blue-200">
+                  <CardContent className="py-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div>
+                        <p className="font-semibold text-slate-800 mb-1">
+                          📄 Free Lease Review Checklist
+                        </p>
+                        <p className="text-sm text-slate-600">
+                          Get our 25-point checklist - never miss critical clauses again!
+                        </p>
+                      </div>
+                      <LeaseChecklistDownload />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           ))}
         </article>
+
+        {/* Share This Article */}
+        <div className="mt-8 mb-8">
+          <Card className="bg-slate-50">
+            <CardContent className="py-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                  <p className="font-semibold text-slate-800 mb-1">
+                    Found this helpful? Share it!
+                  </p>
+                  <p className="text-sm text-slate-600">
+                    Earn 1 free analysis credit when you share this article.
+                  </p>
+                </div>
+                <ShareForCredits 
+                  message={`Check out this article: ${article.title}`}
+                  url={`https://www.leaselenses.com/blog/${slug}`}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* CTA */}
         <Card className="mt-12 bg-gradient-to-r from-blue-600 to-blue-700 border-0">

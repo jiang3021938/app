@@ -21,6 +21,36 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.leaselenses.com/blog/california-lease-clauses</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/review-lease-5-minutes</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/security-deposit-laws</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/lease-renewal-mistakes</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/ai-vs-lawyer-lease-review</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/late-fee-best-practices</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.leaselenses.com/case-studies</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -44,5 +74,15 @@
     <loc>https://www.leaselenses.com/login</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/privacy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/terms</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>

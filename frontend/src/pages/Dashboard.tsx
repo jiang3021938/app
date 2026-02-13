@@ -19,6 +19,8 @@ import {
 import GoogleLoginButton from "@/components/GoogleLoginButton";
 import { checkAuthStatus, performLogout } from "@/lib/checkAuth";
 import { apiCall, documents as documentsApi } from "@/lib/api";
+import { ReferralDashboard } from "@/components/ReferralDashboard";
+import { ShareForCredits } from "@/components/ShareForCredits";
 
 interface Document {
   id: number;
@@ -273,6 +275,34 @@ export default function Dashboard() {
           </Button>
         </div>
 
+        {/* Growth Hacking: Share for Credits & Referral */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ShareForCredits variant="card" />
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+            <CardHeader>
+              <CardTitle>Earn More Credits</CardTitle>
+              <CardDescription>
+                Refer friends and earn free credits for every successful referral
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => {
+                  // Scroll to referral section or navigate to dedicated page
+                  const referralSection = document.getElementById('referral-dashboard');
+                  if (referralSection) {
+                    referralSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
+                View Referral Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Documents List */}
         <Card>
           <CardHeader>
@@ -331,6 +361,11 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* Referral Dashboard Section */}
+        <div id="referral-dashboard">
+          <ReferralDashboard />
+        </div>
 
         {/* No Credits Modal */}
         <Dialog open={showNoCreditsModal} onOpenChange={setShowNoCreditsModal}>

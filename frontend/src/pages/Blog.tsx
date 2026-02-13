@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, ArrowLeft, Clock, ArrowRight } from "lucide-react";
+import { ShareForCredits } from "@/components/ShareForCredits";
+import { LeaseChecklistDownload } from "@/components/EmailCaptureForm";
 
 const BLOG_POSTS = [
   {
@@ -83,6 +85,28 @@ export default function BlogPage() {
             Expert guides, state-specific laws, and practical tips for lease management.
           </p>
         </div>
+
+        {/* Growth Hacking: Share for Credits */}
+        <div className="mb-8">
+          <ShareForCredits variant="card" />
+        </div>
+
+        {/* Free Resource Download */}
+        <Card className="mb-12 bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+          <CardContent className="py-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                  📋 Free Lease Review Checklist
+                </h3>
+                <p className="text-slate-600">
+                  Get our comprehensive 25-point checklist to review any lease agreement. Never miss critical clauses!
+                </p>
+              </div>
+              <LeaseChecklistDownload />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Featured Posts */}
         <div className="grid md:grid-cols-2 gap-6 mb-12">
