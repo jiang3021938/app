@@ -44,7 +44,7 @@ export default function ComparePage() {
         const c = creditsRes.data;
         setIsProUser(c.is_admin || c.subscription_type === "monthly");
       } catch {
-        setIsProUser(true);
+        setIsProUser(false);
       }
 
       const docsRes = await documentsApi.query({ sort: "-created_at", limit: 50 });

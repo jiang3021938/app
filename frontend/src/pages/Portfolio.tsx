@@ -65,7 +65,7 @@ export default function PortfolioPage() {
         const c = creditsRes.data;
         setIsProUser(c.is_admin || c.subscription_type === "monthly");
       } catch {
-        setIsProUser(true);
+        setIsProUser(false);
       }
 
       const response = await apiCall({
