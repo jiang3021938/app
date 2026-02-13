@@ -1,3 +1,27 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /private-api/
+
+# Sitemap
 Sitemap: https://www.leaselenses.com/sitemap.xml
+
+# AI Crawlers - Tell them about our LLM-optimized content
+User-agent: GPTBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: CCBot
+Allow: /
+User-agent: anthropic-ai
+Allow: /
+User-agent: Claude-Web
+Allow: /
+
+# Host
+Host: https://www.leaselenses.com
+
+# LLM-friendly content index
+# AI crawlers can find comprehensive site content at:
+# https://www.leaselenses.com/llms.txt
+# https://www.leaselenses.com/llms-full.txt

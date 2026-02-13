@@ -1,0 +1,119 @@
+# LeaseLenses - AI-Powered Lease Agreement Analysis
+
+## About LeaseLenses
+LeaseLenses is an AI-powered lease agreement analysis and rental contract review tool designed for landlords and property managers. Our platform helps you quickly analyze lease documents, extract key terms, identify risks, and manage important dates.
+
+## Key Features
+- AI-powered lease analysis
+- Automatic key term extraction
+- Risk identification and alerts
+- Calendar reminders for important dates
+- Multi-document comparison
+- State-specific compliance checking
+- Portfolio management
+- Batch document processing
+
+## Main Pages
+
+### Home (/)
+LeaseLenses provides instant lease agreement analysis. Upload your rental contract PDF and get automated extraction of key terms, risk analysis, and calendar reminders in minutes.
+
+### Features (/features)
+- **AI Document Analysis**: Advanced AI extracts critical information from lease agreements
+- **Risk Assessment**: Identify potential legal issues and unfavorable terms
+- **Calendar Integration**: Automatic reminders for rent increases, lease renewals, and important deadlines
+- **Multi-State Compliance**: State-specific legal requirements checking
+- **Portfolio View**: Manage multiple properties and leases in one place
+- **Comparison Tool**: Side-by-side lease comparison
+
+### Pricing (/pricing)
+- **Free Trial**: 1 free lease analysis
+- **Basic Plan**: $9.99/month - 10 analyses per month
+- **Pro Plan**: $29.99/month - Unlimited analyses
+- **Enterprise**: Custom pricing for property management companies
+
+### Blog (/blog)
+Expert guides and resources for landlords:
+- "How to Review a Lease Agreement in 5 Minutes Using AI"
+- "10 Red Flags in Rental Agreements"
+- "California Lease Agreement: 10 Clauses Every Landlord Must Include"
+- "Security Deposit Laws by State: 2026 Complete Guide"
+- "5 Common Lease Renewal Mistakes That Cost Landlords Money"
+- "State-by-State Lease Compliance Guide"
+
+### Case Studies (/case-studies)
+Real-world examples of how LeaseLenses helped landlords:
+- Identifying unfavorable lease terms
+- Avoiding costly mistakes
+- Streamlining lease management
+- Ensuring compliance with state laws
+
+### Templates (/templates)
+Free lease agreement templates and resources:
+- Residential lease agreement templates
+- Commercial lease templates
+- Lease addendum templates
+- State-specific lease forms
+- Lease review checklists
+
+## Common Use Cases
+
+### For Small Landlords
+- Review tenant-provided lease agreements
+- Ensure compliance with local laws
+- Track important dates and deadlines
+- Compare multiple lease offers
+
+### For Property Managers
+- Standardize lease review process
+- Manage multiple properties efficiently
+- Bulk document processing
+- Portfolio-wide compliance monitoring
+
+## Keywords and Topics
+- Lease agreement analysis
+- Rental contract review
+- Landlord tools
+- Lease clause checker
+- Rental agreement analyzer
+- How to review a lease agreement
+- California lease analysis
+- Texas rental agreement review
+- Security deposit laws
+- Lease compliance
+- Rental property management
+- Lease renewal process
+- Late fee policies
+- Pet policies in leases
+- Maintenance responsibilities
+- Lease termination clauses
+
+## Target Audience
+- Small landlords with 1-10 properties
+- Independent property managers
+- Real estate investors
+- First-time landlords
+- Rental property owners
+
+## Geographic Focus
+Primary markets:
+- California
+- Texas
+- Florida
+- New York
+- Illinois
+
+## Technical Information
+- Web-based application (no download required)
+- Supports PDF and Word documents
+- Secure document processing
+- GDPR and privacy compliant
+- Mobile-friendly interface
+
+## Contact & Support
+- Website: https://www.leaselenses.com
+- Support: Available through website contact form
+- Response time: Within 24 hours
+
+## Related Resources
+See /llms-full.txt for comprehensive content including all blog articles, legal guides, and detailed feature documentation.
