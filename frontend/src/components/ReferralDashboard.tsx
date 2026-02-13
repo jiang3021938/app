@@ -15,7 +15,9 @@ interface ReferralStats {
 }
 
 export function ReferralDashboard() {
-  // In production, this would come from an API
+  // TODO: Backend Integration Required
+  // In production, these stats should come from API endpoint (GET /api/referrals/stats)
+  // The referral code should be unique per user and fetched from user profile
   const [stats] = useState<ReferralStats>({
     totalReferrals: 3,
     successfulReferrals: 2,
@@ -23,7 +25,11 @@ export function ReferralDashboard() {
     pendingReferrals: 1,
   });
 
-  const referralCode = "LEASE-ABC123"; // In production, this would be unique per user
+  // TODO: Backend Integration Required
+  // Generate unique referral code per user from backend
+  // Example API: GET /api/user/referral-code
+  // This should be based on user ID, e.g., "LEASE-{userID}-{hash}"
+  const referralCode = "LEASE-ABC123"; // Placeholder - replace with dynamic code
   const referralUrl = `https://www.leaselenses.com/register?ref=${referralCode}`;
 
   const copyReferralLink = async () => {
@@ -125,7 +131,7 @@ export function ReferralDashboard() {
           </CardHeader>
           <CardContent>
             <Progress 
-              value={(stats.successfulReferrals / stats.totalReferrals) * 100} 
+              value={stats.totalReferrals > 0 ? (stats.successfulReferrals / stats.totalReferrals) * 100 : 0} 
               className="h-2"
             />
           </CardContent>

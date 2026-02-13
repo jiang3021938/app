@@ -47,7 +47,14 @@ export function ShareForCredits({
 
     if (shareUrl) {
       window.open(shareUrl, "_blank", "width=600,height=400");
-      // Simulate credit reward - in production, this would call an API
+      
+      // TODO: Backend Integration Required
+      // This simulates the credit reward. In production, implement:
+      // 1. Track share events via API endpoint (POST /api/shares)
+      // 2. Verify user authentication
+      // 3. Increment user credits in database
+      // 4. Prevent duplicate rewards (track by user + platform + timestamp)
+      // 5. Consider using social media APIs to verify actual sharing
       setTimeout(() => {
         toast.success("🎉 Thanks for sharing! You've earned 1 free credit!", {
           description: "Your credit will be added to your account shortly."

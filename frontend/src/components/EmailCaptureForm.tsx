@@ -34,7 +34,14 @@ export function EmailCaptureForm({
 
     setIsSubmitting(true);
 
-    // Simulate API call - in production, this would save the email to your mailing list
+    // TODO: Backend Integration Required
+    // In production, implement proper email capture:
+    // 1. POST email to /api/newsletter/subscribe or /api/leads/capture
+    // 2. Store in database with source tracking (which resource was downloaded)
+    // 3. Integrate with email marketing platform (Mailchimp, SendGrid, etc.)
+    // 4. Send welcome email with the PDF attachment
+    // 5. Add to appropriate email sequence
+    // 6. Track conversion funnel (download -> signup -> paid)
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSuccess(true);
