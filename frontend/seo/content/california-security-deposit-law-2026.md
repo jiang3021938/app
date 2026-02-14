@@ -6,7 +6,7 @@ lang: "en"
 ---
 # California Security Deposit Return Law 2026: Landlord's Essential Guide
 
-![California Security Deposit Return Law 2026: Landlord's Essential Guide](/assets/california-security-deposit-law-2026-hero.jpg)
+![California Security Deposit Return Law 2026: Landlord's Essential Guide](/assets/california-security-deposit-law-2026-hero.webp)
 
 Navigating the intricate world of California landlord laws can feel like a full-time job, especially when it comes to the highly regulated area of security deposits. For landlords operating in the Golden State, understanding the **California security deposit return law 2026** is not just good practice—it's a legal imperative. Mistakes can lead to costly disputes, hefty fines, and damaged reputations.
 

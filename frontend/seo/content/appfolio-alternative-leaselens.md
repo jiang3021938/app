@@ -7,7 +7,7 @@ lang: "en"
 
 # AppFolio Alternative: Why LeaseLens is Your Next-Gen Property Management Tool
 
-![AppFolio Alternative: Why LeaseLens is Your Next-Gen Property Management Tool](/assets/appfolio-alternative-leaselens-hero.jpg)
+![AppFolio Alternative: Why LeaseLens is Your Next-Gen Property Management Tool](/assets/appfolio-alternative-leaselens-hero.webp)
 
 In today's fast-paced real estate market, small landlords and property managers managing 2-20 properties face unique challenges. While robust platforms like AppFolio offer comprehensive property management solutions, they often cater to larger portfolios, sometimes leaving smaller operations feeling overwhelmed or underserved in specific, crucial areas. If you're searching for an **AppFolio alternative** that hones in on the critical task of lease management with unparalleled precision and intelligence, LeaseLens is designed for you.
 

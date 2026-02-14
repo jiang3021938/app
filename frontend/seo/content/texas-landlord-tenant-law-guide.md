@@ -7,7 +7,7 @@ lang: "en"
 
 # Texas Landlord Tenant Law Simplified: Your 2026 Compliance Checklist
 
-![Texas Landlord Tenant Law Simplified: Your 2026 Compliance Checklist](/assets/texas-landlord-tenant-law-guide-hero.jpg)
+![Texas Landlord Tenant Law Simplified: Your 2026 Compliance Checklist](/assets/texas-landlord-tenant-law-guide-hero.webp)
 
 ## Navigating the Lone Star State's Rental Landscape: A Landlord's 2026 Guide
 

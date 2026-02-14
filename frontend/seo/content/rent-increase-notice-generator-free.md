@@ -7,7 +7,7 @@ lang: "en"
 
 # Free Rent Increase Notice Generator: Create Compliant Notices Instantly
 
-![Free Rent Increase Notice Generator: Create Compliant Notices Instantly](/assets/rent-increase-notice-generator-free-hero.jpg)
+![Free Rent Increase Notice Generator: Create Compliant Notices Instantly](/assets/rent-increase-notice-generator-free-hero.webp)
 
 As a landlord, managing rent increases can be one of the most delicate and legally complex aspects of property management. Sending a non-compliant rent increase notice can lead to significant headaches, from invalid notices and delayed rent adjustments to costly legal battles and tenant disputes. Whether you manage two properties or twenty, ensuring your notices adhere to every state and local regulation is paramount. This is where a reliable **free rent increase notice generator** becomes an indispensable tool.
 
