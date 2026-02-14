@@ -3,6 +3,7 @@ import os
 import jwt
 import random
 import string
+import hashlib
 import secrets
 import uuid
 import httpx
@@ -47,14 +48,28 @@ def hash_password(password: str) -> str:
     return hashed.decode('utf-8')
 
 
+def _verify_legacy_sha256(password: str, hashed: str) -> bool:
+    """Verify password against legacy SHA-256 hash (salt$hex format)."""
+    try:
+        salt, stored_hash = hashed.split('$', 1)
+        hash_obj = hashlib.sha256((password + salt).encode())
+        return hash_obj.hexdigest() == stored_hash
+    except (ValueError, AttributeError):
+        return False
+
+
 def verify_password(password: str, hashed: str) -> bool:
-    """Verify password against bcrypt hash."""
+    """Verify password against bcrypt hash, with fallback to legacy SHA-256."""
+    # Try bcrypt first
     try:
         password_bytes = password.encode('utf-8')
         hashed_bytes = hashed.encode('utf-8')
-        return bcrypt.checkpw(password_bytes, hashed_bytes)
+        if bcrypt.checkpw(password_bytes, hashed_bytes):
+            return True
     except (ValueError, AttributeError):
-        return False
+        pass
+    # Fallback: legacy SHA-256 (salt$hex)
+    return _verify_legacy_sha256(password, hashed)
 
 
 def generate_verification_code() -> str:
@@ -117,11 +132,29 @@ class EmailAuthService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def send_verification_code(self, email: str) -> Tuple[bool, str]:
+    async def send_verification_code(self, email: str, purpose: str = "register") -> Tuple[bool, str]:
         """Send verification code to email via Resend."""
         # Check rate limit
         if not check_send_code_rate_limit(email):
             return False, "Too many requests. Please try again later."
+        
+        # For registration, check if email is already registered
+        if purpose == "register":
+            result = await self.db.execute(
+                select(User).where(User.email == email)
+            )
+            existing_user = result.scalar_one_or_none()
+            if existing_user:
+                return False, "This email is already registered. Please sign in instead."
+        
+        # For password reset, check if email exists
+        if purpose == "reset":
+            result = await self.db.execute(
+                select(User).where(User.email == email)
+            )
+            existing_user = result.scalar_one_or_none()
+            if not existing_user:
+                return False, "No account found with this email address."
         
         code = generate_verification_code()
         
@@ -267,6 +300,39 @@ class EmailAuthService:
             "name": new_user.name
         }
 
+    async def reset_password(
+        self,
+        email: str,
+        new_password: str
+    ) -> Tuple[bool, str]:
+        """Reset password for a verified email."""
+        # Check if email has been verified
+        if email not in verified_emails:
+            return False, "Email not verified. Please verify your email first."
+
+        if datetime.now(timezone.utc) > verified_emails[email]:
+            del verified_emails[email]
+            return False, "Email verification expired. Please verify your email again."
+
+        # Find user by email
+        result = await self.db.execute(
+            select(User).where(User.email == email)
+        )
+        user = result.scalar_one_or_none()
+
+        if not user:
+            return False, "No account found with this email address."
+
+        # Update password
+        user.password_hash = hash_password(new_password)
+        await self.db.commit()
+
+        # Remove verified email tracking
+        verified_emails.pop(email, None)
+
+        logger.info(f"[EmailAuth] Password reset for: {email}")
+        return True, "Password reset successful. You can now sign in with your new password."
+
     async def login_user(
         self, 
         email: str, 
@@ -286,6 +352,10 @@ class EmailAuthService:
         # Check password
         if not verify_password(password, user.password_hash):
             return False, "Invalid email or password.", None
+        
+        # Auto-migrate legacy SHA-256 hash to bcrypt
+        if not user.password_hash.startswith("$2b$"):
+            user.password_hash = hash_password(password)
         
         # Update last login
         user.last_login = datetime.now(timezone.utc)

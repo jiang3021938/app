@@ -26,11 +26,19 @@ def validate_email(email: str) -> str:
 
 class SendCodeRequest(BaseModel):
     email: str
+    purpose: str = "register"
 
     @field_validator('email')
     @classmethod
     def validate_email_format(cls, v):
         return validate_email(v)
+
+    @field_validator('purpose')
+    @classmethod
+    def validate_purpose(cls, v):
+        if v not in ("register", "reset"):
+            raise ValueError('Purpose must be "register" or "reset"')
+        return v
 
 
 class VerifyCodeRequest(BaseModel):
@@ -71,12 +79,29 @@ class LoginRequest(BaseModel):
         return validate_email(v)
 
 
+class ResetPasswordRequest(BaseModel):
+    email: str
+    password: str
+
+    @field_validator('email')
+    @classmethod
+    def validate_email_format(cls, v):
+        return validate_email(v)
+
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v):
+        if len(v) < 6:
+            raise ValueError('Password must be at least 6 characters')
+        return v
+
+
 @router.post("/send-code")
 async def send_code(request: SendCodeRequest, db: AsyncSession = Depends(get_db)):
     """Send verification code to email via Resend."""
     try:
         service = EmailAuthService(db)
-        success, result = await service.send_verification_code(request.email)
+        success, result = await service.send_verification_code(request.email, purpose=request.purpose)
         if success:
             return {"success": True, "message": "Verification code sent to your email"}
         else:
@@ -135,6 +160,23 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     except Exception as e:
         logger.error(f"Error logging in: {str(e)}")
         return {"success": False, "message": "Login failed"}
+
+
+@router.post("/reset-password")
+async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    """Reset password after email verification."""
+    try:
+        service = EmailAuthService(db)
+        success, message = await service.reset_password(
+            email=request.email,
+            new_password=request.password
+        )
+        if not success:
+            return {"success": False, "message": message}
+        return {"success": True, "message": message}
+    except Exception as e:
+        logger.error(f"Error resetting password: {str(e)}")
+        return {"success": False, "message": "Password reset failed"}
 
 
 @router.get("/me")
