@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, ArrowLeft, Clock, ArrowRight } from "lucide-react";
+import { FileText, ArrowLeft, Clock, ArrowRight, Shield, TrendingUp, AlertTriangle, Calculator } from "lucide-react";
 import { ShareForCredits } from "@/components/ShareForCredits";
 import { LeaseChecklistDownload } from "@/components/EmailCaptureForm";
 import { blogPostsBySlug } from "@/lib/blogData";
@@ -12,6 +12,75 @@ import DOMPurify from "dompurify";
 
 // Configure marked
 marked.setOptions({ breaks: true, gfm: true });
+
+// Map blog slugs to related free tools
+const RELATED_TOOLS: Record<string, { path: string; title: string; description: string; icon: "shield" | "trending" | "file" | "alert" }[]> = {
+  "security-deposit-laws": [
+    { path: "/tools/security-deposit-calculator", title: "Security Deposit Calculator", description: "Calculate the maximum deposit your landlord can legally charge in your state.", icon: "shield" },
+  ],
+  "california-lease-clauses": [
+    { path: "/tools/security-deposit-calculator", title: "Security Deposit Calculator", description: "Check California's security deposit limits instantly.", icon: "shield" },
+    { path: "/tools/late-fee-checker", title: "Late Fee Checker", description: "Verify if your late fee complies with California law.", icon: "alert" },
+  ],
+  "california-security-deposit-law-2026": [
+    { path: "/tools/security-deposit-calculator", title: "Security Deposit Calculator", description: "Calculate California's current deposit limits.", icon: "shield" },
+  ],
+  "florida-security-deposit-rules-2026": [
+    { path: "/tools/security-deposit-calculator", title: "Security Deposit Calculator", description: "Check Florida's security deposit rules.", icon: "shield" },
+  ],
+  "new-york-rent-control-laws-guide": [
+    { path: "/tools/rent-increase-calculator", title: "Rent Increase Calculator", description: "Calculate the maximum legal rent increase in New York.", icon: "trending" },
+  ],
+  "rent-increase-notice-generator-free": [
+    { path: "/tools/rent-increase-calculator", title: "Rent Increase Calculator", description: "Calculate the maximum legal rent increase for your area.", icon: "trending" },
+    { path: "/tools/lease-termination-notice-generator", title: "Termination Notice Generator", description: "Generate a professional lease termination letter.", icon: "file" },
+  ],
+  "illinois-eviction-notice-requirements": [
+    { path: "/tools/lease-termination-notice-generator", title: "Termination Notice Generator", description: "Generate a lease termination notice for Illinois.", icon: "file" },
+  ],
+  "texas-landlord-tenant-law-guide": [
+    { path: "/tools/security-deposit-calculator", title: "Security Deposit Calculator", description: "Check Texas security deposit rules.", icon: "shield" },
+    { path: "/tools/late-fee-checker", title: "Late Fee Checker", description: "Verify if a late fee is legal in Texas.", icon: "alert" },
+  ],
+  "review-lease-5-minutes": [
+    { path: "/tools/security-deposit-calculator", title: "Security Deposit Calculator", description: "Quickly check your state's deposit limits.", icon: "shield" },
+    { path: "/tools/late-fee-checker", title: "Late Fee Checker", description: "Instantly check if your late fee is legal.", icon: "alert" },
+  ],
+};
+
+function getToolIcon(icon: string) {
+  switch (icon) {
+    case "shield": return <Shield className="h-5 w-5 text-blue-600" />;
+    case "trending": return <TrendingUp className="h-5 w-5 text-green-600" />;
+    case "file": return <FileText className="h-5 w-5 text-purple-600" />;
+    case "alert": return <AlertTriangle className="h-5 w-5 text-amber-600" />;
+    default: return <Calculator className="h-5 w-5 text-blue-600" />;
+  }
+}
+
+const RELATED_TOOLS_HEADING = "🛠️ Try Our Free Tools";
+
+function RelatedToolsSection({ slug, navigate }: { slug: string | undefined; navigate: (path: string) => void }) {
+  if (!slug || !RELATED_TOOLS[slug]) return null;
+  return (
+    <div className="mt-8">
+      <h3 className="text-lg font-semibold text-slate-800 mb-4">{RELATED_TOOLS_HEADING}</h3>
+      <div className="grid sm:grid-cols-2 gap-4">
+        {RELATED_TOOLS[slug].map((tool) => (
+          <Card key={tool.path} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(tool.path)}>
+            <CardContent className="py-4 flex items-start gap-3">
+              {getToolIcon(tool.icon)}
+              <div>
+                <p className="font-medium text-slate-800">{tool.title}</p>
+                <p className="text-sm text-slate-500">{tool.description}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // Keep legacy hardcoded articles as fallback for old slugs
 const LEGACY_ARTICLES: Record<string, { title: string; category: string; readTime: string; date: string; sections: { heading: string; content: string }[]; }> = {
@@ -182,6 +251,8 @@ export default function BlogPostPage() {
             </Card>
           </div>
 
+          <RelatedToolsSection slug={slug} navigate={navigate} />
+
           {/* CTA */}
           <Card className="mt-12 bg-gradient-to-r from-blue-600 to-blue-700 border-0">
             <CardContent className="py-8 text-center">
@@ -285,6 +356,8 @@ export default function BlogPostPage() {
             </CardContent>
           </Card>
         </div>
+
+        <RelatedToolsSection slug={slug} navigate={navigate} />
 
         {/* CTA */}
         <Card className="mt-12 bg-gradient-to-r from-blue-600 to-blue-700 border-0">

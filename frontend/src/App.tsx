@@ -24,6 +24,10 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import LogoutCallbackPage from "./pages/LogoutCallbackPage";
 import SampleReport from "./pages/SampleReport";
+import SecurityDepositCalculator from "./pages/SecurityDepositCalculator";
+import RentIncreaseCalculator from "./pages/RentIncreaseCalculator";
+import LeaseTerminationNoticeGenerator from "./pages/LeaseTerminationNoticeGenerator";
+import LateFeeChecker from "./pages/LateFeeChecker";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +59,10 @@ const App = () => (
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/sample-report" element={<SampleReport />} />
+          <Route path="/tools/security-deposit-calculator" element={<SecurityDepositCalculator />} />
+          <Route path="/tools/rent-increase-calculator" element={<RentIncreaseCalculator />} />
+          <Route path="/tools/lease-termination-notice-generator" element={<LeaseTerminationNoticeGenerator />} />
+          <Route path="/tools/late-fee-checker" element={<LateFeeChecker />} />
           <Route path="/logout-callback" element={<LogoutCallbackPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
