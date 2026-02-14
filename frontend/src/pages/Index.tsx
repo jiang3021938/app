@@ -12,10 +12,10 @@ import {
 } from "lucide-react";
 import { checkAuthStatus, performLogout } from "@/lib/checkAuth";
 
-const HERO_IMAGE = "https://mgx-backend-cdn.metadl.com/generate/images/956230/2026-02-07/f642cfb9-7acb-4105-968a-f0749f554722.png";
-const AI_IMAGE = "https://mgx-backend-cdn.metadl.com/generate/images/956230/2026-02-07/c03eda08-fb18-41ad-8380-2e5ee6bec86b.png";
-const CALENDAR_IMAGE = "https://mgx-backend-cdn.metadl.com/generate/images/956230/2026-02-07/258d270f-e366-46ea-8cd7-330408017848.png";
-const SECURITY_IMAGE = "https://mgx-backend-cdn.metadl.com/generate/images/956230/2026-02-07/93f8c4a3-bd9a-446e-9b3c-e588d16d0ccc.png";
+const HERO_IMAGE = "/assets/hero-image.svg";
+const AI_IMAGE = "/assets/ai-image.svg";
+const CALENDAR_IMAGE = "/assets/calendar-image.svg";
+const SECURITY_IMAGE = "/assets/security-image.svg";
 
 // Animated Counter Component
 function AnimatedCounter({ end, duration = 2, suffix = "" }: { end: number; duration?: number; suffix?: string }) {
