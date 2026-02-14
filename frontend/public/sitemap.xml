@@ -20,6 +20,7 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
+  <!-- Legacy blog posts with hardcoded content -->
   <url>
     <loc>https://www.leaselenses.com/blog/california-lease-clauses</loc>
     <changefreq>monthly</changefreq>
@@ -35,18 +36,54 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  <!-- Markdown-sourced blog posts -->
   <url>
-    <loc>https://www.leaselenses.com/blog/lease-renewal-mistakes</loc>
+    <loc>https://www.leaselenses.com/blog/appfolio-alternative-leaselens</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.leaselenses.com/blog/ai-vs-lawyer-lease-review</loc>
+    <loc>https://www.leaselenses.com/blog/california-security-deposit-law-2026</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.leaselenses.com/blog/late-fee-best-practices</loc>
+    <loc>https://www.leaselenses.com/blog/florida-security-deposit-rules-2026</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/illinois-eviction-notice-requirements</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/landlord-disclosure-requirements-guide</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/lease-audit-software-leaselens-ai</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/new-york-rent-control-laws-guide</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/rent-increase-notice-generator-free</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/texas-landlord-tenant-law-guide</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/turbotenant-alternative-leaselens</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
