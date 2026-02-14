@@ -138,23 +138,16 @@ class EmailAuthService:
         if not check_send_code_rate_limit(email):
             return False, "Too many requests. Please try again later."
         
-        # For registration, check if email is already registered
-        if purpose == "register":
-            result = await self.db.execute(
-                select(User).where(User.email == email)
-            )
-            existing_user = result.scalar_one_or_none()
-            if existing_user:
-                return False, "This email is already registered. Please sign in instead."
+        # Check email existence based on purpose
+        result = await self.db.execute(
+            select(User).where(User.email == email)
+        )
+        existing_user = result.scalar_one_or_none()
         
-        # For password reset, check if email exists
-        if purpose == "reset":
-            result = await self.db.execute(
-                select(User).where(User.email == email)
-            )
-            existing_user = result.scalar_one_or_none()
-            if not existing_user:
-                return False, "No account found with this email address."
+        if purpose == "register" and existing_user:
+            return False, "This email is already registered. Please sign in instead."
+        if purpose == "reset" and not existing_user:
+            return False, "No account found with this email address."
         
         code = generate_verification_code()
         
