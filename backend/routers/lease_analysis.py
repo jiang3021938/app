@@ -872,8 +872,8 @@ async def get_source_map(
     db: AsyncSession = Depends(get_db),
 ):
     """Get source location mapping for an extraction (field → PDF location).
-    If the stored source_map is sparse (<=2 fields), attempts to rebuild it
-    from the document to pick up fields that were missed by older matching logic."""
+    If the stored source_map has fewer fields than expected, rebuilds it
+    from the document using the improved matching logic."""
     try:
         extractions_service = ExtractionsService(db)
         extraction = await extractions_service.get_by_id(extraction_id, current_user.id)
@@ -895,8 +895,29 @@ async def get_source_map(
             except (json.JSONDecodeError, TypeError):
                 pass
 
-        # If source_map is sparse (<=2 fields), try to rebuild it on the fly
-        if len(source_map) <= 2:
+        # Count how many non-null extraction fields exist
+        traceable_fields = ["tenant_name", "landlord_name", "property_address",
+                            "monthly_rent", "security_deposit", "lease_start_date",
+                            "lease_end_date", "pet_policy", "late_fee_terms"]
+        expected_count = sum(1 for f in traceable_fields
+                            if getattr(extraction, f, None) is not None
+                            and str(getattr(extraction, f, "")).strip().lower()
+                            not in ("", "not specified", "not specified in lease", "none", "null"))
+        # Also count risk flags
+        risk_count = 0
+        if extraction.risk_flags:
+            try:
+                risks = json.loads(extraction.risk_flags)
+                if isinstance(risks, list):
+                    risk_count = len(risks)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        total_expected = expected_count + risk_count
+        # Rebuild if source_map has significantly fewer fields than expected
+        needs_rebuild = len(source_map) < max(3, total_expected // 2)
+
+        if needs_rebuild:
             try:
                 rebuilt_map, rebuilt_pages_meta = await _rebuild_source_map(
                     extraction, db, current_user.id
@@ -910,7 +931,7 @@ async def get_source_map(
                         "source_map": json.dumps(source_map),
                         "pages_meta": json.dumps(pages_meta),
                     }, current_user.id)
-                    logger.info(f"Rebuilt source_map for extraction {extraction_id}: {len(source_map)} fields")
+                    logger.info(f"Rebuilt source_map for extraction {extraction_id}: {len(source_map)} fields (expected ~{total_expected})")
             except Exception as e:
                 logger.warning(f"Failed to rebuild source_map for extraction {extraction_id}: {e}")
 

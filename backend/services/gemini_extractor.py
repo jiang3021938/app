@@ -646,53 +646,64 @@ class GeminiExtractor:
                 "match_type": "text_search"
             }
 
-        # Search each page's lines for field values and compute SVG bbox
-        for field_name, variants in field_search_variants.items():
-            found = False
+        def _search_variants_in_pages(variants: List[str], page_texts_list: list) -> Optional[dict]:
+            """Search for any of the variants in page_texts using 4-pass matching.
+            Returns bbox dict or None if not found."""
             for search_value in variants:
-                if found:
-                    break
                 search_lower = search_value.lower()
-                if not search_lower.strip():
+                if not search_lower.strip() or len(search_lower.strip()) < 2:
                     continue
                 search_normalized = _normalize_ws(search_lower)
-                for page_idx, lines in enumerate(page_texts):
+                for page_idx, lines in enumerate(page_texts_list):
                     # Pass 1: exact substring in single line
                     for line_idx, line in enumerate(lines):
                         if search_lower in line.lower():
-                            source_map[field_name] = [_make_bbox(page_idx, line_idx, search_value)]
-                            found = True
-                            break
-                    if found:
-                        break
+                            return _make_bbox(page_idx, line_idx, search_value)
                     # Pass 2: whitespace-normalized match in single line
-                    # (handles pypdf extracting extra spaces like "Robert   J.")
                     for line_idx, line in enumerate(lines):
                         if search_normalized in _normalize_ws(line.lower()):
-                            source_map[field_name] = [_make_bbox(page_idx, line_idx, search_value)]
-                            found = True
-                            break
-                    if found:
-                        break
+                            return _make_bbox(page_idx, line_idx, search_value)
                     # Pass 3: search in joined page text for multi-line values
-                    # (handles values that span across wrapped line boundaries)
                     joined = " ".join(lines)
-                    if search_normalized in _normalize_ws(joined.lower()):
-                        # Find the first line that contains the start of the match
+                    joined_normalized = _normalize_ws(joined.lower())
+                    if search_normalized in joined_normalized:
+                        first_words = " ".join(search_normalized.split()[:3])
+                        if first_words:
+                            for line_idx, line in enumerate(lines):
+                                if first_words in _normalize_ws(line.lower()):
+                                    return _make_bbox(page_idx, line_idx, search_value)
+                        # Fallback: use the middle of the page
+                        return _make_bbox(page_idx, len(lines) // 2, search_value)
+            # Pass 4: try individual significant words (>=4 chars) from the first variant
+            if variants:
+                first_val = variants[0]
+                single_words = [w for w in first_val.split() if len(w) >= 4
+                                and w.lower() not in ("the", "and", "for", "with", "from",
+                                                       "this", "that", "will", "have", "been",
+                                                       "each", "after", "upon", "into", "also",
+                                                       "than", "such", "other", "only", "shall",
+                                                       "must", "does", "were", "like", "make",
+                                                       "made", "just", "over", "more", "most",
+                                                       "some", "what", "when", "your", "they",
+                                                       "them", "then", "here", "there", "where",
+                                                       "which", "their", "about", "would", "could",
+                                                       "should", "before", "after", "during",
+                                                       "between", "under", "above", "below",
+                                                       "lease", "tenant", "landlord", "property",
+                                                       "agreement", "section", "specified", "none")]
+                for word in single_words:
+                    word_lower = word.lower()
+                    for page_idx, lines in enumerate(page_texts_list):
                         for line_idx, line in enumerate(lines):
-                            # Check if any significant part of search appears in this line
-                            first_words = " ".join(search_normalized.split()[:3])
-                            if first_words and first_words in _normalize_ws(line.lower()):
-                                source_map[field_name] = [_make_bbox(page_idx, line_idx, search_value)]
-                                found = True
-                                break
-                        if not found:
-                            # Fallback: use the middle of the page
-                            mid_line = len(lines) // 2
-                            source_map[field_name] = [_make_bbox(page_idx, mid_line, search_value)]
-                            found = True
-                    if found:
-                        break
+                            if word_lower in line.lower():
+                                return _make_bbox(page_idx, line_idx, word)
+            return None
+
+        # Search each page's lines for field values and compute SVG bbox
+        for field_name, variants in field_search_variants.items():
+            result = _search_variants_in_pages(variants, page_texts)
+            if result:
+                source_map[field_name] = [result]
 
         # Risk flags: search for each risk's title/description keywords in the document
         risk_flags = extracted_data.get("risk_flags", [])
@@ -710,13 +721,10 @@ class GeminiExtractor:
                     risk_variants.append(title)
                 if category and len(category) >= 4 and category != title:
                     risk_variants.append(category)
-                # Extract key phrases from description (first sentence or first N words)
                 if desc:
-                    # Try first sentence
                     first_sentence = desc.split('.')[0].strip()
                     if len(first_sentence) >= 6:
                         risk_variants.append(first_sentence)
-                    # Try first 4-6 significant words
                     desc_words = desc.split()
                     if len(desc_words) >= 4:
                         risk_variants.append(" ".join(desc_words[:5]))
@@ -724,40 +732,9 @@ class GeminiExtractor:
                     if len(desc_words) >= 3:
                         risk_variants.append(" ".join(desc_words[:3]))
 
-                # Search using same 3-pass approach
-                found = False
-                for search_value in risk_variants:
-                    if found:
-                        break
-                    search_lower = search_value.lower()
-                    if not search_lower.strip():
-                        continue
-                    search_normalized = _normalize_ws(search_lower)
-                    for page_idx, lines in enumerate(page_texts):
-                        for line_idx, line in enumerate(lines):
-                            if search_lower in line.lower():
-                                source_map[field_key] = [_make_bbox(page_idx, line_idx, search_value)]
-                                found = True
-                                break
-                        if found:
-                            break
-                        for line_idx, line in enumerate(lines):
-                            if search_normalized in _normalize_ws(line.lower()):
-                                source_map[field_key] = [_make_bbox(page_idx, line_idx, search_value)]
-                                found = True
-                                break
-                        if found:
-                            break
-                        joined = " ".join(lines)
-                        if search_normalized in _normalize_ws(joined.lower()):
-                            for line_idx, line in enumerate(lines):
-                                first_words = " ".join(search_normalized.split()[:3])
-                                if first_words and first_words in _normalize_ws(line.lower()):
-                                    source_map[field_key] = [_make_bbox(page_idx, line_idx, search_value)]
-                                    found = True
-                                    break
-                        if found:
-                            break
+                result = _search_variants_in_pages(risk_variants, page_texts)
+                if result:
+                    source_map[field_key] = [result]
 
         logger.info(f"Source map built: {len(source_map)} fields matched out of {len(field_search_variants) + len(risk_flags if isinstance(risk_flags, list) else [])} searched")
         return source_map, page_count
