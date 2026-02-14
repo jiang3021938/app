@@ -7,7 +7,7 @@ lang: "en"
 
 # Illinois Eviction Notice Requirements: A Step-by-Step Landlord's Handbook
 
-![Illinois Eviction Notice Requirements: A Step-by-Step Landlord's Handbook](/assets/illinois-eviction-notice-requirements-hero.jpg)
+![Illinois Eviction Notice Requirements: A Step-by-Step Landlord's Handbook](/assets/illinois-eviction-notice-requirements-hero.webp)
 
 Navigating **Illinois eviction notice requirements** can feel like walking through a legal minefield, even for experienced small landlords. The state's landlord-tenant laws are complex, with specific rules governing everything from proper notice delivery to the exact wording required on a notice. A single misstep can lead to significant delays, costly legal fees, and even the dismissal of your eviction case, forcing you to start the entire **eviction process Illinois** all over again.
 

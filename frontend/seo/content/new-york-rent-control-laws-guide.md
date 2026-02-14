@@ -7,7 +7,7 @@ lang: "en"
 
 # Navigating New York Rent Control Laws: A Landlord's Guide to Compliance
 
-![Navigating New York Rent Control Laws: A Landlord's Guide to Compliance](/assets/new-york-rent-control-laws-guide-hero.jpg)
+![Navigating New York Rent Control Laws: A Landlord's Guide to Compliance](/assets/new-york-rent-control-laws-guide-hero.webp)
 
 New York's rental market is unique, and for landlords, few states present as complex a legal landscape as the Empire State. Understanding and complying with **New York rent control laws** isn't just good practice; it's essential for avoiding severe penalties, ensuring profitability, and maintaining a successful investment. With frequent legislative changes and stringent regulations, even seasoned landlords can find themselves overwhelmed trying to keep up.
 

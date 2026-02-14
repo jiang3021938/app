@@ -5,7 +5,7 @@ keywords: "lease audit software, AI lease analysis, rental contract compliance, 
 lang: "en"
 ---
 
-![LeaseLens: The Future of AI Lease Audit Software for Property Managers](/assets/lease-audit-software-leaselens-ai-hero.jpg)
+![LeaseLens: The Future of AI Lease Audit Software for Property Managers](/assets/lease-audit-software-leaselens-ai-hero.webp)
 
 ## What is AI Lease Auditing & Why Every Landlord Needs It
 

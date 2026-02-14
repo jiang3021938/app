@@ -7,7 +7,7 @@ lang: "en"
 
 # TurboTenant Alternative: Discover LeaseLens for Smarter Lease Management
 
-![TurboTenant Alternative: Discover LeaseLens for Smarter Lease Management](/assets/turbotenant-alternative-leaselens-hero.jpg)
+![TurboTenant Alternative: Discover LeaseLens for Smarter Lease Management](/assets/turbotenant-alternative-leaselens-hero.webp)
 
 Managing rental properties can be a complex and time-consuming endeavor, especially for small landlords juggling 2 to 20 units. While tools like TurboTenant excel at streamlining basic tasks such as tenant screening and lease creation, many property owners eventually realize they need more than just foundational support. They need an advanced, intelligent solution that dives deep into lease contracts, ensuring compliance and mitigating risks. If you're a landlord searching for a robust **TurboTenant alternative** that elevates your lease management game, you've landed in the right place.
 

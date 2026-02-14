@@ -1,12 +1,20 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, ArrowLeft, Clock, ArrowRight } from "lucide-react";
 import { ShareForCredits } from "@/components/ShareForCredits";
 import { LeaseChecklistDownload } from "@/components/EmailCaptureForm";
+import { blogPostsBySlug } from "@/lib/blogData";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 
-const ARTICLES: Record<string, { title: string; category: string; readTime: string; date: string; sections: { heading: string; content: string }[]; }> = {
+// Configure marked
+marked.setOptions({ breaks: true, gfm: true });
+
+// Keep legacy hardcoded articles as fallback for old slugs
+const LEGACY_ARTICLES: Record<string, { title: string; category: string; readTime: string; date: string; sections: { heading: string; content: string }[]; }> = {
   "california-lease-clauses": {
     title: "California Lease Agreement: 10 Clauses Every Landlord Must Include",
     category: "State Guide", readTime: "8 min", date: "Jan 15, 2026",
@@ -44,19 +52,162 @@ const ARTICLES: Record<string, { title: string; category: string; readTime: stri
   },
 };
 
-// Fallback for articles not yet written
-const DEFAULT_ARTICLE = {
-  title: "Article Coming Soon",
-  category: "General", readTime: "5 min", date: "2026",
-  sections: [
-    { heading: "Stay Tuned", content: "This article is being prepared by our team. In the meantime, try LeaseLenses to analyze your lease agreements with AI." },
-  ],
-};
+function estimateReadTime(content: string): string {
+  const wordCount = content.split(/\s+/).length;
+  const minutes = Math.max(1, Math.ceil(wordCount / 200));
+  return `${minutes} min`;
+}
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const article = ARTICLES[slug || ""] || DEFAULT_ARTICLE;
+
+  const mdPost = slug ? blogPostsBySlug[slug] : undefined;
+  const legacyArticle = slug ? LEGACY_ARTICLES[slug] : undefined;
+
+  // Set document title and meta tags for SEO
+  useEffect(() => {
+    const setMetaTag = (selector: string, attr: string, value: string, createTag?: string) => {
+      let tag = document.querySelector(selector);
+      if (!tag) {
+        tag = document.createElement(createTag || 'meta');
+        if (selector.includes('property=')) {
+          const prop = selector.match(/property="([^"]+)"/)?.[1];
+          if (prop) tag.setAttribute('property', prop);
+        } else if (selector.includes('name=')) {
+          const name = selector.match(/name="([^"]+)"/)?.[1];
+          if (name) tag.setAttribute('name', name);
+        } else if (selector.includes('rel=')) {
+          const rel = selector.match(/rel="([^"]+)"/)?.[1];
+          if (rel) tag.setAttribute('rel', rel);
+        }
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute(attr, value);
+    };
+
+    if (mdPost) {
+      document.title = `${mdPost.title} | LeaseLenses Blog`;
+      setMetaTag('meta[name="description"]', 'content', mdPost.description);
+      setMetaTag('link[rel="canonical"]', 'href', `https://www.leaselenses.com/blog/${slug}`, 'link');
+      setMetaTag('meta[property="og:title"]', 'content', mdPost.title);
+      setMetaTag('meta[property="og:description"]', 'content', mdPost.description);
+      setMetaTag('meta[property="og:type"]', 'content', 'article');
+      setMetaTag('meta[property="og:url"]', 'content', `https://www.leaselenses.com/blog/${slug}`);
+    } else if (legacyArticle) {
+      document.title = `${legacyArticle.title} | LeaseLenses Blog`;
+    }
+
+    return () => {
+      document.title = 'LeaseLenses - AI Lease Analysis';
+    };
+  }, [slug, mdPost, legacyArticle]);
+
+  // Render markdown post
+  if (mdPost) {
+    const htmlContent = marked.parse(mdPost.content) as string;
+    const readTime = estimateReadTime(mdPost.content);
+
+    return (
+      <div className="min-h-screen bg-white">
+        <header className="border-b bg-white sticky top-0 z-50">
+          <div className="container mx-auto px-4 py-4 flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/blog")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />Blog
+            </Button>
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+              <FileText className="h-6 w-6 text-blue-600" />
+              <span className="text-lg font-bold text-slate-800">LeaseLenses</span>
+            </div>
+          </div>
+        </header>
+
+        <main className="container mx-auto px-4 py-12 max-w-3xl">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <Badge variant="secondary">Guide</Badge>
+              <span className="text-sm text-slate-500 flex items-center gap-1">
+                <Clock className="h-3 w-3" />{readTime} read
+              </span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight">
+              {mdPost.title}
+            </h1>
+            {mdPost.description && (
+              <p className="text-lg text-slate-600 mt-4">{mdPost.description}</p>
+            )}
+          </div>
+
+          {/* Inline CTA */}
+          <Card className="my-6 bg-blue-50 border-blue-200">
+            <CardContent className="py-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                  <p className="font-semibold text-slate-800 mb-1">
+                    📄 Free Lease Review Checklist
+                  </p>
+                  <p className="text-sm text-slate-600">
+                    Get our 25-point checklist - never miss critical clauses again!
+                  </p>
+                </div>
+                <LeaseChecklistDownload />
+              </div>
+            </CardContent>
+          </Card>
+
+          <article
+            className="prose prose-slate max-w-none"
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(htmlContent) }}
+          />
+
+          {/* Share This Article */}
+          <div className="mt-8 mb-8">
+            <Card className="bg-slate-50">
+              <CardContent className="py-4">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div>
+                    <p className="font-semibold text-slate-800 mb-1">
+                      Found this helpful? Share it!
+                    </p>
+                    <p className="text-sm text-slate-600">
+                      Earn 1 free analysis credit when you share this article.
+                    </p>
+                  </div>
+                  <ShareForCredits
+                    message={`Check out this article: ${mdPost.title}`}
+                    url={`https://www.leaselenses.com/blog/${slug}`}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* CTA */}
+          <Card className="mt-12 bg-gradient-to-r from-blue-600 to-blue-700 border-0">
+            <CardContent className="py-8 text-center">
+              <h2 className="text-2xl font-bold text-white mb-2">Analyze Your Lease in Seconds</h2>
+              <p className="text-blue-100 mb-6">Upload your lease and let AI flag risks, extract terms, and suggest improvements.</p>
+              <div className="flex gap-3 justify-center">
+                <Button variant="secondary" size="lg" onClick={() => navigate("/dashboard")}>
+                  Start Free Analysis <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+              <p className="text-xs text-blue-200 mt-3">No credit card required. First analysis free.</p>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
+  // Fallback: render legacy hardcoded article
+  const article = legacyArticle || {
+    title: "Article Coming Soon",
+    category: "General", readTime: "5 min", date: "2026",
+    sections: [
+      { heading: "Stay Tuned", content: "This article is being prepared by our team. In the meantime, try LeaseLenses to analyze your lease agreements with AI." },
+    ],
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -92,7 +243,6 @@ export default function BlogPostPage() {
               <h2 className="text-xl font-semibold text-slate-800 mb-3">{section.heading}</h2>
               <p className="text-slate-600 leading-relaxed">{section.content}</p>
               
-              {/* Insert CTA after 2nd section */}
               {idx === 1 && (
                 <Card className="my-6 bg-blue-50 border-blue-200">
                   <CardContent className="py-4">

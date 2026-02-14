@@ -9,7 +9,7 @@ const __dirname = path.dirname(currentFile);
 const projectRoot = path.resolve(__dirname, '..');
 
 // Base URL of the website (should match the actual domain)
-const baseUrl = "https://atoms.template.com";
+const baseUrl = "https://www.leaselenses.com";
 
 // GA4 Measurement ID - set via site.config.json
 // Format: "G-XXXXXXXXXX" or empty string if not needed

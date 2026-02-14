@@ -7,7 +7,7 @@ lang: "en"
 
 # Florida Security Deposit Rules: What Every Landlord Needs to Know (2026 Update)
 
-![Florida Security Deposit Rules: What Every Landlord Needs to Know (2026 Update)](/assets/florida-security-deposit-rules-2026-hero.jpg)
+![Florida Security Deposit Rules: What Every Landlord Needs to Know (2026 Update)](/assets/florida-security-deposit-rules-2026-hero.webp)
 
 Navigating the complexities of **Florida security deposit rules** can feel like deciphering a cryptic code. For landlords across the Sunshine State, understanding these regulations isn't just about good practice—it's a critical shield against potential legal disputes and financial losses. With updates and interpretations evolving, staying current with **Florida landlord tenant law**, particularly concerning F.S. 83.49, is non-negotiable for property owners and managers.
 

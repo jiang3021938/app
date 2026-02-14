@@ -5,15 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { FileText, ArrowLeft, Clock, ArrowRight } from "lucide-react";
 import { ShareForCredits } from "@/components/ShareForCredits";
 import { LeaseChecklistDownload } from "@/components/EmailCaptureForm";
+import { blogPosts } from "@/lib/blogData";
 
-const BLOG_POSTS = [
+// Legacy posts that have hardcoded content in BlogPost.tsx
+const LEGACY_POSTS = [
   {
     slug: "california-lease-clauses",
     title: "California Lease Agreement: 10 Clauses Every Landlord Must Include",
     excerpt: "Missing these critical clauses in your California lease could cost you thousands. Learn what state law requires and how to protect your investment.",
     category: "State Guide",
     readTime: "8 min",
-    date: "Jan 15, 2026",
     featured: true,
   },
   {
@@ -22,7 +23,6 @@ const BLOG_POSTS = [
     excerpt: "Manual lease review takes hours. Here's how AI-powered tools can extract key terms, flag risks, and give you actionable insights in under 5 minutes.",
     category: "How-To",
     readTime: "5 min",
-    date: "Jan 22, 2026",
     featured: true,
   },
   {
@@ -31,32 +31,21 @@ const BLOG_POSTS = [
     excerpt: "Every state has different rules for security deposits — limits, return timelines, and penalties. This comprehensive guide covers all 50 states.",
     category: "Legal Guide",
     readTime: "12 min",
-    date: "Feb 1, 2026",
   },
-  {
-    slug: "lease-renewal-mistakes",
-    title: "5 Common Lease Renewal Mistakes That Cost Landlords Money",
-    excerpt: "Renewing a lease seems straightforward, but these common mistakes can lead to lost revenue, legal disputes, and tenant turnover.",
-    category: "Tips",
-    readTime: "6 min",
-    date: "Feb 5, 2026",
-  },
-  {
-    slug: "ai-vs-lawyer-lease-review",
-    title: "AI vs. Lawyer for Lease Review: When to Use Each",
-    excerpt: "AI tools are getting smarter, but when do you still need a real attorney? We break down the use cases for each approach.",
-    category: "Industry",
-    readTime: "7 min",
-    date: "Feb 8, 2026",
-  },
-  {
-    slug: "late-fee-best-practices",
-    title: "Setting Late Fees: Best Practices & Legal Limits",
-    excerpt: "Late fees that are too high are unenforceable. Too low and you lose leverage. Here's how to find the sweet spot while staying legal.",
-    category: "Tips",
-    readTime: "5 min",
-    date: "Feb 10, 2026",
-  },
+];
+
+// Merge markdown-sourced posts with legacy posts, deduplicating by slug
+const markdownSlugs = new Set(blogPosts.map((p) => p.slug));
+const BLOG_POSTS = [
+  ...LEGACY_POSTS.filter((p) => !markdownSlugs.has(p.slug)),
+  ...blogPosts.map((post) => ({
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.description,
+    category: "Guide",
+    readTime: `${Math.max(1, Math.ceil(post.content.split(/\s+/).length / 200))} min`,
+    featured: false as boolean,
+  })),
 ];
 
 export default function BlogPage() {
@@ -123,11 +112,10 @@ export default function BlogPage() {
                   {post.title}
                 </h2>
                 <p className="text-slate-600 text-sm mb-4">{post.excerpt}</p>
-                <div className="flex items-center justify-between text-xs text-slate-500">
+                <div className="flex items-center text-xs text-slate-500">
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />{post.readTime} read
                   </div>
-                  <span>{post.date}</span>
                 </div>
               </CardContent>
             </Card>
@@ -148,7 +136,6 @@ export default function BlogPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge variant="secondary" className="text-xs">{post.category}</Badge>
-                      <span className="text-xs text-slate-400">{post.date}</span>
                     </div>
                     <h3 className="font-medium text-slate-800 hover:text-blue-600">{post.title}</h3>
                     <p className="text-sm text-slate-500 mt-1 truncate">{post.excerpt}</p>

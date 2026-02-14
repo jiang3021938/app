@@ -7,7 +7,7 @@ lang: "en"
 
 # Essential Landlord Disclosure Requirements: Protecting Yourself & Your Tenants
 
-![Essential Landlord Disclosure Requirements: Protecting Yourself & Your Tenants](/assets/landlord-disclosure-requirements-guide-hero.jpg)
+![Essential Landlord Disclosure Requirements: Protecting Yourself & Your Tenants](/assets/landlord-disclosure-requirements-guide-hero.webp)
 
 As a landlord, juggling multiple properties means constantly balancing responsibilities, from rent collection to maintenance. Amidst these tasks, one area often overlooked, yet critically important, is understanding and fulfilling **landlord disclosure requirements**. These aren't just bureaucratic hurdles; they are vital legal obligations designed to protect both you and your tenants, fostering transparency and preventing costly disputes down the line.
 
