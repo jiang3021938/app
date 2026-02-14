@@ -800,19 +800,21 @@ export default function ReportPage() {
                   <CardContent className="space-y-3">
                     {isPaidUser ? (
                       riskFlags.map((risk, index) => (
-                        <Alert key={index} className={getSeverityColor(risk.severity)}>
-                          <AlertTriangle className="h-4 w-4" />
-                          <AlertTitle className="flex items-center gap-2">
-                            {risk.title || risk.category}
-                            <Badge variant="outline" className="text-xs">{risk.severity}</Badge>
-                          </AlertTitle>
-                          <AlertDescription>
-                            {risk.description}
-                            {risk.recommendation && (
-                              <p className="mt-2 text-sm italic opacity-80">💡 {risk.recommendation}</p>
-                            )}
-                          </AlertDescription>
-                        </Alert>
+                        <SourceTraceable key={index} fieldName={`risk_${index}`} hasSource={sourceFields.has(`risk_${index}`)} activeField={activeField} onFieldClick={handleFieldClick}>
+                          <Alert className={getSeverityColor(risk.severity)}>
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertTitle className="flex items-center gap-2">
+                              {risk.title || risk.category}
+                              <Badge variant="outline" className="text-xs">{risk.severity}</Badge>
+                            </AlertTitle>
+                            <AlertDescription>
+                              {risk.description}
+                              {risk.recommendation && (
+                                <p className="mt-2 text-sm italic opacity-80">💡 {risk.recommendation}</p>
+                              )}
+                            </AlertDescription>
+                          </Alert>
+                        </SourceTraceable>
                       ))
                     ) : (
                       <>

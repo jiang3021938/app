@@ -123,6 +123,7 @@ CREATE TABLE user_credits (
     user_id VARCHAR(255) NOT NULL,
     free_credits INTEGER,
     paid_credits INTEGER,
+    share_credits_earned INTEGER,
     subscription_type VARCHAR,
     subscription_expires_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE,

@@ -2,6 +2,7 @@ import logging
 import base64
 import json
 import ast
+import re
 import httpx as httpx_client
 from datetime import datetime
 from urllib.parse import urlencode, quote
@@ -214,8 +215,8 @@ async def analyze_document(
             "audit_checklist": json.dumps(extracted_data.get("audit_checklist", [])),
             "compliance_data": json.dumps(compliance_result),
             "raw_extraction": json.dumps(extracted_data),
-            "source_map": json.dumps(source_map) if source_map else None,
-            "pages_meta": json.dumps(pages_meta) if pages_meta else None,
+            "source_map": json.dumps(source_map if source_map is not None else {}),
+            "pages_meta": json.dumps(pages_meta if pages_meta is not None else []),
             "created_at": datetime.now()
         }, current_user.id)
         
@@ -354,8 +355,8 @@ async def upload_and_analyze(
             "audit_checklist": json.dumps(extracted_data.get("audit_checklist", [])),
             "compliance_data": json.dumps(compliance_result),
             "raw_extraction": json.dumps(extracted_data),
-            "source_map": json.dumps(source_map) if source_map else None,
-            "pages_meta": json.dumps(pages_meta) if pages_meta else None,
+            "source_map": json.dumps(source_map if source_map is not None else {}),
+            "pages_meta": json.dumps(pages_meta if pages_meta is not None else []),
             "created_at": datetime.now()
         }, current_user.id)
 
@@ -800,13 +801,79 @@ async def admin_set_credits(
 # ──────────────────────────────────────────────────────────────────────────────
 
 
+async def _rebuild_source_map(extraction, db: AsyncSession, user_id: str):
+    """Rebuild source_map from the original document for an extraction.
+    Returns (source_map, pages_meta) or (None, None) on failure."""
+    try:
+        doc_service = DocumentsService(db)
+        document = await doc_service.get_by_id(extraction.document_id, user_id)
+        if not document:
+            return None, None
+
+        # Get file bytes (Supabase then DB fallback)
+        file_bytes = None
+        try:
+            if document.file_key:
+                supabase_storage = SupabaseStorageService()
+                download_url = await supabase_storage.get_download_url(
+                    bucket_name="lease-documents",
+                    object_key=document.file_key
+                )
+                async with httpx_client.AsyncClient(timeout=120.0) as http_client:
+                    file_response = await http_client.get(download_url)
+                    file_response.raise_for_status()
+                    file_bytes = file_response.content
+        except Exception as e:
+            logger.warning(f"[rebuild-source-map] Supabase download failed: {e}")
+
+        if not file_bytes and document.file_data:
+            file_bytes = base64.b64decode(document.file_data)
+
+        if not file_bytes:
+            return None, None
+
+        # Reconstruct extracted_data from extraction fields
+        extracted_data = {
+            "tenant_name": extraction.tenant_name,
+            "landlord_name": extraction.landlord_name,
+            "property_address": extraction.property_address,
+            "monthly_rent": extraction.monthly_rent,
+            "security_deposit": extraction.security_deposit,
+            "lease_start_date": extraction.lease_start_date,
+            "lease_end_date": extraction.lease_end_date,
+            "pet_policy": extraction.pet_policy,
+            "late_fee_terms": extraction.late_fee_terms,
+        }
+        # Include risk_flags for risk tracing
+        if extraction.risk_flags:
+            try:
+                extracted_data["risk_flags"] = json.loads(extraction.risk_flags)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        extractor = GeminiExtractor.__new__(GeminiExtractor)
+        source_map, page_count = extractor._build_source_map_from_file(
+            file_bytes, document.file_name, extracted_data
+        )
+        pages_meta = [
+            {"page": i, "width": 612, "height": 792}
+            for i in range(page_count)
+        ]
+        return source_map, pages_meta
+    except Exception as e:
+        logger.error(f"[rebuild-source-map] Error: {e}")
+        return None, None
+
+
 @router.get("/source-map/{extraction_id}")
 async def get_source_map(
     extraction_id: int,
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get source location mapping for an extraction (field → PDF location)."""
+    """Get source location mapping for an extraction (field → PDF location).
+    If the stored source_map has fewer fields than expected, rebuilds it
+    from the document using the improved matching logic."""
     try:
         extractions_service = ExtractionsService(db)
         extraction = await extractions_service.get_by_id(extraction_id, current_user.id)
@@ -827,6 +894,46 @@ async def get_source_map(
                 pages_meta = json.loads(extraction.pages_meta)
             except (json.JSONDecodeError, TypeError):
                 pass
+
+        # Count how many non-null extraction fields exist
+        traceable_fields = ["tenant_name", "landlord_name", "property_address",
+                            "monthly_rent", "security_deposit", "lease_start_date",
+                            "lease_end_date", "pet_policy", "late_fee_terms"]
+        expected_count = sum(1 for f in traceable_fields
+                            if getattr(extraction, f, None) is not None
+                            and str(getattr(extraction, f, "")).strip().lower()
+                            not in ("", "not specified", "not specified in lease", "none", "null"))
+        # Also count risk flags
+        risk_count = 0
+        if extraction.risk_flags:
+            try:
+                risks = json.loads(extraction.risk_flags)
+                if isinstance(risks, list):
+                    risk_count = len(risks)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        total_expected = expected_count + risk_count
+        # Rebuild if source_map has significantly fewer fields than expected
+        needs_rebuild = len(source_map) < max(3, total_expected // 2)
+
+        if needs_rebuild:
+            try:
+                rebuilt_map, rebuilt_pages_meta = await _rebuild_source_map(
+                    extraction, db, current_user.id
+                )
+                if rebuilt_map and len(rebuilt_map) > len(source_map):
+                    source_map = rebuilt_map
+                    if rebuilt_pages_meta:
+                        pages_meta = rebuilt_pages_meta
+                    # Persist the improved source_map back to DB
+                    await extractions_service.update(extraction.id, {
+                        "source_map": json.dumps(source_map),
+                        "pages_meta": json.dumps(pages_meta),
+                    }, current_user.id)
+                    logger.info(f"Rebuilt source_map for extraction {extraction_id}: {len(source_map)} fields (expected ~{total_expected})")
+            except Exception as e:
+                logger.warning(f"Failed to rebuild source_map for extraction {extraction_id}: {e}")
 
         return {
             "extraction_id": extraction_id,
@@ -892,6 +999,8 @@ async def get_pdf_page_image(
         # Download file from storage (with database fallback)
         file_bytes = None
         try:
+            if not document.file_key:
+                raise ValueError("Document has no file_key")
             supabase_storage = SupabaseStorageService()
             download_url = await supabase_storage.get_download_url(
                 bucket_name="lease-documents",
@@ -900,6 +1009,7 @@ async def get_pdf_page_image(
             logger.info(f"[pdf-page] Got Supabase download URL, downloading...")
             async with httpx_client.AsyncClient(timeout=120.0) as http_client:
                 file_response = await http_client.get(download_url)
+                file_response.raise_for_status()
                 file_bytes = file_response.content
             logger.info(f"[pdf-page] Downloaded {len(file_bytes)} bytes from Supabase")
         except Exception as e:
@@ -942,7 +1052,10 @@ async def get_pdf_page_image(
 
 
 def _escape_xml(text: str) -> str:
-    """Escape special XML characters for SVG content."""
+    """Escape special XML characters for SVG content and strip invalid XML chars."""
+    # Remove control characters that are invalid in XML 1.0
+    # Valid: #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+    text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', text)
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace("'", "&apos;")
 
 
@@ -1073,6 +1186,8 @@ async def get_document_page_count(
         # Download file from storage (with database fallback)
         file_bytes = None
         try:
+            if not document.file_key:
+                raise ValueError("Document has no file_key")
             supabase_storage = SupabaseStorageService()
             download_url = await supabase_storage.get_download_url(
                 bucket_name="lease-documents",
@@ -1081,6 +1196,7 @@ async def get_document_page_count(
             logger.info(f"[doc-page-count] Got Supabase download URL, downloading...")
             async with httpx_client.AsyncClient(timeout=120.0) as http_client:
                 file_response = await http_client.get(download_url)
+                file_response.raise_for_status()
                 file_bytes = file_response.content
             logger.info(f"[doc-page-count] Downloaded {len(file_bytes)} bytes from Supabase")
         except Exception as e:
@@ -1781,4 +1897,31 @@ async def export_pdf_report(
         raise
     except Exception as e:
         logger.error(f"PDF export error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class RecordShareRequest(BaseModel):
+    platform: str  # "twitter", "facebook", "linkedin" - validated in endpoint handler
+
+
+@router.post("/record-share")
+async def record_share_credit(
+    req: RecordShareRequest,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Record a social media share and award 1 free credit (max 4 per account)."""
+    try:
+        allowed_platforms = {"twitter", "facebook", "linkedin"}
+        if req.platform not in allowed_platforms:
+            raise HTTPException(status_code=400, detail=f"Invalid platform: {req.platform}")
+
+        credits_service = User_creditsService(db)
+        result = await credits_service.add_share_credit(current_user.id, req.platform)
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Record share error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
