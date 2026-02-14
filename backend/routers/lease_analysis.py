@@ -523,8 +523,6 @@ async def analyze_documents_batch(
                     failed += 1
                     continue
                 
-                extracted_data = result["data"]
-                
                 # Compliance check
                 compliance_result = await compliance_checker.check_compliance(extracted_data)
                 

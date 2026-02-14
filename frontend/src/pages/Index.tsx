@@ -932,7 +932,7 @@ export default function LandingPage() {
               Stop Reading Leases. Start Understanding Them.
             </h2>
             <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
-              Sign up free and get 2 analyses on us. No credit card required. Join landlords
+              Sign up free and get 1 free analysis. No credit card required. Join landlords
               who use AI to review leases faster.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
