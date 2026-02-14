@@ -8,6 +8,7 @@ import { ShareForCredits } from "@/components/ShareForCredits";
 import { LeaseChecklistDownload } from "@/components/EmailCaptureForm";
 import { blogPostsBySlug } from "@/lib/blogData";
 import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 // Configure marked
 marked.setOptions({ breaks: true, gfm: true });
@@ -66,40 +67,33 @@ export default function BlogPostPage() {
 
   // Set document title and meta tags for SEO
   useEffect(() => {
+    const setMetaTag = (selector: string, attr: string, value: string, createTag?: string) => {
+      let tag = document.querySelector(selector);
+      if (!tag) {
+        tag = document.createElement(createTag || 'meta');
+        if (selector.includes('property=')) {
+          const prop = selector.match(/property="([^"]+)"/)?.[1];
+          if (prop) tag.setAttribute('property', prop);
+        } else if (selector.includes('name=')) {
+          const name = selector.match(/name="([^"]+)"/)?.[1];
+          if (name) tag.setAttribute('name', name);
+        } else if (selector.includes('rel=')) {
+          const rel = selector.match(/rel="([^"]+)"/)?.[1];
+          if (rel) tag.setAttribute('rel', rel);
+        }
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute(attr, value);
+    };
+
     if (mdPost) {
       document.title = `${mdPost.title} | LeaseLenses Blog`;
-      // Set meta description
-      let metaDesc = document.querySelector('meta[name="description"]');
-      if (!metaDesc) {
-        metaDesc = document.createElement('meta');
-        metaDesc.setAttribute('name', 'description');
-        document.head.appendChild(metaDesc);
-      }
-      metaDesc.setAttribute('content', mdPost.description);
-
-      // Set canonical URL
-      let canonical = document.querySelector('link[rel="canonical"]');
-      if (!canonical) {
-        canonical = document.createElement('link');
-        canonical.setAttribute('rel', 'canonical');
-        document.head.appendChild(canonical);
-      }
-      canonical.setAttribute('href', `https://www.leaselenses.com/blog/${slug}`);
-
-      // Set OG tags
-      const setMeta = (property: string, content: string) => {
-        let tag = document.querySelector(`meta[property="${property}"]`);
-        if (!tag) {
-          tag = document.createElement('meta');
-          tag.setAttribute('property', property);
-          document.head.appendChild(tag);
-        }
-        tag.setAttribute('content', content);
-      };
-      setMeta('og:title', mdPost.title);
-      setMeta('og:description', mdPost.description);
-      setMeta('og:type', 'article');
-      setMeta('og:url', `https://www.leaselenses.com/blog/${slug}`);
+      setMetaTag('meta[name="description"]', 'content', mdPost.description);
+      setMetaTag('link[rel="canonical"]', 'href', `https://www.leaselenses.com/blog/${slug}`, 'link');
+      setMetaTag('meta[property="og:title"]', 'content', mdPost.title);
+      setMetaTag('meta[property="og:description"]', 'content', mdPost.description);
+      setMetaTag('meta[property="og:type"]', 'content', 'article');
+      setMetaTag('meta[property="og:url"]', 'content', `https://www.leaselenses.com/blog/${slug}`);
     } else if (legacyArticle) {
       document.title = `${legacyArticle.title} | LeaseLenses Blog`;
     }
@@ -163,7 +157,7 @@ export default function BlogPostPage() {
 
           <article
             className="prose prose-slate max-w-none"
-            dangerouslySetInnerHTML={{ __html: htmlContent }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(htmlContent) }}
           />
 
           {/* Share This Article */}
