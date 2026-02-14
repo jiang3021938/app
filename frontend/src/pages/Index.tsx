@@ -8,7 +8,7 @@ import { motion, useInView, AnimatePresence } from "framer-motion";
 import { 
   FileText, Shield, Calendar, Zap, CheckCircle, ArrowRight, Upload, 
   Bot, Download, Lock, Users, Clock, Target, ShieldCheck,
-  Globe, ChevronRight, User, LogOut
+  Globe, ChevronRight, User, LogOut, Menu, X
 } from "lucide-react";
 import { checkAuthStatus, performLogout } from "@/lib/checkAuth";
 
@@ -216,6 +216,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [authType, setAuthType] = useState<"email" | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in (supports both email JWT and Atoms Cloud)
@@ -366,6 +367,13 @@ export default function LandingPage() {
             <FileText className="h-8 w-8 text-blue-600" />
             <span className="text-xl font-bold text-slate-800">LeaseLenses</span>
           </div>
+          <button
+            className="md:hidden p-2 text-slate-600 hover:text-slate-900"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
           <nav className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-slate-600 hover:text-slate-900 transition">Features</a>
             <a href="#pricing" className="text-slate-600 hover:text-slate-900 transition">Pricing</a>
@@ -398,6 +406,41 @@ export default function LandingPage() {
             )}
           </nav>
         </div>
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <nav className="md:hidden border-t bg-white px-4 py-4 space-y-3">
+            <a href="#features" className="block text-slate-600 hover:text-slate-900 transition" onClick={() => setMobileMenuOpen(false)}>Features</a>
+            <a href="#pricing" className="block text-slate-600 hover:text-slate-900 transition" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
+            <span className="block text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => { navigate("/blog"); setMobileMenuOpen(false); }}>Blog</span>
+            <span className="block text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => { navigate("/case-studies"); setMobileMenuOpen(false); }}>Case Studies</span>
+            <span className="block text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => { navigate("/templates"); setMobileMenuOpen(false); }}>Free Templates</span>
+            {currentUser ? (
+              <div className="space-y-2 pt-2 border-t">
+                <Button onClick={() => { navigate("/upload"); setMobileMenuOpen(false); }} className="w-full gap-2 bg-blue-600 hover:bg-blue-700">
+                  <Upload className="h-4 w-4" />
+                  Upload Contract
+                </Button>
+                <Button variant="outline" onClick={() => { navigate("/dashboard"); setMobileMenuOpen(false); }} className="w-full gap-2">
+                  <User className="h-4 w-4" />
+                  {currentUser.name || currentUser.email || "Dashboard"}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="w-full gap-1 text-slate-500">
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2 pt-2 border-t">
+                <Button variant="outline" onClick={() => { navigate("/login"); setMobileMenuOpen(false); }} className="w-full">
+                  Sign In
+                </Button>
+                <Button onClick={() => { navigate("/register"); setMobileMenuOpen(false); }} className="w-full">
+                  Sign Up Free
+                </Button>
+              </div>
+            )}
+          </nav>
+        )}
       </header>
 
       {/* Hero Section */}

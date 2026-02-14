@@ -222,16 +222,7 @@ async def analyze_document(
         
         # Deduct credits (admins don't consume credits)
         if not is_admin:
-            if user_credits.free_credits and user_credits.free_credits > 0:
-                await credits_service.update(user_credits.id, {
-                    "free_credits": user_credits.free_credits - 1,
-                    "updated_at": datetime.now(timezone.utc)
-                }, current_user.id)
-            elif user_credits.paid_credits and user_credits.paid_credits > 0:
-                await credits_service.update(user_credits.id, {
-                    "paid_credits": user_credits.paid_credits - 1,
-                    "updated_at": datetime.now(timezone.utc)
-                }, current_user.id)
+            await credits_service.deduct_credit(current_user.id)
         
         # Update document status
         await doc_service.update(request.document_id, {"status": "completed"}, current_user.id)
@@ -364,16 +355,7 @@ async def upload_and_analyze(
 
         # Deduct credits
         if not is_admin:
-            if user_credits.free_credits and user_credits.free_credits > 0:
-                await credits_service.update(user_credits.id, {
-                    "free_credits": user_credits.free_credits - 1,
-                    "updated_at": datetime.now(timezone.utc)
-                }, current_user.id)
-            elif user_credits.paid_credits and user_credits.paid_credits > 0:
-                await credits_service.update(user_credits.id, {
-                    "paid_credits": user_credits.paid_credits - 1,
-                    "updated_at": datetime.now(timezone.utc)
-                }, current_user.id)
+            await credits_service.deduct_credit(current_user.id)
 
         # Update document status and store file data for PDF preview fallback
         # Only store file_data for files under 20MB to avoid database bloat
@@ -549,17 +531,7 @@ async def analyze_documents_batch(
                 
                 # Deduct credit (admins don't consume credits)
                 if not is_admin:
-                    current_credits = await credits_service.get_by_field("user_id", current_user.id)
-                    if current_credits.free_credits and current_credits.free_credits > 0:
-                        await credits_service.update(current_credits.id, {
-                            "free_credits": current_credits.free_credits - 1,
-                            "updated_at": datetime.now(timezone.utc)
-                        }, current_user.id)
-                    elif current_credits.paid_credits and current_credits.paid_credits > 0:
-                        await credits_service.update(current_credits.id, {
-                            "paid_credits": current_credits.paid_credits - 1,
-                            "updated_at": datetime.now(timezone.utc)
-                        }, current_user.id)
+                    await credits_service.deduct_credit(current_user.id)
                 
                 await doc_service.update(doc_id, {"status": "completed"}, current_user.id)
                 

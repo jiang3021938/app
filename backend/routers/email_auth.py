@@ -76,11 +76,11 @@ async def send_code(request: SendCodeRequest, db: AsyncSession = Depends(get_db)
     """Send verification code to email via Resend."""
     try:
         service = EmailAuthService(db)
-        success, code = await service.send_verification_code(request.email)
+        success, result = await service.send_verification_code(request.email)
         if success:
             return {"success": True, "message": "Verification code sent to your email"}
         else:
-            return {"success": False, "message": "Failed to send verification code"}
+            return {"success": False, "message": result}
     except Exception as e:
         logger.error(f"Error sending code: {str(e)}")
         return {"success": False, "message": "Failed to send verification code"}

@@ -9,6 +9,7 @@ import logging
 import os
 import re
 import json
+import time
 from typing import Dict, Any, List, Optional
 from google import genai
 from google.genai import types
@@ -166,20 +167,33 @@ class GeminiExtractor:
 
             text_part = types.Part.from_text(text=EXTRACTION_PROMPT)
 
-            # Generate content
-            response = self.client.models.generate_content(
-                model="gemini-3-flash-preview",
-                contents=[
-                    types.Content(
-                        role="user",
-                        parts=[content_part, text_part]
+            # Generate content with retry logic (exponential backoff)
+            max_retries = 2
+            response = None
+            for attempt in range(max_retries + 1):
+                try:
+                    response = self.client.models.generate_content(
+                        model="gemini-3-flash-preview",
+                        contents=[
+                            types.Content(
+                                role="user",
+                                parts=[content_part, text_part]
+                            )
+                        ],
+                        config=types.GenerateContentConfig(
+                            max_output_tokens=8192,
+                            temperature=0.2,
+                        )
                     )
-                ],
-                config=types.GenerateContentConfig(
-                    max_output_tokens=8192,
-                    temperature=0.2,
-                )
-            )
+                    break  # Success, exit retry loop
+                except Exception as retry_err:
+                    if attempt < max_retries:
+                        wait_time = 2 ** attempt  # 1s, 2s
+                        logger.warning(f"Gemini API attempt {attempt + 1} failed: {retry_err}. Retrying in {wait_time}s...")
+                        time.sleep(wait_time)
+                    else:
+                        logger.error(f"Gemini API failed after {max_retries + 1} attempts: {retry_err}")
+                        raise
 
             # Parse the response
             response_text = response.text

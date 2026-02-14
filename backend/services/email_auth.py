@@ -1,11 +1,12 @@
 import logging
+import os
 import jwt
 import random
 import string
-import hashlib
 import secrets
 import uuid
 import httpx
+import bcrypt
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Tuple, Dict, Any
 
@@ -20,8 +21,16 @@ logger = logging.getLogger(__name__)
 # In-memory storage for verification codes (short-lived data is OK)
 verification_codes: Dict[str, Dict[str, Any]] = {}
 
+# In-memory storage for verified emails (tracks emails that passed verification)
+verified_emails: Dict[str, datetime] = {}
+
+# In-memory rate limiting for send-code endpoint
+send_code_timestamps: Dict[str, list] = {}
+SEND_CODE_RATE_LIMIT = 3  # max requests per window
+SEND_CODE_RATE_WINDOW = 300  # 5 minutes in seconds
+
 # Resend API configuration
-RESEND_API_KEY = "re_3M2tYDM3_2Jc16xhPX1sZmsCniCQGZ9E4"
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 RESEND_API_URL = "https://api.resend.com/emails"
 # Use Resend's default sender for unverified domains
 FROM_EMAIL = "noreply@leaselenses.com"
@@ -29,18 +38,19 @@ BRAND_NAME = "LeaseLenses"
 
 
 def hash_password(password: str) -> str:
-    """Hash password using SHA256 with salt for security."""
-    salt = secrets.token_hex(16)
-    hash_obj = hashlib.sha256((password + salt).encode())
-    return f"{salt}${hash_obj.hexdigest()}"
+    """Hash password using bcrypt for security."""
+    password_bytes = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode('utf-8')
 
 
 def verify_password(password: str, hashed: str) -> bool:
-    """Verify password against hash with salt."""
+    """Verify password against bcrypt hash."""
     try:
-        salt, stored_hash = hashed.split('$')
-        hash_obj = hashlib.sha256((password + salt).encode())
-        return hash_obj.hexdigest() == stored_hash
+        password_bytes = password.encode('utf-8')
+        hashed_bytes = hashed.encode('utf-8')
+        return bcrypt.checkpw(password_bytes, hashed_bytes)
     except (ValueError, AttributeError):
         return False
 
@@ -79,12 +89,38 @@ async def send_email_via_resend(to_email: str, subject: str, html_content: str) 
         return False
 
 
+def check_send_code_rate_limit(email: str) -> bool:
+    """Check if email has exceeded rate limit for sending codes.
+    
+    Returns True if the request is allowed, False if rate limited.
+    """
+    now = datetime.now(timezone.utc)
+    if email not in send_code_timestamps:
+        send_code_timestamps[email] = []
+    
+    # Remove timestamps outside the rate window
+    send_code_timestamps[email] = [
+        ts for ts in send_code_timestamps[email]
+        if (now - ts).total_seconds() < SEND_CODE_RATE_WINDOW
+    ]
+    
+    if len(send_code_timestamps[email]) >= SEND_CODE_RATE_LIMIT:
+        return False
+    
+    send_code_timestamps[email].append(now)
+    return True
+
+
 class EmailAuthService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
     async def send_verification_code(self, email: str) -> Tuple[bool, str]:
         """Send verification code to email via Resend."""
+        # Check rate limit
+        if not check_send_code_rate_limit(email):
+            return False, "Too many requests. Please try again later."
+        
         code = generate_verification_code()
         
         # Store code with expiration (10 minutes)
@@ -124,7 +160,7 @@ class EmailAuthService:
                 <p>This code will expire in 10 minutes.</p>
                 <p>If you didn't request this code, please ignore this email.</p>
                 <div class="footer">
-                    <p>© 2024 {BRAND_NAME}. All rights reserved.</p>
+                    <p>© {datetime.now().year} {BRAND_NAME}. All rights reserved.</p>
                     <p>AI-Powered Lease Analysis Platform</p>
                 </div>
             </div>
@@ -135,7 +171,7 @@ class EmailAuthService:
         # Send email via Resend
         email_sent = await send_email_via_resend(
             to_email=email,
-            subject=f"Your {BRAND_NAME} Verification Code: {code}",
+            subject=f"Your {BRAND_NAME} Verification Code",
             html_content=html_content
         )
         
@@ -171,6 +207,8 @@ class EmailAuthService:
         
         # Code is valid, remove it
         del verification_codes[email]
+        # Track this email as verified (valid for 30 minutes to complete registration)
+        verified_emails[email] = datetime.now(timezone.utc) + timedelta(minutes=30)
         return True, "Code verified successfully."
 
     async def register_user(
@@ -180,6 +218,14 @@ class EmailAuthService:
         name: Optional[str] = None
     ) -> Tuple[bool, str, Optional[Dict]]:
         """Register a new user with email and password in database."""
+        
+        # Check if email has been verified
+        if email not in verified_emails:
+            return False, "Email not verified. Please verify your email first.", None
+        
+        if datetime.now(timezone.utc) > verified_emails[email]:
+            del verified_emails[email]
+            return False, "Email verification expired. Please verify your email again.", None
         
         # Check if user already exists in database
         result = await self.db.execute(
@@ -207,6 +253,9 @@ class EmailAuthService:
         self.db.add(new_user)
         await self.db.commit()
         await self.db.refresh(new_user)
+        
+        # Remove verified email tracking after successful registration
+        verified_emails.pop(email, None)
         
         logger.info(f"[EmailAuth] New user registered: {email}")
         
