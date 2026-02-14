@@ -189,7 +189,7 @@ class GeminiExtractor:
                 except Exception as retry_err:
                     if attempt < max_retries:
                         wait_time = 2 ** attempt  # 1s, 2s
-                        logger.warning(f"Gemini API attempt {attempt + 1} failed: {retry_err}. Retrying in {wait_time}s...")
+                        logger.warning(f"Gemini API attempt {attempt + 1}/{max_retries + 1} failed: {retry_err}. Retrying in {wait_time}s...")
                         time.sleep(wait_time)
                     else:
                         logger.error(f"Gemini API failed after {max_retries + 1} attempts: {retry_err}")

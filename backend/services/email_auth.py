@@ -31,6 +31,8 @@ SEND_CODE_RATE_WINDOW = 300  # 5 minutes in seconds
 
 # Resend API configuration
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+if not RESEND_API_KEY:
+    logger.warning("RESEND_API_KEY environment variable is not set. Email sending will fail.")
 RESEND_API_URL = "https://api.resend.com/emails"
 # Use Resend's default sender for unverified domains
 FROM_EMAIL = "noreply@leaselenses.com"
