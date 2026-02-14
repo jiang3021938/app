@@ -29,8 +29,8 @@ class Settings(BaseSettings):
     admin_user_id: str = ""
     admin_user_email: str = ""
     
-    # JWT Configuration
-    jwt_secret_key: str = "your-super-secret-jwt-key-12345-for-leaselenses"
+    # JWT Configuration – MUST be overridden via JWT_SECRET_KEY env var in production
+    jwt_secret_key: str = os.environ.get("JWT_SECRET_KEY", "dev-only-insecure-key-override-in-production")
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60
 

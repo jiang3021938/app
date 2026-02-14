@@ -173,7 +173,7 @@ class User_creditsService:
 
     async def add_credits(self, user_id: str, credits_to_add: int) -> Optional[User_credits]:
         """Add paid credits to a user's account."""
-        from datetime import datetime
+        from datetime import datetime, timezone
         try:
             user_credits = await self.get_by_field("user_id", user_id)
             if not user_credits:
@@ -182,14 +182,14 @@ class User_creditsService:
                     "free_credits": 0,
                     "paid_credits": credits_to_add,
                     "subscription_type": "none",
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now(),
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc),
                 })
             else:
                 current_paid = user_credits.paid_credits or 0
                 user_credits = await self.update(user_credits.id, {
                     "paid_credits": current_paid + credits_to_add,
-                    "updated_at": datetime.now(),
+                    "updated_at": datetime.now(timezone.utc),
                 })
             logger.info(f"Added {credits_to_add} credits to user {user_id}")
             return user_credits
@@ -199,7 +199,7 @@ class User_creditsService:
 
     async def add_share_credit(self, user_id: str, platform: str) -> dict:
         """Add 1 free credit for social media sharing. Max 4 share credits per account."""
-        from datetime import datetime
+        from datetime import datetime, timezone
         MAX_SHARE_CREDITS = 4
         try:
             user_credits = await self.get_by_field("user_id", user_id)
@@ -210,8 +210,8 @@ class User_creditsService:
                     "paid_credits": 0,
                     "share_credits_earned": 1,
                     "subscription_type": "none",
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now(),
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc),
                 })
                 logger.info(f"Created user_credits with share credit for user {user_id}")
                 return {
@@ -235,7 +235,7 @@ class User_creditsService:
                 user_credits = await self.update(user_credits.id, {
                     "free_credits": current_free + 1,
                     "share_credits_earned": current_share + 1,
-                    "updated_at": datetime.now(),
+                    "updated_at": datetime.now(timezone.utc),
                 })
                 logger.info(f"Added share credit for user {user_id} on {platform}, total share credits: {current_share + 1}")
                 return {
@@ -250,10 +250,10 @@ class User_creditsService:
 
     async def activate_subscription(self, user_id: str, sub_type: str, days: int = 30) -> Optional[User_credits]:
         """Activate a subscription for a user."""
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, timezone
         try:
             user_credits = await self.get_by_field("user_id", user_id)
-            expires_at = datetime.now() + timedelta(days=days)
+            expires_at = datetime.now(timezone.utc) + timedelta(days=days)
             if not user_credits:
                 user_credits = await self.create({
                     "user_id": user_id,
@@ -261,14 +261,14 @@ class User_creditsService:
                     "paid_credits": 0,
                     "subscription_type": sub_type,
                     "subscription_expires_at": expires_at,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now(),
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc),
                 })
             else:
                 await self.update(user_credits.id, {
                     "subscription_type": sub_type,
                     "subscription_expires_at": expires_at,
-                    "updated_at": datetime.now(),
+                    "updated_at": datetime.now(timezone.utc),
                 })
             logger.info(f"Activated {sub_type} subscription for user {user_id} until {expires_at}")
             return user_credits
