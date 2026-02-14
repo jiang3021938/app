@@ -344,6 +344,19 @@ export default function LandingPage() {
     }
   ];
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Header */}
@@ -464,12 +477,23 @@ export default function LandingPage() {
       <div className="border-y bg-white/60 py-5">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap items-center justify-center gap-8 text-slate-400 text-sm">
-            <span className="text-slate-500 font-medium">Trusted by property managers at</span>
-            <span className="font-semibold text-slate-600 text-base">RE/MAX</span>
-            <span className="font-semibold text-slate-600 text-base">Keller Williams</span>
-            <span className="font-semibold text-slate-600 text-base">CBRE</span>
-            <span className="font-semibold text-slate-600 text-base">Century 21</span>
-            <span className="font-semibold text-slate-600 text-base">Coldwell Banker</span>
+            <span className="text-slate-500 font-medium">Built for property managers</span>
+            <div className="flex items-center gap-1">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              <span>PDF & Word Support</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              <span>AI-Powered Analysis</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              <span>State-Specific Compliance</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              <span>Bank-Level Encryption</span>
+            </div>
           </div>
         </div>
       </div>
@@ -911,6 +935,12 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* FAQ Schema Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
 
       {/* Final CTA Section */}
       <section className="container mx-auto px-4 py-16 md:py-24">
