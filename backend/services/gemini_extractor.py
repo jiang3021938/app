@@ -687,8 +687,8 @@ class GeminiExtractor:
                                                        "some", "what", "when", "your", "they",
                                                        "them", "then", "here", "there", "where",
                                                        "which", "their", "about", "would", "could",
-                                                       "should", "before", "after", "during",
-                                                       "between", "under", "above", "below",
+                                                       "should", "before", "during", "between",
+                                                       "under", "above", "below",
                                                        "lease", "tenant", "landlord", "property",
                                                        "agreement", "section", "specified", "none")]
                 for word in single_words:
