@@ -7,7 +7,7 @@ Generates a professional PDF report from lease analysis data using reportlab.
 import io
 import logging
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +105,7 @@ class PDFReportGenerator:
         elements.append(Paragraph("LeaseLens Analysis Report", styles["ReportTitle"]))
         property_addr = extraction.get("property_address", "Unknown Property")
         elements.append(Paragraph(
-            f"{property_addr} &nbsp;|&nbsp; Generated {datetime.now().strftime('%B %d, %Y')}",
+            f"{property_addr} &nbsp;|&nbsp; Generated {datetime.now(timezone.utc).strftime('%B %d, %Y')}",
             styles["ReportSubtitle"],
         ))
         elements.append(HRFlowable(width="100%", thickness=1, color=HexColor("#e2e8f0")))

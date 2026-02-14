@@ -234,19 +234,33 @@ async def stripe_webhook(
         
         # Process the successful payment
         user_id = session.get('client_reference_id')
+        plan_type = session.get('metadata', {}).get('plan_type', 'single')
         credits = int(session.get('metadata', {}).get('credits', 1))
         
         if user_id:
-            credits_service = User_creditsService(db)
-            await credits_service.add_credits(user_id, credits)
-            
+            # Idempotency check: skip if payment already completed
             payments_service = PaymentsService(db)
+            payment = await payments_service.get_by_stripe_session_id(session['id'])
+            if payment and payment.status == 'completed':
+                logger.info(f"Payment {session['id']} already processed, skipping")
+                return {"status": "success"}
+
+            credits_service = User_creditsService(db)
+
+            if plan_type == 'monthly':
+                # Activate monthly subscription
+                await credits_service.activate_subscription(
+                    user_id, 'monthly', days=30
+                )
+                logger.info(f"Activated monthly subscription for user {user_id}")
+            else:
+                await credits_service.add_credits(user_id, credits)
+                logger.info(f"Added {credits} credits to user {user_id}")
+            
             await payments_service.update_by_stripe_session_id(
                 session['id'],
                 {'status': 'completed'}
             )
-            
-            logger.info(f"Added {credits} credits to user {user_id}")
     
     return {"status": "success"}
 

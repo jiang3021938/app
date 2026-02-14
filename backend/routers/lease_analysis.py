@@ -4,7 +4,7 @@ import json
 import ast
 import re
 import httpx as httpx_client
-from datetime import datetime
+from datetime import datetime, timezone
 from urllib.parse import urlencode, quote
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from fastapi.responses import Response
@@ -130,8 +130,8 @@ async def analyze_document(
                 "free_credits": 1,
                 "paid_credits": 0,
                 "subscription_type": "none",
-                "created_at": datetime.now(),
-                "updated_at": datetime.now()
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc)
             }, current_user.id)
         
         # Check if user has credits
@@ -140,7 +140,7 @@ async def analyze_document(
         # Check subscription
         has_subscription = False
         if user_credits.subscription_type == "monthly" and user_credits.subscription_expires_at:
-            if user_credits.subscription_expires_at > datetime.now():
+            if user_credits.subscription_expires_at > datetime.now(timezone.utc):
                 has_subscription = True
         
         if not is_admin and total_credits <= 0 and not has_subscription:
@@ -217,7 +217,7 @@ async def analyze_document(
             "raw_extraction": json.dumps(extracted_data),
             "source_map": json.dumps(source_map if source_map is not None else {}),
             "pages_meta": json.dumps(pages_meta if pages_meta is not None else []),
-            "created_at": datetime.now()
+            "created_at": datetime.now(timezone.utc)
         }, current_user.id)
         
         # Deduct credits (admins don't consume credits)
@@ -225,12 +225,12 @@ async def analyze_document(
             if user_credits.free_credits and user_credits.free_credits > 0:
                 await credits_service.update(user_credits.id, {
                     "free_credits": user_credits.free_credits - 1,
-                    "updated_at": datetime.now()
+                    "updated_at": datetime.now(timezone.utc)
                 }, current_user.id)
             elif user_credits.paid_credits and user_credits.paid_credits > 0:
                 await credits_service.update(user_credits.id, {
                     "paid_credits": user_credits.paid_credits - 1,
-                    "updated_at": datetime.now()
+                    "updated_at": datetime.now(timezone.utc)
                 }, current_user.id)
         
         # Update document status
@@ -270,6 +270,8 @@ async def upload_and_analyze(
         file_bytes = await file.read()
         if len(file_bytes) == 0:
             raise HTTPException(status_code=400, detail="Empty file")
+        if len(file_bytes) > 20 * 1024 * 1024:
+            raise HTTPException(status_code=413, detail="File too large. Maximum file size is 20MB.")
 
         # Check user credits
         is_admin = getattr(current_user, 'role', 'user') == 'admin'
@@ -282,14 +284,14 @@ async def upload_and_analyze(
                 "free_credits": 1,
                 "paid_credits": 0,
                 "subscription_type": "none",
-                "created_at": datetime.now(),
-                "updated_at": datetime.now()
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc)
             }, current_user.id)
 
         total_credits = (user_credits.free_credits or 0) + (user_credits.paid_credits or 0)
         has_subscription = False
         if user_credits.subscription_type == "monthly" and user_credits.subscription_expires_at:
-            if user_credits.subscription_expires_at > datetime.now():
+            if user_credits.subscription_expires_at > datetime.now(timezone.utc):
                 has_subscription = True
 
         if not is_admin and total_credits <= 0 and not has_subscription:
@@ -310,8 +312,8 @@ async def upload_and_analyze(
             "file_key": file_key,
             "file_size": len(file_bytes),
             "status": "processing",
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),
         }, current_user.id)
 
         # Analyze PDF directly from uploaded bytes (no storage download needed)
@@ -357,7 +359,7 @@ async def upload_and_analyze(
             "raw_extraction": json.dumps(extracted_data),
             "source_map": json.dumps(source_map if source_map is not None else {}),
             "pages_meta": json.dumps(pages_meta if pages_meta is not None else []),
-            "created_at": datetime.now()
+            "created_at": datetime.now(timezone.utc)
         }, current_user.id)
 
         # Deduct credits
@@ -365,12 +367,12 @@ async def upload_and_analyze(
             if user_credits.free_credits and user_credits.free_credits > 0:
                 await credits_service.update(user_credits.id, {
                     "free_credits": user_credits.free_credits - 1,
-                    "updated_at": datetime.now()
+                    "updated_at": datetime.now(timezone.utc)
                 }, current_user.id)
             elif user_credits.paid_credits and user_credits.paid_credits > 0:
                 await credits_service.update(user_credits.id, {
                     "paid_credits": user_credits.paid_credits - 1,
-                    "updated_at": datetime.now()
+                    "updated_at": datetime.now(timezone.utc)
                 }, current_user.id)
 
         # Update document status and store file data for PDF preview fallback
@@ -439,14 +441,14 @@ async def analyze_documents_batch(
                 "free_credits": 1,
                 "paid_credits": 0,
                 "subscription_type": "none",
-                "created_at": datetime.now(),
-                "updated_at": datetime.now()
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc)
             }, current_user.id)
         
         total_credits = (user_credits.free_credits or 0) + (user_credits.paid_credits or 0)
         has_subscription = False
         if user_credits.subscription_type == "monthly" and user_credits.subscription_expires_at:
-            if user_credits.subscription_expires_at > datetime.now():
+            if user_credits.subscription_expires_at > datetime.now(timezone.utc):
                 has_subscription = True
         
         documents_to_process = len(request.document_ids)
@@ -478,25 +480,48 @@ async def analyze_documents_batch(
                 # Update document status
                 await doc_service.update(doc_id, {"status": "processing"}, current_user.id)
                 
-                # Extract text (placeholder for MVP)
-                document_text = f"""
-                Sample lease agreement for {document.file_name}.
-                """
-                
-                # Perform AI extraction
-                result = await extraction_service.extract_lease_data(document_text)
-                
-                if not result["success"]:
+                # Download actual document file from storage (with database fallback)
+                file_bytes = None
+                try:
+                    supabase_storage = SupabaseStorageService()
+                    download_url = await supabase_storage.get_download_url(
+                        bucket_name="lease-documents",
+                        object_key=document.file_key
+                    )
+                    async with httpx_client.AsyncClient(timeout=120.0) as http_client:
+                        file_response = await http_client.get(download_url)
+                        file_bytes = file_response.content
+                except Exception as e:
+                    logger.warning(f"Supabase download failed for doc {doc_id}, trying database fallback: {e}")
+
+                if not file_bytes and document.file_data:
+                    file_bytes = base64.b64decode(document.file_data)
+
+                if not file_bytes:
                     await doc_service.update(doc_id, {"status": "failed"}, current_user.id)
                     results.append({
                         "document_id": doc_id,
                         "success": False,
-                        "error": result.get("error", "Extraction failed")
+                        "error": "Document file not available"
                     })
                     failed += 1
                     continue
-                
-                extracted_data = result["data"]
+
+                # Analyze document using Gemini API
+                try:
+                    gemini_extractor = GeminiExtractor()
+                    analysis_result = await gemini_extractor.analyze_pdf(file_bytes, document.file_name)
+                    extracted_data = analysis_result["extracted_data"]
+                except Exception as e:
+                    logger.error(f"Gemini analysis failed for doc {doc_id}: {e}")
+                    await doc_service.update(doc_id, {"status": "failed"}, current_user.id)
+                    results.append({
+                        "document_id": doc_id,
+                        "success": False,
+                        "error": f"Analysis failed: {str(e)}"
+                    })
+                    failed += 1
+                    continue
                 
                 # Compliance check
                 compliance_result = await compliance_checker.check_compliance(extracted_data)
@@ -519,7 +544,7 @@ async def analyze_documents_batch(
                     "audit_checklist": json.dumps(extracted_data.get("audit_checklist", [])),
                     "compliance_data": json.dumps(compliance_result),
                     "raw_extraction": json.dumps(extracted_data),
-                    "created_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc)
                 }, current_user.id)
                 
                 # Deduct credit (admins don't consume credits)
@@ -528,12 +553,12 @@ async def analyze_documents_batch(
                     if current_credits.free_credits and current_credits.free_credits > 0:
                         await credits_service.update(current_credits.id, {
                             "free_credits": current_credits.free_credits - 1,
-                            "updated_at": datetime.now()
+                            "updated_at": datetime.now(timezone.utc)
                         }, current_user.id)
                     elif current_credits.paid_credits and current_credits.paid_credits > 0:
                         await credits_service.update(current_credits.id, {
                             "paid_credits": current_credits.paid_credits - 1,
-                            "updated_at": datetime.now()
+                            "updated_at": datetime.now(timezone.utc)
                         }, current_user.id)
                 
                 await doc_service.update(doc_id, {"status": "completed"}, current_user.id)
@@ -724,14 +749,14 @@ async def get_user_credits(
                 "free_credits": 1,
                 "paid_credits": 0,
                 "subscription_type": "none",
-                "created_at": datetime.now(),
-                "updated_at": datetime.now()
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc)
             }, current_user.id)
         
         total_credits = (user_credits.free_credits or 0) + (user_credits.paid_credits or 0)
         has_subscription = False
         if user_credits.subscription_type == "monthly" and user_credits.subscription_expires_at:
-            if user_credits.subscription_expires_at > datetime.now():
+            if user_credits.subscription_expires_at > datetime.now(timezone.utc):
                 has_subscription = True
         
         return {
@@ -777,11 +802,11 @@ async def admin_set_credits(
                 "free_credits": request.free_credits or 0,
                 "paid_credits": request.paid_credits or 0,
                 "subscription_type": request.subscription_type or "none",
-                "created_at": datetime.now(),
-                "updated_at": datetime.now()
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc)
             }, current_user.id)
         else:
-            updates = {"updated_at": datetime.now()}
+            updates = {"updated_at": datetime.now(timezone.utc)}
             if request.free_credits is not None:
                 updates["free_credits"] = request.free_credits
             if request.paid_credits is not None:
@@ -1674,7 +1699,7 @@ async def get_portfolio_summary(
         from models.extractions import Extractions
 
         docs_result = await db.execute(
-            select(Documents).where(Documents.created_by == current_user.id).order_by(Documents.created_at.desc())
+            select(Documents).where(Documents.user_id == current_user.id).order_by(Documents.created_at.desc())
         )
         documents = docs_result.scalars().all()
 
@@ -1691,7 +1716,7 @@ async def get_portfolio_summary(
         upcoming_dates = []
 
         from datetime import datetime, timedelta
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         ninety_days = now + timedelta(days=90)
 
         lease_items = []
