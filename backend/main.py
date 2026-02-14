@@ -2,7 +2,9 @@ import importlib
 import logging
 import os
 import pkgutil
+import time
 import traceback
+from collections import defaultdict
 from contextlib import asynccontextmanager
 from datetime import datetime
 
@@ -11,6 +13,7 @@ from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRouter
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # MODULE_IMPORTS_START
 from services.database import initialize_database, close_database
@@ -103,6 +106,36 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    """Simple in-memory rate limiting middleware."""
+
+    def __init__(self, app, requests_per_minute: int = 60):
+        super().__init__(app)
+        self.requests_per_minute = requests_per_minute
+        self.requests: dict = defaultdict(list)
+
+    async def dispatch(self, request: Request, call_next):
+        client_ip = request.client.host if request.client else "unknown"
+        now = time.time()
+
+        # Clean old entries outside the 60-second window
+        self.requests[client_ip] = [
+            t for t in self.requests[client_ip] if now - t < 60
+        ]
+
+        if len(self.requests[client_ip]) >= self.requests_per_minute:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Too many requests. Please try again later."},
+            )
+
+        self.requests[client_ip].append(now)
+        return await call_next(request)
+
+
+app.add_middleware(RateLimitMiddleware, requests_per_minute=60)
 # MODULE_MIDDLEWARE_END
 
 

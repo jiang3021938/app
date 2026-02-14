@@ -1,7 +1,7 @@
 import logging
 from typing import Optional, Dict, Any, List
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.user_credits import User_credits
@@ -169,6 +169,53 @@ class User_creditsService:
             return result.scalars().all()
         except Exception as e:
             logger.error(f"Error fetching user_creditss by {field_name}: {str(e)}")
+            raise
+
+    async def deduct_credit(self, user_id: str) -> bool:
+        """Atomically deduct one credit from a user's account.
+        
+        Uses SQL UPDATE with WHERE clause for atomic operation to prevent race conditions.
+        Tries free credits first, then paid credits.
+        
+        Returns True if a credit was successfully deducted, False otherwise.
+        """
+        from datetime import datetime, timezone
+        try:
+            # Try to deduct from free_credits first (atomic)
+            result = await self.db.execute(
+                update(User_credits)
+                .where(User_credits.user_id == user_id)
+                .where(User_credits.free_credits > 0)
+                .values(
+                    free_credits=User_credits.free_credits - 1,
+                    updated_at=datetime.now(timezone.utc)
+                )
+            )
+            if result.rowcount > 0:
+                await self.db.commit()
+                logger.info(f"Deducted 1 free credit from user {user_id}")
+                return True
+            
+            # Try to deduct from paid_credits (atomic)
+            result = await self.db.execute(
+                update(User_credits)
+                .where(User_credits.user_id == user_id)
+                .where(User_credits.paid_credits > 0)
+                .values(
+                    paid_credits=User_credits.paid_credits - 1,
+                    updated_at=datetime.now(timezone.utc)
+                )
+            )
+            if result.rowcount > 0:
+                await self.db.commit()
+                logger.info(f"Deducted 1 paid credit from user {user_id}")
+                return True
+            
+            logger.warning(f"No credits available to deduct for user {user_id}")
+            return False
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"Error deducting credit for user {user_id}: {str(e)}")
             raise
 
     async def add_credits(self, user_id: str, credits_to_add: int) -> Optional[User_credits]:

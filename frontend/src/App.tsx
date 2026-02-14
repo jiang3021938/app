@@ -24,6 +24,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import LogoutCallbackPage from "./pages/LogoutCallbackPage";
 import SampleReport from "./pages/SampleReport";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => (
           <Route path="/terms" element={<Terms />} />
           <Route path="/sample-report" element={<SampleReport />} />
           <Route path="/logout-callback" element={<LogoutCallbackPage />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
