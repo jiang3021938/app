@@ -174,8 +174,8 @@ const jurisdictions: Record<string, JurisdictionRule> = {
     addsCpi: false,
     hardCapPct: 7,
     cpiPct: 3.4,
-    description: "7% annual cap (eff. 2025)",
-    notes: "Signed into law in 2025. Limits annual rent increases to 7% for most residential tenancies. Certain new construction is temporarily exempt.",
+    description: "7% annual cap",
+    notes: "Enacted in 2025 and currently in effect. Limits annual rent increases to 7% for most residential tenancies. Certain new construction is temporarily exempt.",
   },
   TX: {
     name: "Texas",
