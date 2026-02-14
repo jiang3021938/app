@@ -380,6 +380,7 @@ export default function LandingPage() {
             <span className="text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => navigate("/blog")}>Blog</span>
             <span className="text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => navigate("/case-studies")}>Case Studies</span>
             <span className="text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => navigate("/templates")}>Free Templates</span>
+            <span className="text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => navigate("/tools/security-deposit-calculator")}>Free Tools</span>
             {currentUser ? (
               <>
                 <Button onClick={() => navigate("/upload")} className="gap-2 bg-blue-600 hover:bg-blue-700">
@@ -414,6 +415,7 @@ export default function LandingPage() {
             <span className="block text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => { navigate("/blog"); setMobileMenuOpen(false); }}>Blog</span>
             <span className="block text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => { navigate("/case-studies"); setMobileMenuOpen(false); }}>Case Studies</span>
             <span className="block text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => { navigate("/templates"); setMobileMenuOpen(false); }}>Free Templates</span>
+            <span className="block text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => { navigate("/tools/security-deposit-calculator"); setMobileMenuOpen(false); }}>Free Tools</span>
             {currentUser ? (
               <div className="space-y-2 pt-2 border-t">
                 <Button onClick={() => { navigate("/upload"); setMobileMenuOpen(false); }} className="w-full gap-2 bg-blue-600 hover:bg-blue-700">
@@ -1023,21 +1025,45 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t bg-slate-50 py-12">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <FileText className="h-6 w-6 text-blue-600" />
-              <span className="font-bold text-slate-800">LeaseLenses</span>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="h-6 w-6 text-blue-600" />
+                <span className="font-bold text-slate-800">LeaseLenses</span>
+              </div>
+              <p className="text-sm text-slate-500">
+                AI-powered lease analysis for landlords and tenants.
+              </p>
             </div>
-            <div className="flex flex-wrap justify-center gap-6 text-sm text-slate-500">
-              <a href="#features" className="hover:text-slate-700">Features</a>
-              <a href="#pricing" className="hover:text-slate-700">Pricing</a>
-              <a href="#faq" className="hover:text-slate-700">FAQ</a>
-              <a href="/blog/" className="hover:text-slate-700">Blog</a>
-              <a href="/about" className="hover:text-slate-700">About</a>
-              <a href="/privacy" className="hover:text-slate-700">Privacy Policy</a>
-              <a href="/terms" className="hover:text-slate-700">Terms of Service</a>
+            <div>
+              <h4 className="font-semibold text-slate-800 mb-3">Product</h4>
+              <ul className="space-y-2 text-sm text-slate-500">
+                <li><a href="#features" className="hover:text-slate-700">Features</a></li>
+                <li><a href="#pricing" className="hover:text-slate-700">Pricing</a></li>
+                <li><a href="#faq" className="hover:text-slate-700">FAQ</a></li>
+                <li><a href="/blog/" className="hover:text-slate-700">Blog</a></li>
+                <li><a href="/about" className="hover:text-slate-700">About</a></li>
+              </ul>
             </div>
-            <p className="text-sm text-slate-500 text-center md:text-right">
+            <div>
+              <h4 className="font-semibold text-slate-800 mb-3">Free Tools</h4>
+              <ul className="space-y-2 text-sm text-slate-500">
+                <li><a href="/tools/security-deposit-calculator" className="hover:text-slate-700">Security Deposit Calculator</a></li>
+                <li><a href="/tools/rent-increase-calculator" className="hover:text-slate-700">Rent Increase Calculator</a></li>
+                <li><a href="/tools/lease-termination-notice-generator" className="hover:text-slate-700">Lease Termination Notice</a></li>
+                <li><a href="/tools/late-fee-checker" className="hover:text-slate-700">Late Fee Checker</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-slate-800 mb-3">Legal</h4>
+              <ul className="space-y-2 text-sm text-slate-500">
+                <li><a href="/privacy" className="hover:text-slate-700">Privacy Policy</a></li>
+                <li><a href="/terms" className="hover:text-slate-700">Terms of Service</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t pt-6 text-center text-sm text-slate-500">
+            <p>
               © 2026 LeaseLenses. All rights reserved.<br />
               This tool provides information only and does not constitute legal advice.
             </p>

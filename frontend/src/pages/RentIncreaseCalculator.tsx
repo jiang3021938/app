@@ -613,6 +613,40 @@ export default function RentIncreaseCalculator() {
         </div>
       </main>
 
+      {/* More Free Tools */}
+      <section className="container mx-auto px-4 py-12">
+        <h2 className="text-2xl font-bold text-slate-900 text-center mb-8">More Free Tools</h2>
+        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/tools/security-deposit-calculator")}>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Shield className="h-5 w-5 text-blue-600" />
+                Security Deposit Calculator
+              </CardTitle>
+              <CardDescription>Find out the maximum deposit your landlord can legally charge.</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/tools/lease-termination-notice-generator")}>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FileText className="h-5 w-5 text-purple-600" />
+                Termination Notice Generator
+              </CardTitle>
+              <CardDescription>Generate a professional lease termination letter for your state.</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/tools/late-fee-checker")}>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+                Late Fee Checker
+              </CardTitle>
+              <CardDescription>Check if your landlord's late fee is legal in your state.</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t bg-white py-8 mt-12">
         <div className="container mx-auto px-4 text-center text-sm text-slate-500">

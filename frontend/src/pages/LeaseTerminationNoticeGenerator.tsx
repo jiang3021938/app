@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   FileText, ArrowLeft, ArrowRight, Shield, Copy, CheckCircle,
-  AlertTriangle, Info, ClipboardCheck, Calendar,
+  AlertTriangle, Info, ClipboardCheck, Calendar, TrendingUp,
 } from "lucide-react";
 
 interface StateNoticePeriod {
@@ -594,6 +594,40 @@ export default function LeaseTerminationNoticeGenerator() {
           </section>
         </div>
       </main>
+
+      {/* More Free Tools */}
+      <section className="container mx-auto px-4 py-12">
+        <h2 className="text-2xl font-bold text-slate-900 text-center mb-8">More Free Tools</h2>
+        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/tools/security-deposit-calculator")}>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Shield className="h-5 w-5 text-blue-600" />
+                Security Deposit Calculator
+              </CardTitle>
+              <CardDescription>Find out the maximum deposit your landlord can legally charge.</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/tools/rent-increase-calculator")}>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-green-600" />
+                Rent Increase Calculator
+              </CardTitle>
+              <CardDescription>Calculate the maximum legal rent increase in your city or state.</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/tools/late-fee-checker")}>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+                Late Fee Checker
+              </CardTitle>
+              <CardDescription>Check if your landlord's late fee is legal in your state.</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="border-t bg-white py-8 mt-12">
