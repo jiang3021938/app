@@ -58,6 +58,30 @@ function getToolIcon(icon: string) {
   }
 }
 
+const RELATED_TOOLS_HEADING = "🛠️ Try Our Free Tools";
+
+function RelatedToolsSection({ slug, navigate }: { slug: string | undefined; navigate: (path: string) => void }) {
+  if (!slug || !RELATED_TOOLS[slug]) return null;
+  return (
+    <div className="mt-8">
+      <h3 className="text-lg font-semibold text-slate-800 mb-4">{RELATED_TOOLS_HEADING}</h3>
+      <div className="grid sm:grid-cols-2 gap-4">
+        {RELATED_TOOLS[slug].map((tool) => (
+          <Card key={tool.path} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(tool.path)}>
+            <CardContent className="py-4 flex items-start gap-3">
+              {getToolIcon(tool.icon)}
+              <div>
+                <p className="font-medium text-slate-800">{tool.title}</p>
+                <p className="text-sm text-slate-500">{tool.description}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Keep legacy hardcoded articles as fallback for old slugs
 const LEGACY_ARTICLES: Record<string, { title: string; category: string; readTime: string; date: string; sections: { heading: string; content: string }[]; }> = {
   "california-lease-clauses": {
@@ -227,25 +251,7 @@ export default function BlogPostPage() {
             </Card>
           </div>
 
-          {/* Related Free Tools */}
-          {slug && RELATED_TOOLS[slug] && (
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold text-slate-800 mb-4">🛠️ Try Our Free Tools</h3>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {RELATED_TOOLS[slug].map((tool) => (
-                  <Card key={tool.path} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(tool.path)}>
-                    <CardContent className="py-4 flex items-start gap-3">
-                      {getToolIcon(tool.icon)}
-                      <div>
-                        <p className="font-medium text-slate-800">{tool.title}</p>
-                        <p className="text-sm text-slate-500">{tool.description}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
+          <RelatedToolsSection slug={slug} navigate={navigate} />
 
           {/* CTA */}
           <Card className="mt-12 bg-gradient-to-r from-blue-600 to-blue-700 border-0">
@@ -351,25 +357,7 @@ export default function BlogPostPage() {
           </Card>
         </div>
 
-        {/* Related Free Tools */}
-        {slug && RELATED_TOOLS[slug] && (
-          <div className="mt-8">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">🛠️ Try Our Free Tools</h3>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {RELATED_TOOLS[slug].map((tool) => (
-                <Card key={tool.path} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(tool.path)}>
-                  <CardContent className="py-4 flex items-start gap-3">
-                    {getToolIcon(tool.icon)}
-                    <div>
-                      <p className="font-medium text-slate-800">{tool.title}</p>
-                      <p className="text-sm text-slate-500">{tool.description}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
+        <RelatedToolsSection slug={slug} navigate={navigate} />
 
         {/* CTA */}
         <Card className="mt-12 bg-gradient-to-r from-blue-600 to-blue-700 border-0">
