@@ -171,8 +171,8 @@ export default function StateLandlordTenantLaw() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              {stateInfo.keyStatutes.map((statute, index) => (
-                <li key={index} className="flex items-start gap-2">
+              {stateInfo.keyStatutes.map((statute) => (
+                <li key={statute} className="flex items-start gap-2">
                   <span className="text-blue-600 mt-1">•</span>
                   <span className="text-slate-700">{statute}</span>
                 </li>
@@ -194,8 +194,8 @@ export default function StateLandlordTenantLaw() {
               Landlords and tenants in {stateInfo.name} should be aware of these frequent violations:
             </p>
             <ul className="space-y-2">
-              {stateInfo.commonIssues.map((issue, index) => (
-                <li key={index} className="flex items-start gap-2">
+              {stateInfo.commonIssues.map((issue) => (
+                <li key={issue} className="flex items-start gap-2">
                   <span className="text-amber-600 mt-1">⚠️</span>
                   <span className="text-slate-700">{issue}</span>
                 </li>
@@ -263,8 +263,8 @@ export default function StateLandlordTenantLaw() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
-              {stateInfo.resources.map((resource, index) => (
-                <li key={index}>
+              {stateInfo.resources.map((resource) => (
+                <li key={resource.url}>
                   <a
                     href={resource.url}
                     target="_blank"
