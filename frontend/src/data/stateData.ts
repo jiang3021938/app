@@ -890,7 +890,6 @@ export const stateData: Record<string, StateInfo> = {
     keyStatutes: [
       "Utah Code §57-22-4 - Security Deposits",
       "Utah Code §57-22-5 - Landlord Obligations (Fit Premises Act)",
-      "Utah Code §57-22-5 - Right of Entry",
       "Utah Code §78B-6-812 - Eviction Process"
     ],
     commonIssues: [
