@@ -1262,6 +1262,38 @@ export const stateData: Record<string, StateInfo> = {
       }
     ]
   },
+  "new-jersey": {
+    name: "New Jersey",
+    slug: "new-jersey",
+    description: "New Jersey's Anti-Eviction Act and Truth in Renting laws provide strong tenant protections. The state has specific requirements for security deposits, lease disclosures, and detailed eviction procedures.",
+    securityDepositLimit: "1.5 months' rent for security deposits, plus additional pet deposit allowed.",
+    securityDepositReturn: "30 days after termination of tenancy. Must provide itemized statement of damages and deposit must be held in separate interest-bearing account.",
+    rentIncreaseNotice: "No statutory requirement for month-to-month tenancies, but 30 days is customary. Must follow lease terms for fixed-term leases.",
+    entryNotice: "Reasonable notice required as specified in lease, typically 24 hours except in emergencies.",
+    keyStatutes: [
+      "New Jersey Statutes §46:8-19 - Security Deposits",
+      "New Jersey Statutes §46:8-21.1 - Truth in Renting Act",
+      "New Jersey Statutes §2A:18-61.1 - Anti-Eviction Act",
+      "New Jersey Statutes §46:8-27 - Landlord Obligations"
+    ],
+    commonIssues: [
+      "Not holding deposits in interest-bearing accounts",
+      "Not returning deposits with interest within 30 days",
+      "Failure to provide Truth in Renting statement",
+      "Not providing itemized deductions",
+      "Improper eviction procedures under Anti-Eviction Act"
+    ],
+    resources: [
+      {
+        title: "NJ Courts - Landlord-Tenant Information",
+        url: "https://www.njcourts.gov/forms/11991_lt_tenant_kit.pdf"
+      },
+      {
+        title: "NJ Department of Community Affairs - Tenants' Rights",
+        url: "https://www.nj.gov/dca/divisions/codes/publications/pdf_lti/t_r_i.pdf"
+      }
+    ]
+  },
   maine: {
     name: "Maine",
     slug: "maine",
@@ -1419,6 +1451,38 @@ export const stateData: Record<string, StateInfo> = {
       {
         title: "East River Legal Services",
         url: "https://www.erlservices.org/housing"
+      }
+    ]
+  },
+  "north-carolina": {
+    name: "North Carolina",
+    slug: "north-carolina",
+    description: "North Carolina's Residential Rental Agreements Act provides comprehensive regulations for rental housing. The state has specific requirements for security deposits, late fees, and detailed lease procedures.",
+    securityDepositLimit: "1.5 months' rent for month-to-month tenancies, 2 months' rent for leases longer than 2 months.",
+    securityDepositReturn: "30 days after termination of tenancy. Must provide itemized statement of damages. If deposit is not returned or accounted for, tenant may recover damages.",
+    rentIncreaseNotice: "No statutory requirement for month-to-month tenancies, but reasonable notice (typically 30 days) is recommended. Must follow lease terms for fixed-term leases.",
+    entryNotice: "No specific statutory requirement, but reasonable notice (typically 24 hours) is standard practice except in emergencies.",
+    keyStatutes: [
+      "North Carolina General Statutes §42-51 - Security Deposits",
+      "North Carolina General Statutes §42-52 - Deposit Return",
+      "North Carolina General Statutes §42-46 - Late Fee Restrictions",
+      "North Carolina General Statutes §42-14 - Notice to Vacate"
+    ],
+    commonIssues: [
+      "Charging deposits above legal limits",
+      "Not returning deposits within 30 days",
+      "Charging excessive late fees (max $15 or 5% of rent)",
+      "Charging late fees before 5-day grace period",
+      "Not providing itemized deductions"
+    ],
+    resources: [
+      {
+        title: "NC Bar Association - Tenant Rights",
+        url: "https://www.ncbar.org/public-resources/find-legal-help/"
+      },
+      {
+        title: "Legal Aid of North Carolina",
+        url: "https://www.legalaidnc.org/get-help/housing"
       }
     ]
   },
