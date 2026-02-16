@@ -54,7 +54,7 @@ export default function StateLandlordTenantLaw() {
       setMetaTag('meta[property="og:type"]', 'content', 'article');
       setMetaTag('meta[property="og:url"]', 'content', `https://www.leaselenses.com/states/${stateInfo.slug}`);
 
-      // Add FAQ Schema JSON-LD
+      // Add FAQ Schema JSON-LD with unique identifier
       const faqSchema = {
         "@context": "https://schema.org",
         "@type": "FAQPage",
@@ -94,10 +94,11 @@ export default function StateLandlordTenantLaw() {
         ]
       };
 
-      let faqScript = document.querySelector('script[type="application/ld+json"]');
+      let faqScript = document.querySelector('script[data-state-faq-schema]');
       if (!faqScript) {
         faqScript = document.createElement('script');
         faqScript.setAttribute('type', 'application/ld+json');
+        faqScript.setAttribute('data-state-faq-schema', 'true');
         document.head.appendChild(faqScript);
       }
       faqScript.textContent = JSON.stringify(faqSchema);
@@ -121,8 +122,8 @@ export default function StateLandlordTenantLaw() {
         if (tag) tag.remove();
       });
 
-      // Clean up FAQ schema
-      const faqScript = document.querySelector('script[type="application/ld+json"]');
+      // Clean up FAQ schema with unique selector
+      const faqScript = document.querySelector('script[data-state-faq-schema]');
       if (faqScript) faqScript.remove();
     };
   }, [stateInfo]);

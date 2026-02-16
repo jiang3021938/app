@@ -47,6 +47,21 @@ export default function StatesIndex() {
 
     return () => {
       document.title = 'LeaseLenses - AI Lease Analysis';
+      
+      // Clean up meta tags
+      const metaTags = [
+        'meta[name="description"]',
+        'link[rel="canonical"]',
+        'meta[property="og:title"]',
+        'meta[property="og:description"]',
+        'meta[property="og:type"]',
+        'meta[property="og:url"]'
+      ];
+      
+      metaTags.forEach(selector => {
+        const tag = document.querySelector(selector);
+        if (tag) tag.remove();
+      });
     };
   }, []);
 
