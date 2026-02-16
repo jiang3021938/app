@@ -6,6 +6,11 @@ export const BLOG_TO_STATE: Record<string, string> = {
   "texas-landlord-tenant-law-guide": "texas",
   "new-york-rent-control-laws-guide": "new-york",
   "illinois-eviction-notice-requirements": "illinois",
+  "georgia-landlord-tenant-law-guide": "georgia",
+  "ohio-security-deposit-law": "ohio",
+  "pennsylvania-lease-agreement-guide": "pennsylvania",
+  "michigan-eviction-process-guide": "michigan",
+  "virginia-tenant-rights-2026": "virginia",
 };
 
 // Reverse mapping: state slug to blog post slugs
@@ -25,6 +30,21 @@ export const STATE_TO_BLOGS: Record<string, string[]> = {
   ],
   illinois: [
     "illinois-eviction-notice-requirements",
+  ],
+  georgia: [
+    "georgia-landlord-tenant-law-guide",
+  ],
+  ohio: [
+    "ohio-security-deposit-law",
+  ],
+  pennsylvania: [
+    "pennsylvania-lease-agreement-guide",
+  ],
+  michigan: [
+    "michigan-eviction-process-guide",
+  ],
+  virginia: [
+    "virginia-tenant-rights-2026",
   ],
 };
 
@@ -98,6 +118,76 @@ export const STATE_TO_TOOLS: Record<string, Array<{ path: string; title: string;
       title: "Security Deposit Calculator",
       description: "Check Illinois security deposit requirements",
       icon: "shield",
+    },
+  ],
+  georgia: [
+    {
+      path: "/tools/security-deposit-calculator",
+      title: "Security Deposit Calculator",
+      description: "Calculate Georgia security deposit requirements",
+      icon: "shield",
+    },
+    {
+      path: "/tools/lease-termination-notice-generator",
+      title: "Notice Generator",
+      description: "Generate Georgia-compliant eviction notices",
+      icon: "file",
+    },
+  ],
+  ohio: [
+    {
+      path: "/tools/security-deposit-calculator",
+      title: "Security Deposit Calculator",
+      description: "Check Ohio's 30-day return rule compliance",
+      icon: "shield",
+    },
+    {
+      path: "/tools/late-fee-checker",
+      title: "Late Fee Checker",
+      description: "Verify reasonable late fees under Ohio law",
+      icon: "alert",
+    },
+  ],
+  pennsylvania: [
+    {
+      path: "/tools/security-deposit-calculator",
+      title: "Security Deposit Calculator",
+      description: "Verify Pennsylvania security deposit rules",
+      icon: "shield",
+    },
+    {
+      path: "/tools/lease-termination-notice-generator",
+      title: "Notice Generator",
+      description: "Generate Pennsylvania-compliant notices",
+      icon: "file",
+    },
+  ],
+  michigan: [
+    {
+      path: "/tools/lease-termination-notice-generator",
+      title: "Notice Generator",
+      description: "Generate Michigan eviction notices under Truth in Renting Act",
+      icon: "file",
+    },
+    {
+      path: "/tools/security-deposit-calculator",
+      title: "Security Deposit Calculator",
+      description: "Check Michigan's 1.5 month deposit limit",
+      icon: "shield",
+    },
+  ],
+  virginia: [
+    {
+      path: "/tools/security-deposit-calculator",
+      title: "Security Deposit Calculator",
+      description: "Calculate Virginia's 2-month deposit limit under VRLTA",
+      icon: "shield",
+    },
+    {
+      path: "/tools/rent-increase-calculator",
+      title: "Rent Increase Calculator",
+      description: "Plan Virginia rent increases with proper notice",
+      icon: "trending",
     },
   ],
 };
