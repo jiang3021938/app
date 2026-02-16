@@ -115,12 +115,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.leaselenses.com/states/alabama</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.leaselenses.com/states/arizona</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.leaselenses.com/states/california</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/states/colorado</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -140,6 +150,41 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.leaselenses.com/states/indiana</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/states/louisiana</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/states/maryland</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/states/massachusetts</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/states/michigan</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/states/minnesota</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/states/missouri</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.leaselenses.com/states/new-york</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -155,12 +200,32 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.leaselenses.com/states/south-carolina</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/states/tennessee</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.leaselenses.com/states/texas</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.leaselenses.com/states/virginia</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.leaselenses.com/states/washington</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/states/wisconsin</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
