@@ -3,12 +3,14 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, ArrowLeft, Clock, ArrowRight, Shield, TrendingUp, AlertTriangle, Calculator } from "lucide-react";
+import { FileText, ArrowLeft, Clock, ArrowRight, Shield, TrendingUp, AlertTriangle, Calculator, MapPin, ExternalLink } from "lucide-react";
 import { ShareForCredits } from "@/components/ShareForCredits";
 import { LeaseChecklistDownload } from "@/components/EmailCaptureForm";
 import { blogPostsBySlug } from "@/lib/blogData";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import { BLOG_TO_STATE } from "@/data/blogStateMapping";
+import { getStateBySlug } from "@/data/stateData";
 
 // Configure marked
 marked.setOptions({ breaks: true, gfm: true });
@@ -59,6 +61,49 @@ function getToolIcon(icon: string) {
 }
 
 const RELATED_TOOLS_HEADING = "🛠️ Try Our Free Tools";
+
+function StateLawPageCard({ slug, navigate }: { slug: string | undefined; navigate: (path: string) => void }) {
+  if (!slug) return null;
+  
+  const stateSlug = BLOG_TO_STATE[slug];
+  if (!stateSlug) return null;
+  
+  const stateInfo = getStateBySlug(stateSlug);
+  if (!stateInfo) return null;
+  
+  return (
+    <Card className="mt-8 mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/states/${stateSlug}`)}>
+      <CardContent className="py-6">
+        <div className="flex items-start gap-4">
+          <div className="bg-blue-600 text-white p-3 rounded-lg">
+            <MapPin className="h-6 w-6" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="text-lg font-semibold text-slate-900">
+                {stateInfo.name} Landlord-Tenant Law Guide
+              </h3>
+              <ExternalLink className="h-4 w-4 text-blue-600" />
+            </div>
+            <p className="text-sm text-slate-600 mb-3">
+              {stateInfo.description}
+            </p>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="flex items-start gap-1">
+                <Shield className="h-3 w-3 text-blue-600 mt-0.5 flex-shrink-0" />
+                <span className="text-slate-700">{stateInfo.securityDepositLimit}</span>
+              </div>
+              <div className="flex items-start gap-1">
+                <Clock className="h-3 w-3 text-blue-600 mt-0.5 flex-shrink-0" />
+                <span className="text-slate-700">{stateInfo.securityDepositReturn}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 function RelatedToolsSection({ slug, navigate }: { slug: string | undefined; navigate: (path: string) => void }) {
   if (!slug || !RELATED_TOOLS[slug]) return null;
@@ -251,6 +296,8 @@ export default function BlogPostPage() {
             </Card>
           </div>
 
+          <StateLawPageCard slug={slug} navigate={navigate} />
+
           <RelatedToolsSection slug={slug} navigate={navigate} />
 
           {/* CTA */}
@@ -356,6 +403,8 @@ export default function BlogPostPage() {
             </CardContent>
           </Card>
         </div>
+
+        <StateLawPageCard slug={slug} navigate={navigate} />
 
         <RelatedToolsSection slug={slug} navigate={navigate} />
 

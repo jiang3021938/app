@@ -12,9 +12,29 @@ import {
   DoorOpen, 
   AlertCircle,
   ExternalLink,
-  Calculator
+  Calculator,
+  BookOpen,
+  ArrowRight
 } from "lucide-react";
 import { getStateBySlug } from "@/data/stateData";
+import { STATE_TO_BLOGS, STATE_TO_TOOLS } from "@/data/blogStateMapping";
+import { blogPostsBySlug } from "@/lib/blogData";
+
+function getToolIcon(icon: string) {
+  switch (icon) {
+    case "shield": return <Shield className="h-4 w-4" />;
+    case "trending": return <TrendingUp className="h-4 w-4" />;
+    case "file": return <FileText className="h-4 w-4" />;
+    case "alert": return <AlertCircle className="h-4 w-4" />;
+    default: return <Calculator className="h-4 w-4" />;
+  }
+}
+
+function estimateReadTime(content: string): string {
+  const wordCount = content.split(/\s+/).length;
+  const minutes = Math.max(1, Math.ceil(wordCount / 200));
+  return `${minutes} min`;
+}
 
 export default function StateLandlordTenantLaw() {
   const { stateSlug } = useParams<{ stateSlug: string }>();
@@ -278,7 +298,7 @@ export default function StateLandlordTenantLaw() {
           </CardContent>
         </Card>
 
-        {/* Free Tools Section */}
+        {/* Free Tools Section - Enhanced with state-specific tools */}
         <Card className="mb-8 bg-blue-50 border-blue-200">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -291,41 +311,114 @@ export default function StateLandlordTenantLaw() {
               Use our free calculators to check compliance with {stateInfo.name} law:
             </p>
             <div className="grid sm:grid-cols-2 gap-3">
-              <Button 
-                variant="outline" 
-                className="justify-start"
-                onClick={() => navigate("/tools/security-deposit-calculator")}
-              >
-                <Shield className="h-4 w-4 mr-2" />
-                Security Deposit Calculator
-              </Button>
-              <Button 
-                variant="outline"
-                className="justify-start" 
-                onClick={() => navigate("/tools/rent-increase-calculator")}
-              >
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Rent Increase Calculator
-              </Button>
-              <Button 
-                variant="outline"
-                className="justify-start" 
-                onClick={() => navigate("/tools/late-fee-checker")}
-              >
-                <AlertCircle className="h-4 w-4 mr-2" />
-                Late Fee Checker
-              </Button>
-              <Button 
-                variant="outline"
-                className="justify-start" 
-                onClick={() => navigate("/tools/lease-termination-notice-generator")}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Notice Generator
-              </Button>
+              {/* Show state-specific tools if available, otherwise show default tools */}
+              {stateSlug && STATE_TO_TOOLS[stateSlug] ? (
+                STATE_TO_TOOLS[stateSlug].map((tool) => (
+                  <Button
+                    key={tool.path}
+                    variant="outline"
+                    className="justify-start h-auto py-3"
+                    onClick={() => navigate(tool.path)}
+                  >
+                    <div className="flex items-start gap-3 text-left">
+                      {getToolIcon(tool.icon)}
+                      <div>
+                        <div className="font-medium">{tool.title}</div>
+                        <div className="text-xs text-slate-500 font-normal mt-0.5">{tool.description}</div>
+                      </div>
+                    </div>
+                  </Button>
+                ))
+              ) : (
+                <>
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => navigate("/tools/security-deposit-calculator")}
+                  >
+                    <Shield className="h-4 w-4 mr-2" />
+                    Security Deposit Calculator
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="justify-start" 
+                    onClick={() => navigate("/tools/rent-increase-calculator")}
+                  >
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Rent Increase Calculator
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="justify-start" 
+                    onClick={() => navigate("/tools/late-fee-checker")}
+                  >
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    Late Fee Checker
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="justify-start" 
+                    onClick={() => navigate("/tools/lease-termination-notice-generator")}
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Notice Generator
+                  </Button>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
+
+        {/* Related Articles Section */}
+        {stateSlug && STATE_TO_BLOGS[stateSlug] && STATE_TO_BLOGS[stateSlug].length > 0 && (
+          <Card className="mb-8 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-purple-600" />
+                Related Articles About {stateInfo.name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-slate-700 mb-4">
+                Learn more about {stateInfo.name} landlord-tenant law:
+              </p>
+              <div className="space-y-3">
+                {STATE_TO_BLOGS[stateSlug].map((blogSlug) => {
+                  const post = blogPostsBySlug[blogSlug];
+                  if (!post) return null;
+                  
+                  const readTime = estimateReadTime(post.content);
+                  
+                  return (
+                    <Card
+                      key={blogSlug}
+                      className="hover:shadow-md transition-shadow cursor-pointer bg-white"
+                      onClick={() => navigate(`/blog/${blogSlug}`)}
+                    >
+                      <CardContent className="py-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-slate-900 mb-1 hover:text-blue-600 transition-colors">
+                              {post.title}
+                            </h4>
+                            <p className="text-sm text-slate-600 line-clamp-2 mb-2">
+                              {post.description}
+                            </p>
+                            <div className="flex items-center gap-2 text-xs text-slate-500">
+                              <Clock className="h-3 w-3" />
+                              {readTime} read
+                            </div>
+                          </div>
+                          <ArrowRight className="h-5 w-5 text-slate-400 flex-shrink-0 mt-1" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Official Resources */}
         <Card className="mb-8">
