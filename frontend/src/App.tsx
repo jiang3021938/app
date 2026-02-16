@@ -28,6 +28,7 @@ import SecurityDepositCalculator from "./pages/SecurityDepositCalculator";
 import RentIncreaseCalculator from "./pages/RentIncreaseCalculator";
 import LeaseTerminationNoticeGenerator from "./pages/LeaseTerminationNoticeGenerator";
 import LateFeeChecker from "./pages/LateFeeChecker";
+import StateLandlordTenantLaw from "./pages/StateLandlordTenantLaw";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,7 @@ const App = () => (
           <Route path="/tools/rent-increase-calculator" element={<RentIncreaseCalculator />} />
           <Route path="/tools/lease-termination-notice-generator" element={<LeaseTerminationNoticeGenerator />} />
           <Route path="/tools/late-fee-checker" element={<LateFeeChecker />} />
+          <Route path="/states/:stateSlug" element={<StateLandlordTenantLaw />} />
           <Route path="/logout-callback" element={<LogoutCallbackPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
