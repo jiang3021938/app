@@ -750,6 +750,837 @@ export const stateData: Record<string, StateInfo> = {
         url: "https://www.legalaction.org/areas-of-law/housing/"
       }
     ]
+  },
+  kentucky: {
+    name: "Kentucky",
+    slug: "kentucky",
+    description: "Kentucky's Uniform Residential Landlord and Tenant Act provides comprehensive regulations for rental housing. The state has specific requirements for security deposits, maintenance obligations, and detailed eviction procedures.",
+    securityDepositLimit: "No statutory limit, but deposits must be reasonable.",
+    securityDepositReturn: "30-60 days after termination of tenancy (30 days if no deductions, 60 days if itemizing deductions). Must provide written itemization of damages.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "2 days notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "Kentucky Revised Statutes §383.580 - Security Deposits",
+      "Kentucky Revised Statutes §383.595 - Landlord Obligations",
+      "Kentucky Revised Statutes §383.615 - Right of Entry",
+      "Kentucky Revised Statutes §383.660 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within required timeframe",
+      "Failure to provide itemized deductions",
+      "Entering without 2-day notice",
+      "Not maintaining habitability standards",
+      "Improper eviction procedures"
+    ],
+    resources: [
+      {
+        title: "Kentucky Attorney General - Consumer Protection",
+        url: "https://ag.ky.gov/Resources/Consumer-Protection/Pages/default.aspx"
+      },
+      {
+        title: "Legal Aid Network of Kentucky",
+        url: "https://www.kyjustice.org/"
+      }
+    ]
+  },
+  oregon: {
+    name: "Oregon",
+    slug: "oregon",
+    description: "Oregon has strong tenant protection laws with strict rent control provisions, comprehensive security deposit regulations, and detailed notice requirements. The state recently enacted significant tenant-friendly reforms including rent increase caps and cause requirements for evictions.",
+    securityDepositLimit: "No statutory limit on security deposits, but must be reasonable.",
+    securityDepositReturn: "31 days after termination of tenancy. Must provide itemized statement of damages. If landlord fails to comply, tenant may recover twice the amount wrongfully withheld.",
+    rentIncreaseNotice: "90 days notice required for rent increases. Annual increases capped at 7% plus CPI (max 10%) statewide.",
+    entryNotice: "24 hours notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "Oregon Revised Statutes §90.300 - Security Deposits",
+      "Oregon Revised Statutes §90.320 - Landlord Obligations",
+      "Oregon Revised Statutes §90.322 - Right of Entry",
+      "Oregon Revised Statutes §90.427 - Rent Increase Limits"
+    ],
+    commonIssues: [
+      "Rent increases exceeding statutory caps",
+      "Not providing 90-day notice for rent increases",
+      "Failure to return deposits within 31 days",
+      "No-cause evictions (now prohibited in most cases)",
+      "Entering without 24-hour notice"
+    ],
+    resources: [
+      {
+        title: "Oregon State Bar - Landlord-Tenant Law",
+        url: "https://www.osbar.org/public/legalinfo/1247_RentLaw.htm"
+      },
+      {
+        title: "Oregon Law Help - Housing",
+        url: "https://oregonlawhelp.org/topics/housing"
+      }
+    ]
+  },
+  oklahoma: {
+    name: "Oklahoma",
+    slug: "oklahoma",
+    description: "Oklahoma's Residential Landlord and Tenant Act establishes clear requirements for rental relationships. The state provides specific guidelines for security deposits, property maintenance, and eviction procedures.",
+    securityDepositLimit: "No statutory limit on security deposit amounts.",
+    securityDepositReturn: "45 days after termination of tenancy. Must provide itemized list of deductions. If deposit is not returned or itemization not provided, landlord forfeits right to retain any portion.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "1 day notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "Oklahoma Statutes Title 41 §115 - Security Deposits",
+      "Oklahoma Statutes Title 41 §118 - Landlord Obligations",
+      "Oklahoma Statutes Title 41 §128 - Right of Entry",
+      "Oklahoma Statutes Title 41 §131 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within 45 days",
+      "Failure to provide itemized deductions",
+      "Entering without 1-day notice",
+      "Not maintaining habitability standards",
+      "Self-help evictions (illegal)"
+    ],
+    resources: [
+      {
+        title: "Oklahoma Bar Association - Landlord-Tenant Act",
+        url: "https://www.okbar.org/freelegalinfo/landlordtenantact/"
+      },
+      {
+        title: "Legal Aid Services of Oklahoma",
+        url: "https://www.legalaidok.org/housing"
+      }
+    ]
+  },
+  connecticut: {
+    name: "Connecticut",
+    slug: "connecticut",
+    description: "Connecticut has comprehensive tenant protection laws with strict security deposit regulations, detailed disclosure requirements, and strong habitability standards. The state provides clear procedures for lease agreements and evictions.",
+    securityDepositLimit: "2 months' rent for tenants under 62 years old, 1 month's rent for tenants 62 or older.",
+    securityDepositReturn: "30 days after termination of tenancy, or within 15 days of receiving tenant's forwarding address, whichever is later. Must provide itemized statement of deductions and deposit must be held in escrow account.",
+    rentIncreaseNotice: "No statutory requirement for month-to-month tenancies, but reasonable notice is required. Some municipalities have specific requirements.",
+    entryNotice: "Reasonable notice required, typically 24 hours except in emergencies.",
+    keyStatutes: [
+      "Connecticut General Statutes §47a-21 - Security Deposits",
+      "Connecticut General Statutes §47a-7 - Landlord Obligations",
+      "Connecticut General Statutes §47a-16 - Right of Entry",
+      "Connecticut General Statutes §47a-23 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not holding deposits in escrow accounts",
+      "Charging deposits above legal limits",
+      "Not returning deposits within 30 days",
+      "Failure to provide itemized deductions",
+      "Not maintaining habitability standards"
+    ],
+    resources: [
+      {
+        title: "CT Judicial Branch - Housing Matters",
+        url: "https://www.jud.ct.gov/lawlib/housing.htm"
+      },
+      {
+        title: "Connecticut Fair Housing Center",
+        url: "https://www.ctfairhousing.org/"
+      }
+    ]
+  },
+  utah: {
+    name: "Utah",
+    slug: "utah",
+    description: "Utah's landlord-tenant law provides balanced protections with specific requirements for security deposits and rental agreements. The state follows the Utah Fit Premises Act for habitability standards.",
+    securityDepositLimit: "No statutory limit on security deposit amounts.",
+    securityDepositReturn: "30 days after termination of tenancy, or within 30 days after tenant provides forwarding address. Must provide itemized list of damages.",
+    rentIncreaseNotice: "15 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "Reasonable notice required, typically 24 hours except in emergencies.",
+    keyStatutes: [
+      "Utah Code §57-22-4 - Security Deposits",
+      "Utah Code §57-22-5 - Landlord Obligations (Fit Premises Act)",
+      "Utah Code §78B-6-812 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within 30 days",
+      "Failure to provide itemized deductions",
+      "Not maintaining habitability under Fit Premises Act",
+      "Entering without reasonable notice",
+      "Improper eviction procedures"
+    ],
+    resources: [
+      {
+        title: "Utah State Courts - Landlord-Tenant Resources",
+        url: "https://www.utcourts.gov/howto/landlord/"
+      },
+      {
+        title: "Utah Legal Services - Housing",
+        url: "https://www.utahlegalservices.org/housing"
+      }
+    ]
+  },
+  iowa: {
+    name: "Iowa",
+    slug: "iowa",
+    description: "Iowa's landlord-tenant law provides clear guidelines for rental relationships with specific requirements for security deposits, property maintenance, and lease procedures.",
+    securityDepositLimit: "2 months' rent for security deposits.",
+    securityDepositReturn: "30 days after termination of tenancy. Must provide itemized statement of damages. If landlord fails to comply, tenant may recover deposit amount plus actual damages.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "24 hours notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "Iowa Code §562A.12 - Security Deposits",
+      "Iowa Code §562A.15 - Landlord Obligations",
+      "Iowa Code §562A.19 - Right of Entry",
+      "Iowa Code §562A.27 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within 30 days",
+      "Failure to provide itemized deductions",
+      "Entering without 24-hour notice",
+      "Not maintaining habitability standards",
+      "Improper eviction procedures"
+    ],
+    resources: [
+      {
+        title: "Iowa Attorney General - Tenant Rights",
+        url: "https://www.iowaattorneygeneral.gov/for-consumers/consumer-protection"
+      },
+      {
+        title: "Iowa Legal Aid - Housing",
+        url: "https://www.iowalegalaid.org/topics/housing"
+      }
+    ]
+  },
+  nevada: {
+    name: "Nevada",
+    slug: "nevada",
+    description: "Nevada's landlord-tenant law provides specific requirements for rental housing with detailed security deposit regulations and eviction procedures. The state has relatively landlord-friendly laws but still requires compliance with basic tenant protections.",
+    securityDepositLimit: "3 months' rent for security deposits.",
+    securityDepositReturn: "30 days after termination of tenancy. Must provide itemized statement of deductions. If landlord fails to comply, tenant may recover deposit plus damages.",
+    rentIncreaseNotice: "45 days notice required for month-to-month tenancies if rent increase is 5% or more. 30 days for increases under 5%.",
+    entryNotice: "24 hours notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "Nevada Revised Statutes §118A.242 - Security Deposits",
+      "Nevada Revised Statutes §118A.290 - Landlord Obligations",
+      "Nevada Revised Statutes §118A.330 - Right of Entry",
+      "Nevada Revised Statutes §40.253 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within 30 days",
+      "Not providing proper notice for rent increases",
+      "Failure to provide itemized deductions",
+      "Entering without 24-hour notice",
+      "Self-help evictions (illegal)"
+    ],
+    resources: [
+      {
+        title: "Nevada Judiciary - Landlord-Tenant Information",
+        url: "https://www.clarkcountycourts.us/self-help/eviction-information/"
+      },
+      {
+        title: "Legal Aid Center of Southern Nevada",
+        url: "https://www.lacsn.org/housing"
+      }
+    ]
+  },
+  arkansas: {
+    name: "Arkansas",
+    slug: "arkansas",
+    description: "Arkansas has relatively landlord-friendly laws with fewer statutory tenant protections compared to many other states. However, landlords must still comply with security deposit requirements and basic habitability standards.",
+    securityDepositLimit: "2 months' rent for security deposits.",
+    securityDepositReturn: "60 days after termination of tenancy. Must provide itemized statement of damages.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "No statutory requirement, but reasonable notice (typically 24 hours) is customary.",
+    keyStatutes: [
+      "Arkansas Code §18-16-305 - Security Deposits",
+      "Arkansas Code §18-16-303 - Landlord Obligations",
+      "Arkansas Code §18-16-304 - Right of Entry",
+      "Arkansas Code §18-17-701 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within 60 days",
+      "Failure to provide itemized deductions",
+      "Not maintaining basic habitability",
+      "Entering without reasonable notice",
+      "Improper eviction procedures"
+    ],
+    resources: [
+      {
+        title: "Arkansas Attorney General - Consumer Protection",
+        url: "https://arkansasag.gov/consumer-protection/"
+      },
+      {
+        title: "Center for Arkansas Legal Services",
+        url: "https://arlegalservices.org/housing"
+      }
+    ]
+  },
+  mississippi: {
+    name: "Mississippi",
+    slug: "mississippi",
+    description: "Mississippi has minimal statutory landlord-tenant regulations, with most rental terms governed by lease agreements and common law. The state provides basic protections but is generally considered landlord-friendly.",
+    securityDepositLimit: "No statutory limit on security deposit amounts.",
+    securityDepositReturn: "45 days after termination of tenancy. Must provide itemized statement of damages.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "No statutory requirement, but reasonable notice is customary and should be specified in lease.",
+    keyStatutes: [
+      "Mississippi Code §89-8-21 - Security Deposits",
+      "Mississippi Code §89-8-15 - Landlord Obligations",
+      "Mississippi Code §89-7-27 - Eviction Process",
+      "Common Law - Habitability Standards"
+    ],
+    commonIssues: [
+      "Not returning deposits within 45 days",
+      "Failure to provide itemized deductions",
+      "Not maintaining basic habitability",
+      "Entering without notice",
+      "Self-help evictions (illegal)"
+    ],
+    resources: [
+      {
+        title: "Mississippi Bar - Legal Resources",
+        url: "https://www.msbar.org/for-the-public/"
+      },
+      {
+        title: "Mississippi Center for Legal Services",
+        url: "https://www.mslegalservices.org/"
+      }
+    ]
+  },
+  kansas: {
+    name: "Kansas",
+    slug: "kansas",
+    description: "Kansas landlord-tenant law provides balanced protections with specific requirements for security deposits and rental agreements. The Kansas Residential Landlord and Tenant Act governs most rental relationships.",
+    securityDepositLimit: "1 month's rent for unfurnished units, 1.5 months' rent for furnished units.",
+    securityDepositReturn: "30 days after termination of tenancy. Must provide itemized statement of damages. If landlord fails to comply, tenant may recover 1.5 times the deposit amount.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "Reasonable notice required, typically 24 hours except in emergencies.",
+    keyStatutes: [
+      "Kansas Statutes §58-2550 - Security Deposits",
+      "Kansas Statutes §58-2553 - Landlord Obligations",
+      "Kansas Statutes §58-2557 - Right of Entry",
+      "Kansas Statutes §61-2310 - Eviction Process"
+    ],
+    commonIssues: [
+      "Charging deposits above legal limits",
+      "Not returning deposits within 30 days",
+      "Failure to provide itemized deductions",
+      "Entering without reasonable notice",
+      "Not maintaining habitability standards"
+    ],
+    resources: [
+      {
+        title: "Kansas Attorney General - Consumer Protection",
+        url: "https://ag.ks.gov/consumer-protection"
+      },
+      {
+        title: "Kansas Legal Services - Housing",
+        url: "https://www.kansaslegalservices.org/housing"
+      }
+    ]
+  },
+  "new-mexico": {
+    name: "New Mexico",
+    slug: "new-mexico",
+    description: "New Mexico's Uniform Owner-Resident Relations Act provides comprehensive regulations for rental housing. The state has specific requirements for security deposits, property maintenance, and detailed lease procedures.",
+    securityDepositLimit: "1 month's rent for leases under 1 year, no limit for longer leases.",
+    securityDepositReturn: "30 days after termination of tenancy. Must provide itemized statement of damages and deposit must be held in separate account.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "24 hours notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "New Mexico Statutes §47-8-18 - Security Deposits",
+      "New Mexico Statutes §47-8-20 - Landlord Obligations",
+      "New Mexico Statutes §47-8-24 - Right of Entry",
+      "New Mexico Statutes §47-8-33 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not holding deposits in separate accounts",
+      "Not returning deposits within 30 days",
+      "Failure to provide itemized deductions",
+      "Entering without 24-hour notice",
+      "Not maintaining habitability standards"
+    ],
+    resources: [
+      {
+        title: "New Mexico Courts - Landlord-Tenant Law",
+        url: "https://www.nmcourts.gov/self-help/landlord-tenant.aspx"
+      },
+      {
+        title: "New Mexico Legal Aid",
+        url: "https://www.newmexicolegalaid.org/housing"
+      }
+    ]
+  },
+  nebraska: {
+    name: "Nebraska",
+    slug: "nebraska",
+    description: "Nebraska's Uniform Residential Landlord and Tenant Act provides comprehensive regulations for rental relationships. The state has specific requirements for security deposits, maintenance obligations, and eviction procedures.",
+    securityDepositLimit: "1 month's rent for security deposits.",
+    securityDepositReturn: "14 days after termination of tenancy. Must provide itemized statement of damages. If landlord fails to comply, tenant may recover deposit plus damages.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "1 day notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "Nebraska Revised Statutes §76-1416 - Security Deposits",
+      "Nebraska Revised Statutes §76-1419 - Landlord Obligations",
+      "Nebraska Revised Statutes §76-1423 - Right of Entry",
+      "Nebraska Revised Statutes §76-1431 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within 14 days",
+      "Charging deposits above 1 month's rent",
+      "Failure to provide itemized deductions",
+      "Entering without 1-day notice",
+      "Not maintaining habitability standards"
+    ],
+    resources: [
+      {
+        title: "Nebraska Judicial Branch - Landlord-Tenant Information",
+        url: "https://supremecourt.nebraska.gov/self-help/landlord-tenant"
+      },
+      {
+        title: "Legal Aid of Nebraska",
+        url: "https://www.legalaidofnebraska.org/housing"
+      }
+    ]
+  },
+  idaho: {
+    name: "Idaho",
+    slug: "idaho",
+    description: "Idaho's landlord-tenant law provides basic protections with specific requirements for security deposits and rental agreements. The state follows relatively landlord-friendly policies with clear eviction procedures.",
+    securityDepositLimit: "No statutory limit on security deposit amounts.",
+    securityDepositReturn: "21 days after termination of tenancy, or up to 30 days if specified in lease. Must provide itemized statement of damages.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies (15 days if rent is paid weekly). Must follow lease terms for fixed-term leases.",
+    entryNotice: "Reasonable notice required as specified in lease, typically 24 hours except in emergencies.",
+    keyStatutes: [
+      "Idaho Code §6-321 - Security Deposits",
+      "Idaho Code §6-320 - Landlord Obligations",
+      "Idaho Code §55-208 - Right of Entry",
+      "Idaho Code §6-310 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within 21-30 days",
+      "Failure to provide itemized deductions",
+      "Entering without reasonable notice",
+      "Not maintaining habitability standards",
+      "Improper eviction procedures"
+    ],
+    resources: [
+      {
+        title: "Idaho Courts - Landlord-Tenant Information",
+        url: "https://isc.idaho.gov/civil/landlord-tenant"
+      },
+      {
+        title: "Idaho Legal Aid Services",
+        url: "https://www.idaholegalaid.org/housing"
+      }
+    ]
+  },
+  "west-virginia": {
+    name: "West Virginia",
+    slug: "west-virginia",
+    description: "West Virginia's landlord-tenant law provides protections with specific requirements for security deposits and rental agreements. The state has clear procedures for lease agreements and evictions.",
+    securityDepositLimit: "No statutory limit on security deposit amounts.",
+    securityDepositReturn: "60 days after termination of tenancy, or within 45 days if tenant provides forwarding address. Must provide itemized statement of damages.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "Reasonable notice required, typically 24 hours except in emergencies.",
+    keyStatutes: [
+      "West Virginia Code §37-6A-1 - Residential Rental Agreements",
+      "West Virginia Code §37-6-30 - Security Deposits",
+      "West Virginia Code §37-6A-3 - Landlord Obligations",
+      "West Virginia Code §55-3A-1 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within required timeframe",
+      "Failure to provide itemized deductions",
+      "Entering without reasonable notice",
+      "Not maintaining habitability standards",
+      "Improper eviction procedures"
+    ],
+    resources: [
+      {
+        title: "West Virginia State Bar - Legal Resources",
+        url: "https://www.wvbar.org/public-resources/"
+      },
+      {
+        title: "Legal Aid of West Virginia",
+        url: "https://legalaidwv.org/housing"
+      }
+    ]
+  },
+  hawaii: {
+    name: "Hawaii",
+    slug: "hawaii",
+    description: "Hawaii has comprehensive tenant protection laws with strict regulations on security deposits, rent increases, and property maintenance. The state provides strong habitability standards and detailed eviction procedures.",
+    securityDepositLimit: "1 month's rent for security deposits.",
+    securityDepositReturn: "14 days after termination of tenancy. Must provide itemized statement of damages. Deposit must be held in separate trust account.",
+    rentIncreaseNotice: "45 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "2 days notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "Hawaii Revised Statutes §521-44 - Security Deposits",
+      "Hawaii Revised Statutes §521-42 - Landlord Obligations",
+      "Hawaii Revised Statutes §521-53 - Right of Entry",
+      "Hawaii Revised Statutes §666-1 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not holding deposits in trust accounts",
+      "Not returning deposits within 14 days",
+      "Not providing 45-day notice for rent increases",
+      "Entering without 2-day notice",
+      "Not maintaining habitability standards"
+    ],
+    resources: [
+      {
+        title: "Hawaii Office of Consumer Protection - Landlord-Tenant",
+        url: "https://cca.hawaii.gov/ocp/landlord-tenant/"
+      },
+      {
+        title: "Legal Aid Society of Hawaii",
+        url: "https://www.legalaidhawaii.org/housing"
+      }
+    ]
+  },
+  "new-hampshire": {
+    name: "New Hampshire",
+    slug: "new-hampshire",
+    description: "New Hampshire's landlord-tenant law provides balanced protections with specific requirements for security deposits and rental agreements. The state has clear procedures for lease agreements and evictions.",
+    securityDepositLimit: "1 month's rent for security deposits, plus an additional pet deposit of no more than 1 month's rent.",
+    securityDepositReturn: "30 days after termination of tenancy. Must provide itemized statement of damages. Deposit must be held in separate account in New Hampshire bank.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "Notice required as specified in lease, but must be reasonable. Typically 24 hours except in emergencies.",
+    keyStatutes: [
+      "New Hampshire RSA 540-A:6 - Security Deposits",
+      "New Hampshire RSA 540-A:2 - Landlord Obligations",
+      "New Hampshire RSA 540-A:3 - Right of Entry",
+      "New Hampshire RSA 540:2 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not holding deposits in NH bank accounts",
+      "Charging deposits above legal limits",
+      "Not returning deposits within 30 days",
+      "Failure to provide itemized deductions",
+      "Not maintaining habitability standards"
+    ],
+    resources: [
+      {
+        title: "NH Housing - Tenant Rights",
+        url: "https://www.nhhfa.org/homeownership-tenants/tenant-resources/"
+      },
+      {
+        title: "NH Legal Assistance",
+        url: "https://nhlegalaid.org/housing"
+      }
+    ]
+  },
+  maine: {
+    name: "Maine",
+    slug: "maine",
+    description: "Maine has strong tenant protection laws with comprehensive regulations for security deposits, property maintenance, and lease procedures. The state provides detailed requirements for rental agreements and evictions.",
+    securityDepositLimit: "2 months' rent for security deposits.",
+    securityDepositReturn: "30 days after termination of tenancy, or within 21 days if tenancy is at will. Must provide itemized statement of damages.",
+    rentIncreaseNotice: "45 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "24 hours notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "Maine Revised Statutes Title 14 §6033 - Security Deposits",
+      "Maine Revised Statutes Title 14 §6021 - Landlord Obligations",
+      "Maine Revised Statutes Title 14 §6025 - Right of Entry",
+      "Maine Revised Statutes Title 14 §6001 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within required timeframe",
+      "Charging deposits above 2 months' rent",
+      "Failure to provide itemized deductions",
+      "Not providing 45-day notice for rent increases",
+      "Entering without 24-hour notice"
+    ],
+    resources: [
+      {
+        title: "Maine Attorney General - Renting in Maine",
+        url: "https://www.maine.gov/ag/consumer/housing_rental.shtml"
+      },
+      {
+        title: "Pine Tree Legal Assistance",
+        url: "https://ptla.org/housing"
+      }
+    ]
+  },
+  montana: {
+    name: "Montana",
+    slug: "montana",
+    description: "Montana's landlord-tenant law provides balanced protections with specific requirements for security deposits and rental agreements. The state has clear procedures for lease agreements and evictions.",
+    securityDepositLimit: "No statutory limit on security deposit amounts.",
+    securityDepositReturn: "30 days after termination of tenancy, or within 10 days after receiving tenant's forwarding address. Must provide itemized statement of damages.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "24 hours notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "Montana Code §70-25-201 - Security Deposits",
+      "Montana Code §70-24-303 - Landlord Obligations",
+      "Montana Code §70-24-312 - Right of Entry",
+      "Montana Code §70-27-101 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within required timeframe",
+      "Failure to provide itemized deductions",
+      "Entering without 24-hour notice",
+      "Not maintaining habitability standards",
+      "Improper eviction procedures"
+    ],
+    resources: [
+      {
+        title: "Montana Department of Justice - Consumer Protection",
+        url: "https://dojmt.gov/consumer/"
+      },
+      {
+        title: "Montana Legal Services Association",
+        url: "https://www.mtlsa.org/housing"
+      }
+    ]
+  },
+  "rhode-island": {
+    name: "Rhode Island",
+    slug: "rhode-island",
+    description: "Rhode Island has comprehensive tenant protection laws with strict regulations on security deposits, rent increases, and property maintenance. The state provides strong habitability standards and detailed eviction procedures.",
+    securityDepositLimit: "1 month's rent for security deposits.",
+    securityDepositReturn: "20 days after termination of tenancy. Must provide itemized statement of damages. If landlord fails to comply, tenant may recover twice the deposit amount.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "2 days notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "Rhode Island General Laws §34-18-19 - Security Deposits",
+      "Rhode Island General Laws §34-18-16 - Landlord Obligations",
+      "Rhode Island General Laws §34-18-26 - Right of Entry",
+      "Rhode Island General Laws §34-18-35 - Eviction Process"
+    ],
+    commonIssues: [
+      "Charging deposits above 1 month's rent",
+      "Not returning deposits within 20 days",
+      "Failure to provide itemized deductions",
+      "Entering without 2-day notice",
+      "Not maintaining habitability standards"
+    ],
+    resources: [
+      {
+        title: "Rhode Island Bar Association - Legal Resources",
+        url: "https://www.ribar.com/for-the-public/"
+      },
+      {
+        title: "Rhode Island Legal Services",
+        url: "https://www.rils.org/housing"
+      }
+    ]
+  },
+  delaware: {
+    name: "Delaware",
+    slug: "delaware",
+    description: "Delaware's Residential Landlord-Tenant Code provides comprehensive regulations for rental housing. The state has specific requirements for security deposits, property maintenance, and detailed lease procedures.",
+    securityDepositLimit: "No statutory limit on security deposits, but must be reasonable. Some local ordinances may have limits.",
+    securityDepositReturn: "20 days after termination of tenancy. Must provide itemized statement of damages. If landlord fails to comply, tenant may recover twice the withheld amount.",
+    rentIncreaseNotice: "60 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "2 days notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "Delaware Code Title 25 §5514 - Security Deposits",
+      "Delaware Code Title 25 §5305 - Landlord Obligations",
+      "Delaware Code Title 25 §5509 - Right of Entry",
+      "Delaware Code Title 25 §5701 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within 20 days",
+      "Not providing 60-day notice for rent increases",
+      "Failure to provide itemized deductions",
+      "Entering without 2-day notice",
+      "Not maintaining habitability standards"
+    ],
+    resources: [
+      {
+        title: "Delaware Courts - Landlord-Tenant Information",
+        url: "https://courts.delaware.gov/help/landlord-tenant/"
+      },
+      {
+        title: "Delaware Community Legal Aid Society",
+        url: "https://declasi.org/housing"
+      }
+    ]
+  },
+  "south-dakota": {
+    name: "South Dakota",
+    slug: "south-dakota",
+    description: "South Dakota's landlord-tenant law provides basic protections with specific requirements for security deposits and rental agreements. The state has relatively landlord-friendly policies with clear eviction procedures.",
+    securityDepositLimit: "1 month's rent for security deposits (may be higher with written agreement).",
+    securityDepositReturn: "2 weeks after termination of tenancy, or until tenant provides forwarding address, plus 45 days. Must provide itemized statement of damages.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies (1 week for week-to-week). Must follow lease terms for fixed-term leases.",
+    entryNotice: "Reasonable notice required as specified in lease, typically 24 hours except in emergencies.",
+    keyStatutes: [
+      "South Dakota Codified Laws §43-32-6.1 - Security Deposits",
+      "South Dakota Codified Laws §43-32-8 - Landlord Obligations",
+      "South Dakota Codified Laws §43-32-9 - Right of Entry",
+      "South Dakota Codified Laws §21-16-1 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within required timeframe",
+      "Failure to provide itemized deductions",
+      "Entering without reasonable notice",
+      "Not maintaining habitability standards",
+      "Improper eviction procedures"
+    ],
+    resources: [
+      {
+        title: "South Dakota Bar Association - Legal Resources",
+        url: "https://www.statebarofsouthdakota.com/page/PublicResources"
+      },
+      {
+        title: "East River Legal Services",
+        url: "https://www.erlservices.org/housing"
+      }
+    ]
+  },
+  "north-dakota": {
+    name: "North Dakota",
+    slug: "north-dakota",
+    description: "North Dakota's landlord-tenant law provides balanced protections with specific requirements for security deposits and rental agreements. The state has clear procedures for lease agreements and evictions.",
+    securityDepositLimit: "1 month's rent for security deposits, or $2,500 if no monthly rent is specified.",
+    securityDepositReturn: "30 days after termination of tenancy. Must provide itemized statement of damages. If landlord fails to comply, tenant may recover damages.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "Reasonable notice required, typically 24 hours except in emergencies.",
+    keyStatutes: [
+      "North Dakota Century Code §47-16-07.1 - Security Deposits",
+      "North Dakota Century Code §47-16-13 - Landlord Obligations",
+      "North Dakota Century Code §47-16-07.3 - Right of Entry",
+      "North Dakota Century Code §33-06-01 - Eviction Process"
+    ],
+    commonIssues: [
+      "Charging deposits above legal limits",
+      "Not returning deposits within 30 days",
+      "Failure to provide itemized deductions",
+      "Entering without reasonable notice",
+      "Not maintaining habitability standards"
+    ],
+    resources: [
+      {
+        title: "North Dakota Attorney General - Consumer Protection",
+        url: "https://attorneygeneral.nd.gov/consumer-protection"
+      },
+      {
+        title: "Legal Services of North Dakota",
+        url: "https://www.legalassist.org/housing"
+      }
+    ]
+  },
+  alaska: {
+    name: "Alaska",
+    slug: "alaska",
+    description: "Alaska's Uniform Residential Landlord and Tenant Act provides comprehensive regulations for rental housing. The state has specific requirements for security deposits, maintenance obligations, and detailed eviction procedures.",
+    securityDepositLimit: "2 months' rent for security deposits.",
+    securityDepositReturn: "14 days after termination of tenancy if tenant properly terminates, 30 days otherwise. Must provide itemized statement of damages.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "24 hours notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "Alaska Statutes §34.03.070 - Security Deposits",
+      "Alaska Statutes §34.03.100 - Landlord Obligations",
+      "Alaska Statutes §34.03.140 - Right of Entry",
+      "Alaska Statutes §34.03.220 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within required timeframe",
+      "Charging deposits above 2 months' rent",
+      "Failure to provide itemized deductions",
+      "Entering without 24-hour notice",
+      "Not maintaining heating (critical in Alaska)"
+    ],
+    resources: [
+      {
+        title: "Alaska Court System - Landlord-Tenant Information",
+        url: "https://courts.alaska.gov/shc/landlord-tenant/index.htm"
+      },
+      {
+        title: "Alaska Legal Services Corporation",
+        url: "https://alsc-law.org/housing"
+      }
+    ]
+  },
+  vermont: {
+    name: "Vermont",
+    slug: "vermont",
+    description: "Vermont has strong tenant protection laws with comprehensive regulations for security deposits, property maintenance, and lease procedures. The state provides detailed requirements for rental agreements and evictions.",
+    securityDepositLimit: "No statutory limit on security deposit amounts.",
+    securityDepositReturn: "14 days after termination of tenancy. Must provide itemized statement of damages. If landlord fails to comply, tenant may recover deposit plus damages and attorney fees.",
+    rentIncreaseNotice: "60 days notice required for month-to-month tenancies. Must follow lease terms for fixed-term leases.",
+    entryNotice: "48 hours notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "Vermont Statutes Title 9 §4461 - Security Deposits",
+      "Vermont Statutes Title 9 §4457 - Landlord Obligations",
+      "Vermont Statutes Title 9 §4460 - Right of Entry",
+      "Vermont Statutes Title 9 §4467 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within 14 days",
+      "Not providing 60-day notice for rent increases",
+      "Failure to provide itemized deductions",
+      "Entering without 48-hour notice",
+      "Not maintaining habitability standards"
+    ],
+    resources: [
+      {
+        title: "Vermont Legal Aid - Housing",
+        url: "https://www.vtlegalaid.org/housing"
+      },
+      {
+        title: "Vermont Judiciary - Housing Resources",
+        url: "https://www.vermontjudiciary.org/self-help/evictions-housing"
+      }
+    ]
+  },
+  wyoming: {
+    name: "Wyoming",
+    slug: "wyoming",
+    description: "Wyoming has minimal statutory landlord-tenant regulations, with most rental terms governed by lease agreements and common law. The state provides basic protections but is generally considered landlord-friendly.",
+    securityDepositLimit: "No statutory limit on security deposit amounts.",
+    securityDepositReturn: "30 days after termination of tenancy, or within 15 days after receiving tenant's forwarding address. Must provide itemized statement of damages.",
+    rentIncreaseNotice: "No statutory requirement, but reasonable notice is customary. Must follow lease terms.",
+    entryNotice: "No statutory requirement, but reasonable notice is customary and should be specified in lease.",
+    keyStatutes: [
+      "Wyoming Statutes §1-21-1207 - Security Deposits",
+      "Wyoming Statutes §1-21-1203 - Landlord Obligations",
+      "Wyoming Statutes §1-21-1206 - Right of Entry",
+      "Wyoming Statutes §1-21-1002 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not returning deposits within required timeframe",
+      "Failure to provide itemized deductions",
+      "Entering without reasonable notice",
+      "Not maintaining habitability standards",
+      "Improper eviction procedures"
+    ],
+    resources: [
+      {
+        title: "Wyoming State Bar - Legal Resources",
+        url: "https://www.wyomingbar.org/for-the-public/"
+      },
+      {
+        title: "Legal Aid of Wyoming",
+        url: "https://www.legalaidofwyoming.org/housing"
+      }
+    ]
+  },
+  "district-of-columbia": {
+    name: "District of Columbia",
+    slug: "district-of-columbia",
+    description: "The District of Columbia has some of the strongest tenant protection laws in the nation with comprehensive rent control, strict security deposit regulations, and extensive habitability standards. DC provides robust protections for tenants.",
+    securityDepositLimit: "1 month's rent for security deposits.",
+    securityDepositReturn: "30 days after termination of tenancy. Must provide itemized statement of damages. Deposit must be held in interest-bearing escrow account and interest paid to tenant annually.",
+    rentIncreaseNotice: "30 days notice required for month-to-month tenancies. Rent control applies to most buildings built before 1975. Increases limited to CPI.",
+    entryNotice: "48 hours notice required for entry, except in emergencies.",
+    keyStatutes: [
+      "DC Code §42-3202.01 - Security Deposits",
+      "DC Code §42-3501.01 - Rent Control",
+      "DC Code §42-3505.51 - Landlord Obligations",
+      "DC Code §16-1501 - Eviction Process"
+    ],
+    commonIssues: [
+      "Not holding deposits in interest-bearing accounts",
+      "Not paying annual interest to tenants",
+      "Violating rent control regulations",
+      "Not providing 48-hour notice for entry",
+      "Improper eviction procedures"
+    ],
+    resources: [
+      {
+        title: "DC Office of the Tenant Advocate",
+        url: "https://ota.dc.gov/"
+      },
+      {
+        title: "DC Bar Pro Bono - Housing",
+        url: "https://www.dcbar.org/pro-bono/housing"
+      }
+    ]
   }
 };
 
