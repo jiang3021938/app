@@ -37,6 +37,9 @@ export default function StateLandlordTenantLaw() {
           } else if (selector.includes('name=')) {
             const name = selector.match(/name="([^"]+)"/)?.[1];
             if (name) tag.setAttribute('name', name);
+          } else if (selector.includes('rel=')) {
+            const rel = selector.match(/rel="([^"]+)"/)?.[1];
+            if (rel) tag.setAttribute('rel', rel);
           }
           document.head.appendChild(tag);
         }
@@ -45,12 +48,82 @@ export default function StateLandlordTenantLaw() {
 
       const description = `Complete guide to ${stateInfo.name} landlord-tenant law. Learn about security deposits, rent increases, notice requirements, and tenant rights in ${stateInfo.name}.`;
       setMetaTag('meta[name="description"]', 'content', description);
+      setMetaTag('link[rel="canonical"]', 'href', `https://www.leaselenses.com/states/${stateInfo.slug}`, 'link');
       setMetaTag('meta[property="og:title"]', 'content', `${stateInfo.name} Landlord-Tenant Law Guide`);
       setMetaTag('meta[property="og:description"]', 'content', description);
+      setMetaTag('meta[property="og:type"]', 'content', 'article');
+      setMetaTag('meta[property="og:url"]', 'content', `https://www.leaselenses.com/states/${stateInfo.slug}`);
+
+      // Add FAQ Schema JSON-LD
+      const faqSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": `What is the security deposit limit in ${stateInfo.name}?`,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": stateInfo.securityDepositLimit
+            }
+          },
+          {
+            "@type": "Question",
+            "name": `How long does a landlord have to return a security deposit in ${stateInfo.name}?`,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": stateInfo.securityDepositReturn
+            }
+          },
+          {
+            "@type": "Question",
+            "name": `What notice is required for rent increases in ${stateInfo.name}?`,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": stateInfo.rentIncreaseNotice
+            }
+          },
+          {
+            "@type": "Question",
+            "name": `How much notice must a landlord give before entering a rental unit in ${stateInfo.name}?`,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": stateInfo.entryNotice
+            }
+          }
+        ]
+      };
+
+      let faqScript = document.querySelector('script[type="application/ld+json"]');
+      if (!faqScript) {
+        faqScript = document.createElement('script');
+        faqScript.setAttribute('type', 'application/ld+json');
+        document.head.appendChild(faqScript);
+      }
+      faqScript.textContent = JSON.stringify(faqSchema);
     }
 
     return () => {
       document.title = 'LeaseLenses - AI Lease Analysis';
+      
+      // Clean up meta tags
+      const metaTags = [
+        'meta[name="description"]',
+        'link[rel="canonical"]',
+        'meta[property="og:title"]',
+        'meta[property="og:description"]',
+        'meta[property="og:type"]',
+        'meta[property="og:url"]'
+      ];
+      
+      metaTags.forEach(selector => {
+        const tag = document.querySelector(selector);
+        if (tag) tag.remove();
+      });
+
+      // Clean up FAQ schema
+      const faqScript = document.querySelector('script[type="application/ld+json"]');
+      if (faqScript) faqScript.remove();
     };
   }, [stateInfo]);
 
