@@ -532,7 +532,7 @@ export const stateData: Record<string, StateInfo> = {
     slug: "michigan",
     description: "Michigan's Truth in Renting Act provides comprehensive landlord-tenant regulations. The state has specific requirements for security deposits, habitability standards, and detailed notice requirements for various landlord actions.",
     securityDepositLimit: "1.5 months' rent for security deposit.",
-    securityDepositReturn: "30 days after termination of tenancy. Must provide itemized list of damages within 4 days of tenant providing forwarding address.",
+    securityDepositReturn: "30 days after termination of tenancy. Itemized list of damages must be provided within 4 days of tenant providing forwarding address.",
     rentIncreaseNotice: "No statutory requirement for month-to-month tenancies, but reasonable notice (30 days) is customary. Must comply with lease terms.",
     entryNotice: "Reasonable notice required, typically 24 hours is considered reasonable except in emergencies.",
     keyStatutes: [
@@ -564,7 +564,7 @@ export const stateData: Record<string, StateInfo> = {
     slug: "minnesota",
     description: "Minnesota landlord-tenant law provides balanced protections with specific requirements for security deposits, rent receipts, and property maintenance. The state has detailed statutory provisions and local ordinances in cities like Minneapolis and St. Paul add additional protections.",
     securityDepositLimit: "No statutory limit on security deposit amounts.",
-    securityDepositReturn: "21 days after tenant vacates and returns keys. Must provide itemized statement of any deductions. 3 weeks plus 5 days if withholding any portion.",
+    securityDepositReturn: "21 days after tenant vacates and returns keys, or 3 weeks plus 5 days if withholding any portion. Must provide itemized statement of any deductions.",
     rentIncreaseNotice: "No statutory requirement for month-to-month tenancies, but reasonable notice is customary. Minneapolis requires written notice equal to one rental period.",
     entryNotice: "Reasonable notice required (typically 24 hours), must be during reasonable hours unless emergency.",
     keyStatutes: [
