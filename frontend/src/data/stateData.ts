@@ -532,7 +532,7 @@ export const stateData: Record<string, StateInfo> = {
     slug: "michigan",
     description: "Michigan's Truth in Renting Act provides comprehensive landlord-tenant regulations. The state has specific requirements for security deposits, habitability standards, and detailed notice requirements for various landlord actions.",
     securityDepositLimit: "1.5 months' rent for security deposit.",
-    securityDepositReturn: "30 days after termination of occupancy. Must provide itemized list of damages within 4 days of tenant providing forwarding address.",
+    securityDepositReturn: "30 days after termination of tenancy. Must provide itemized list of damages within 4 days of tenant providing forwarding address.",
     rentIncreaseNotice: "No statutory requirement for month-to-month tenancies, but reasonable notice (30 days) is customary. Must comply with lease terms.",
     entryNotice: "Reasonable notice required, typically 24 hours is considered reasonable except in emergencies.",
     keyStatutes: [
