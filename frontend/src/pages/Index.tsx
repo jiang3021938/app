@@ -377,6 +377,7 @@ export default function LandingPage() {
           <nav className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-slate-600 hover:text-slate-900 transition">Features</a>
             <a href="#pricing" className="text-slate-600 hover:text-slate-900 transition">Pricing</a>
+            <span className="text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => navigate("/states")}>State Laws</span>
             <span className="text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => navigate("/blog")}>Blog</span>
             <span className="text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => navigate("/case-studies")}>Case Studies</span>
             <span className="text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => navigate("/templates")}>Free Templates</span>
@@ -412,6 +413,7 @@ export default function LandingPage() {
           <nav className="md:hidden border-t bg-white px-4 py-4 space-y-3">
             <a href="#features" className="block text-slate-600 hover:text-slate-900 transition" onClick={() => setMobileMenuOpen(false)}>Features</a>
             <a href="#pricing" className="block text-slate-600 hover:text-slate-900 transition" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
+            <span className="block text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => { navigate("/states"); setMobileMenuOpen(false); }}>State Laws</span>
             <span className="block text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => { navigate("/blog"); setMobileMenuOpen(false); }}>Blog</span>
             <span className="block text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => { navigate("/case-studies"); setMobileMenuOpen(false); }}>Case Studies</span>
             <span className="block text-slate-600 hover:text-slate-900 transition cursor-pointer" onClick={() => { navigate("/templates"); setMobileMenuOpen(false); }}>Free Templates</span>
@@ -1041,6 +1043,7 @@ export default function LandingPage() {
                 <li><a href="#features" className="hover:text-slate-700">Features</a></li>
                 <li><a href="#pricing" className="hover:text-slate-700">Pricing</a></li>
                 <li><a href="#faq" className="hover:text-slate-700">FAQ</a></li>
+                <li><a href="/states" className="hover:text-slate-700">State Laws</a></li>
                 <li><a href="/blog/" className="hover:text-slate-700">Blog</a></li>
                 <li><a href="/about" className="hover:text-slate-700">About</a></li>
               </ul>
