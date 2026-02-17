@@ -11,6 +11,11 @@ export const BLOG_TO_STATE: Record<string, string> = {
   "pennsylvania-lease-agreement-guide": "pennsylvania",
   "michigan-eviction-process-guide": "michigan",
   "virginia-tenant-rights-2026": "virginia",
+  "new-jersey-landlord-tenant-law-guide": "new-jersey",
+  "north-carolina-security-deposit-law": "north-carolina",
+  "colorado-tenant-rights-2026": "colorado",
+  "massachusetts-landlord-tenant-law-guide": "massachusetts",
+  "tennessee-lease-agreement-guide": "tennessee",
 };
 
 // Reverse mapping: state slug to blog post slugs
@@ -45,6 +50,21 @@ export const STATE_TO_BLOGS: Record<string, string[]> = {
   ],
   virginia: [
     "virginia-tenant-rights-2026",
+  ],
+  "new-jersey": [
+    "new-jersey-landlord-tenant-law-guide",
+  ],
+  "north-carolina": [
+    "north-carolina-security-deposit-law",
+  ],
+  colorado: [
+    "colorado-tenant-rights-2026",
+  ],
+  massachusetts: [
+    "massachusetts-landlord-tenant-law-guide",
+  ],
+  tennessee: [
+    "tennessee-lease-agreement-guide",
   ],
 };
 
