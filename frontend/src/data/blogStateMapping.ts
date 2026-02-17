@@ -16,6 +16,11 @@ export const BLOG_TO_STATE: Record<string, string> = {
   "colorado-tenant-rights-2026": "colorado",
   "massachusetts-landlord-tenant-law-guide": "massachusetts",
   "tennessee-lease-agreement-guide": "tennessee",
+  "washington-state-landlord-tenant-law-guide": "washington",
+  "arizona-tenant-rights-2026": "arizona",
+  "minnesota-security-deposit-law": "minnesota",
+  "maryland-landlord-tenant-law-guide": "maryland",
+  "indiana-eviction-process-guide": "indiana",
 };
 
 // Reverse mapping: state slug to blog post slugs
@@ -65,6 +70,21 @@ export const STATE_TO_BLOGS: Record<string, string[]> = {
   ],
   tennessee: [
     "tennessee-lease-agreement-guide",
+  ],
+  washington: [
+    "washington-state-landlord-tenant-law-guide",
+  ],
+  arizona: [
+    "arizona-tenant-rights-2026",
+  ],
+  minnesota: [
+    "minnesota-security-deposit-law",
+  ],
+  maryland: [
+    "maryland-landlord-tenant-law-guide",
+  ],
+  indiana: [
+    "indiana-eviction-process-guide",
   ],
 };
 

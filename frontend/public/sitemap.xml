@@ -137,6 +137,31 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/washington-state-landlord-tenant-law-guide</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/arizona-tenant-rights-2026</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/minnesota-security-deposit-law</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/maryland-landlord-tenant-law-guide</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.leaselenses.com/blog/indiana-eviction-process-guide</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
   <!-- Free SEO tools -->
   <url>
     <loc>https://www.leaselenses.com/tools/security-deposit-calculator</loc>
