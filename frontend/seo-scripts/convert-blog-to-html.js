@@ -60,6 +60,16 @@ function getHtmlTemplate(title, content, datePublished, dateModified, meta = {})
       "@type": "Person",
       "name": meta.author || "Sarah"
     },
+    "publisher": {
+      "@type": "Organization",
+      "name": "LeaseLenses",
+      "url": baseUrl
+    },
+    "url": `${baseUrl}/blog/${slug}/`,
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `${baseUrl}/blog/${slug}/`
+    },
     "keywords": keywords,
     "inLanguage": lang
   };
@@ -71,7 +81,7 @@ function getHtmlTemplate(title, content, datePublished, dateModified, meta = {})
       {
         "@type": "ListItem",
         "position": 1,
-        "name": "Home",
+        "name": "LeaseLenses",
         "item": baseUrl
       },
       {
@@ -100,6 +110,7 @@ function getHtmlTemplate(title, content, datePublished, dateModified, meta = {})
   <link rel="canonical" href="${baseUrl}/blog/${slug}/">
   
   <meta property="og:type" content="article">
+  <meta property="og:site_name" content="LeaseLenses">
   <meta property="og:url" content="${baseUrl}/blog/${slug}/">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${description}">
@@ -113,7 +124,7 @@ function getHtmlTemplate(title, content, datePublished, dateModified, meta = {})
   <meta name="twitter:title" content="${title}">
   <meta name="twitter:description" content="${description}">
   
-  <title>${title}</title>
+  <title>${title} | LeaseLenses Blog</title>
   
   <script type="application/ld+json">
 ${JSON.stringify(blogPostingSchema, null, 2)}
@@ -459,11 +470,11 @@ ${JSON.stringify(breadcrumbSchema, null, 2)}
   <main class="container">
     <nav class="nav">
       <a href="/blog/" class="nav-btn">← All Articles</a>
-      <a href="/" class="nav-btn">Home</a>
+      <a href="/" class="nav-btn" style="font-weight: 700;">LeaseLenses</a>
     </nav>
     
     <nav class="breadcrumb" aria-label="Breadcrumb">
-      <a href="/">Home</a>
+      <a href="/">LeaseLenses</a>
       <span class="breadcrumb-separator">/</span>
       <a href="/blog/">Blog</a>
       <span class="breadcrumb-separator">/</span>
@@ -750,16 +761,70 @@ function generateListPage(articles) {
   // Use the first article's language as the list page language
   const pageLang = sortedArticles.length > 0 ? (sortedArticles[0].lang || 'en') : 'en';
 
+  const listPageTitle = "Landlord-Tenant Law Blog: Lease Analysis Guides & State Laws | LeaseLenses";
+  const listPageDescription = "Expert guides on landlord-tenant law, lease analysis, state rental regulations, and AI-powered contract review. Stay informed with the LeaseLenses blog.";
+
+  const listBreadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "LeaseLenses",
+        "item": baseUrl
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": `${baseUrl}/blog/`
+      }
+    ]
+  };
+
+  const listCollectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": listPageTitle,
+    "description": listPageDescription,
+    "url": `${baseUrl}/blog/`,
+    "publisher": {
+      "@type": "Organization",
+      "name": "LeaseLenses",
+      "url": baseUrl
+    }
+  };
+
   const listHtml = `<!DOCTYPE html>
 <html lang="${pageLang}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Blog Articles List">
+  <meta name="description" content="${listPageDescription}">
   
   <link rel="canonical" href="${baseUrl}/blog/">
   
-  <title>Articles</title>
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="LeaseLenses">
+  <meta property="og:url" content="${baseUrl}/blog/">
+  <meta property="og:title" content="${listPageTitle}">
+  <meta property="og:description" content="${listPageDescription}">
+  
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="${baseUrl}/blog/">
+  <meta name="twitter:title" content="${listPageTitle}">
+  <meta name="twitter:description" content="${listPageDescription}">
+  
+  <title>${listPageTitle}</title>
+  
+  <script type="application/ld+json">
+${JSON.stringify(listBreadcrumbSchema, null, 2)}
+  </script>
+  
+  <script type="application/ld+json">
+${JSON.stringify(listCollectionSchema, null, 2)}
+  </script>
   ${GA4_MEASUREMENT_ID ? `
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}"></script>
@@ -917,10 +982,14 @@ function generateListPage(articles) {
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>Articles</h1>
-      <p class="subtitle">Thoughts, stories and ideas</p>
+    <nav class="nav" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+      <a href="/" style="font-size: 1.1rem; font-weight: 700; color: var(--color-text); text-decoration: none;">LeaseLenses</a>
       <a href="/" class="nav-btn">← Back to Home</a>
+    </nav>
+    
+    <div class="header">
+      <h1>LeaseLenses Blog</h1>
+      <p class="subtitle">Landlord-tenant law guides, lease analysis tips, and state rental regulations</p>
     </div>
     
     <ul class="article-list">
