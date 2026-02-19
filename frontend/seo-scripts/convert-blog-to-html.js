@@ -771,7 +771,7 @@ function generateListPage(articles) {
       {
         "@type": "ListItem",
         "position": 1,
-        "name": "Home",
+        "name": "LeaseLenses",
         "item": baseUrl
       },
       {
