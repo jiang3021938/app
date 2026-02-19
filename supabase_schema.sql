@@ -183,6 +183,7 @@ ALTER TABLE oidc_states ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies: ensure users can only access their own data
 CREATE POLICY users_select_own ON users FOR SELECT USING (id = auth.uid()::text);
+CREATE POLICY users_insert_own ON users FOR INSERT WITH CHECK (id = auth.uid()::text);
 CREATE POLICY users_update_own ON users FOR UPDATE USING (id = auth.uid()::text);
 
 CREATE POLICY documents_select_own ON documents FOR SELECT USING (user_id = auth.uid()::text);
@@ -192,14 +193,16 @@ CREATE POLICY documents_delete_own ON documents FOR DELETE USING (user_id = auth
 
 CREATE POLICY extractions_select_own ON extractions FOR SELECT USING (user_id = auth.uid()::text);
 CREATE POLICY extractions_insert_own ON extractions FOR INSERT WITH CHECK (user_id = auth.uid()::text);
+CREATE POLICY extractions_update_own ON extractions FOR UPDATE USING (user_id = auth.uid()::text);
+CREATE POLICY extractions_delete_own ON extractions FOR DELETE USING (user_id = auth.uid()::text);
 
 CREATE POLICY payments_select_own ON payments FOR SELECT USING (user_id = auth.uid()::text);
-CREATE POLICY payments_insert_own ON payments FOR INSERT WITH CHECK (user_id = auth.uid()::text);
 
 CREATE POLICY user_credits_select_own ON user_credits FOR SELECT USING (user_id = auth.uid()::text);
 CREATE POLICY user_credits_update_own ON user_credits FOR UPDATE USING (user_id = auth.uid()::text);
 
 CREATE POLICY user_credentials_select_own ON user_credentials FOR SELECT USING (user_id = auth.uid()::text);
+CREATE POLICY user_credentials_insert_own ON user_credentials FOR INSERT WITH CHECK (user_id = auth.uid()::text);
 CREATE POLICY user_credentials_update_own ON user_credentials FOR UPDATE USING (user_id = auth.uid()::text);
 
 -- ============================================
