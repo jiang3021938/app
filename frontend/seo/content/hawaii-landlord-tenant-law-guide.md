@@ -254,7 +254,7 @@ Landlords have a statutory duty to mitigate damages by making reasonable efforts
 
 ### Rent Increases
 
-Hawaii does not have statewide rent control, though certain local jurisdances may have additional regulations. Landlords must provide at least **45 days' written notice** before increasing rent for month-to-month tenancies. Rent cannot be increased during a fixed-term lease unless the lease specifically allows it.
+Hawaii does not have statewide rent control, though certain local jurisdictions may have additional regulations. Landlords must provide at least **45 days' written notice** before increasing rent for month-to-month tenancies. Rent cannot be increased during a fixed-term lease unless the lease specifically allows it.
 
 ## How LeaseLens Helps Hawaii Landlords Stay Compliant
 
