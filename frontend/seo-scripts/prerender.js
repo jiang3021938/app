@@ -500,7 +500,9 @@ function prerenderHomepage(assets) {
 
   // Overwrite the root index.html with the prerendered version
   const indexPath = path.join(distDir, "index.html");
-  fs.copyFileSync(indexPath, path.join(distDir, "index.original.html"));
+  if (fs.existsSync(indexPath)) {
+    fs.copyFileSync(indexPath, path.join(distDir, "index.original.html"));
+  }
   fs.writeFileSync(indexPath, html, "utf-8");
 }
 
