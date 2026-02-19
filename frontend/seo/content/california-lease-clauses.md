@@ -13,7 +13,7 @@ California has some of the most tenant-friendly laws in the nation. As a landlor
 
 ## 1. Security Deposit Terms (Civil Code §1950.5)
 
-California caps security deposits at 2 months' rent for unfurnished units and 3 months' for furnished. Starting July 2024, AB 12 reduced this to just 1 month's rent for most landlords. Your lease must clearly state the deposit amount, the conditions for deductions, and the 21-day return timeline.
+California previously capped security deposits at 2 months' rent for unfurnished units and 3 months' for furnished. As of July 2024, AB 12 reduced this to just 1 month's rent for most landlords, and this remains the current limit. Your lease must clearly state the deposit amount, the conditions for deductions, and the 21-day return timeline.
 
 ## 2. Rent Increase Notice Requirements
 

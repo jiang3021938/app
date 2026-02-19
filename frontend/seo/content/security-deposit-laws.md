@@ -21,4 +21,4 @@ The most frequent violations include: charging more than the state maximum, fail
 
 ## Protect Yourself
 
-Use AI-powered lease analysis to verify your security deposit terms comply with your state's current laws. Regulations change frequently — California's deposit cap dropped from 2x to 1x rent in 2024. Staying current is essential.
+Use AI-powered lease analysis to verify your security deposit terms comply with your state's current laws. Regulations change frequently — for example, California's deposit cap dropped from 2x to 1x rent in 2024 and remains at 1x as of 2026. Staying current is essential.
