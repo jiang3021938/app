@@ -29,15 +29,38 @@ function extractAssetsFromIndex() {
   }
   const html = fs.readFileSync(indexPath, "utf-8");
 
-  // Extract <link> and <script> tags from <head>
-  const headLinkTags = (html.match(/<link[^>]+>/g) || [])
-    .filter((t) => t.includes("/assets/"))
-    .join("\n  ");
-  // Extract module <script> tags (Vite entry point)
-  const bodyScriptTags = (html.match(/<script[^>]*src="[^"]*"[^>]*><\/script>/g) || []).join(
-    "\n  "
-  );
-  return { headLinkTags, bodyScriptTags };
+  // Extract <link> tags pointing to built assets
+  const headLinkTags = [];
+  const linkRegex = /<link\b[^>]*>/gi;
+  let linkMatch;
+  while ((linkMatch = linkRegex.exec(html)) !== null) {
+    if (linkMatch[0].includes("/assets/")) {
+      headLinkTags.push(linkMatch[0]);
+    }
+  }
+
+  // Extract <script> tags with src attributes (Vite entry point bundles)
+  // Split on script boundaries to avoid regex-based HTML tag matching
+  const bodyScriptTags = [];
+  let searchStart = 0;
+  while (true) {
+    const openIdx = html.indexOf("<script", searchStart);
+    if (openIdx === -1) break;
+    const closeIdx = html.indexOf("</script", openIdx);
+    if (closeIdx === -1) break;
+    const endIdx = html.indexOf(">", closeIdx);
+    if (endIdx === -1) break;
+    const tag = html.substring(openIdx, endIdx + 1);
+    if (tag.includes('src="')) {
+      bodyScriptTags.push(tag);
+    }
+    searchStart = endIdx + 1;
+  }
+
+  return {
+    headLinkTags: headLinkTags.join("\n  "),
+    bodyScriptTags: bodyScriptTags.join("\n  "),
+  };
 }
 
 // ---------------------------------------------------------------------------
