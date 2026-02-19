@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { main as convertBlog } from "./convert-blog-to-html.js";
+import { prerender } from "./prerender.js";
 
 // Load config from site.config.json if exists
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -21,6 +22,12 @@ if (fs.existsSync(configPath)) {
 try {
   convertBlog(siteConfig);
 } catch (error) { }
+
+try {
+  prerender();
+} catch (error) {
+  console.warn("Prerender warning:", error.message || error);
+}
 
 try {
   execSync("node seo-scripts/generate-sitemap.js", { stdio: "pipe" });

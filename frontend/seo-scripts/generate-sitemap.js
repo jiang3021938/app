@@ -72,11 +72,14 @@ if (fs.existsSync(blogDir)) {
   urls.push(...blogUrls);
 }
 
-// Collect HTML files in other directories (if any)
-const seoDir = path.join(distDir, "seo");
-if (fs.existsSync(seoDir)) {
-  const seoUrls = collectHtmlFiles(seoDir, "/seo");
-  urls.push(...seoUrls);
+// Collect HTML files in prerendered directories (states, tools, etc.)
+const prerenderDirs = ["states", "tools", "features", "about", "pricing", "case-studies", "templates", "privacy", "terms", "sample-report", "seo"];
+for (const dir of prerenderDirs) {
+  const dirPath = path.join(distDir, dir);
+  if (fs.existsSync(dirPath)) {
+    const dirUrls = collectHtmlFiles(dirPath, `/${dir}`);
+    urls.push(...dirUrls);
+  }
 }
 
 // Generate sitemap.xml
