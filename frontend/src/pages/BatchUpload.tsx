@@ -159,7 +159,7 @@ export default function BatchUploadPage() {
       try {
         updateFileStatus(fileItem.id, { status: "uploading", progress: 20 });
 
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("auth_token");
         const formData = new FormData();
         formData.append("file", fileItem.file);
 

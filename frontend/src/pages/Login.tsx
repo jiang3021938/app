@@ -15,7 +15,7 @@ export default function Login() {
 
   // Check if user is already logged in
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("auth_token");
     if (token) {
       navigate("/dashboard");
     }
@@ -45,7 +45,7 @@ export default function Login() {
       const data = await response.json();
       
       if (data.success && data.token) {
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("auth_token", data.token);
         navigate("/dashboard");
       } else {
         setError(data.message || "Login failed. Please try again.");

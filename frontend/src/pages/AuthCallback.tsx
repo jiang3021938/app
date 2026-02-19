@@ -10,7 +10,7 @@ export default function AuthCallback() {
     // Handle token from Google OAuth callback
     const token = searchParams.get("token");
     if (token) {
-      localStorage.setItem("token", token);
+      localStorage.setItem("auth_token", token);
     }
     navigate("/dashboard");
   }, [navigate, searchParams]);

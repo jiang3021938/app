@@ -71,6 +71,14 @@ async def lifespan(app: FastAPI):
     logger = logging.getLogger(__name__)
     logger.info("=== Application startup initiated ===")
 
+    # Validate JWT secret key in non-dev environments
+    is_dev = os.getenv("ENVIRONMENT", "prod").lower() == "dev"
+    if not is_dev and settings.jwt_secret_key == "dev-only-insecure-key-override-in-production":
+        raise RuntimeError(
+            "JWT_SECRET_KEY is set to the insecure default value. "
+            "You must set the JWT_SECRET_KEY environment variable in production."
+        )
+
     # MODULE_STARTUP_START
     await initialize_database()
     await initialize_mock_data()
@@ -85,8 +93,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="FastAPI Modular Template",
-    description="A best-practice FastAPI template with modular architecture",
+    title="LeaseLenses API",
+    description="AI-powered lease agreement analysis and rental contract review API",
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -102,9 +110,9 @@ app.add_middleware(
     allow_origins=_allowed_origins,
     allow_origin_regex=None,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
+    expose_headers=["Content-Length", "Content-Range"],
 )
 
 
@@ -228,7 +236,7 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 @app.get("/")
 def root():
-    return {"message": "FastAPI Modular Template is running"}
+    return {"message": "LeaseLenses API is running"}
 
 
 @app.get("/health")

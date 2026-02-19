@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { getPrerenderDirs } from "./prerender.js";
 
 const baseUrl = "https://www.leaselenses.com";
 const distDir = "./dist";
@@ -72,11 +73,14 @@ if (fs.existsSync(blogDir)) {
   urls.push(...blogUrls);
 }
 
-// Collect HTML files in other directories (if any)
-const seoDir = path.join(distDir, "seo");
-if (fs.existsSync(seoDir)) {
-  const seoUrls = collectHtmlFiles(seoDir, "/seo");
-  urls.push(...seoUrls);
+// Collect HTML files in prerendered directories (derived from prerender.js)
+const prerenderDirs = getPrerenderDirs();
+for (const dir of prerenderDirs) {
+  const dirPath = path.join(distDir, dir);
+  if (fs.existsSync(dirPath)) {
+    const dirUrls = collectHtmlFiles(dirPath, `/${dir}`);
+    urls.push(...dirUrls);
+  }
 }
 
 // Generate sitemap.xml

@@ -139,7 +139,7 @@ export default function UploadPage() {
       setProgress(20);
 
       // Send file directly to backend for in-memory analysis
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("auth_token");
       const formData = new FormData();
       formData.append("file", file);
 
