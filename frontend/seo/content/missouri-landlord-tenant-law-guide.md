@@ -1,6 +1,6 @@
 ---
 title: "Missouri Landlord-Tenant Law Guide 2026: Rights, Deposits & Eviction Rules"
-description: "Complete guide to Missouri landlord-tenant law including security deposits, eviction process, repair obligations, and lease termination. Updated for 2026 with Missouri Revised Statutes Chapter 441 references."
+description: "Complete guide to Missouri landlord-tenant law including security deposits, eviction process, repair obligations, and lease termination. Updated for 2026 with Missouri Revised Statutes Chapter 441 and Chapter 535 references."
 keywords: "Missouri landlord tenant law, Missouri security deposit law, Missouri eviction process, Missouri Revised Statutes Chapter 441, Missouri landlord tenant rights"
 lang: "en"
 ---
