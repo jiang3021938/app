@@ -171,10 +171,8 @@ CREATE INDEX idx_state_regulations_state_code ON state_regulations(state_code);
 CREATE INDEX idx_state_regulations_regulation_category ON state_regulations(regulation_category);
 
 -- ============================================
--- Enable Row Level Security (RLS) - Optional
--- Uncomment if you need RLS for your application
+-- Enable Row Level Security (RLS)
 -- ============================================
-/*
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE extractions ENABLE ROW LEVEL SECURITY;
@@ -182,7 +180,27 @@ ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_credits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_credentials ENABLE ROW LEVEL SECURITY;
 ALTER TABLE oidc_states ENABLE ROW LEVEL SECURITY;
-*/
+
+-- RLS Policies: ensure users can only access their own data
+CREATE POLICY users_select_own ON users FOR SELECT USING (id = auth.uid()::text);
+CREATE POLICY users_update_own ON users FOR UPDATE USING (id = auth.uid()::text);
+
+CREATE POLICY documents_select_own ON documents FOR SELECT USING (user_id = auth.uid()::text);
+CREATE POLICY documents_insert_own ON documents FOR INSERT WITH CHECK (user_id = auth.uid()::text);
+CREATE POLICY documents_update_own ON documents FOR UPDATE USING (user_id = auth.uid()::text);
+CREATE POLICY documents_delete_own ON documents FOR DELETE USING (user_id = auth.uid()::text);
+
+CREATE POLICY extractions_select_own ON extractions FOR SELECT USING (user_id = auth.uid()::text);
+CREATE POLICY extractions_insert_own ON extractions FOR INSERT WITH CHECK (user_id = auth.uid()::text);
+
+CREATE POLICY payments_select_own ON payments FOR SELECT USING (user_id = auth.uid()::text);
+CREATE POLICY payments_insert_own ON payments FOR INSERT WITH CHECK (user_id = auth.uid()::text);
+
+CREATE POLICY user_credits_select_own ON user_credits FOR SELECT USING (user_id = auth.uid()::text);
+CREATE POLICY user_credits_update_own ON user_credits FOR UPDATE USING (user_id = auth.uid()::text);
+
+CREATE POLICY user_credentials_select_own ON user_credentials FOR SELECT USING (user_id = auth.uid()::text);
+CREATE POLICY user_credentials_update_own ON user_credentials FOR UPDATE USING (user_id = auth.uid()::text);
 
 -- ============================================
 -- Setup Functions for automatic updated_at

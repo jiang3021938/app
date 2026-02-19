@@ -4,7 +4,7 @@
  */
 
 function getToken(): string | null {
-  return localStorage.getItem("token");
+  return localStorage.getItem("auth_token");
 }
 
 function authHeaders(): Record<string, string> {

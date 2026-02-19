@@ -7,7 +7,7 @@ export interface AuthResult {
  * Check authentication status using email JWT token.
  */
 export async function checkAuthStatus(): Promise<AuthResult> {
-  const emailToken = localStorage.getItem("token");
+  const emailToken = localStorage.getItem("auth_token");
   if (emailToken) {
     try {
       const response = await fetch("/api/v1/email-auth/me", {
@@ -20,7 +20,7 @@ export async function checkAuthStatus(): Promise<AuthResult> {
         }
       }
       // Token invalid, remove it
-      localStorage.removeItem("token");
+      localStorage.removeItem("auth_token");
     } catch {
       // Token check failed
     }
@@ -33,5 +33,5 @@ export async function checkAuthStatus(): Promise<AuthResult> {
  * Perform logout by clearing the JWT token.
  */
 export async function performLogout() {
-  localStorage.removeItem("token");
+  localStorage.removeItem("auth_token");
 }

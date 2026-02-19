@@ -25,7 +25,7 @@ export default function Register() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("auth_token");
     if (token) {
       navigate("/dashboard");
     }
@@ -188,7 +188,7 @@ export default function Register() {
           const loginData = await loginResponse.json();
           
           if (loginData.success && loginData.token) {
-            localStorage.setItem("token", loginData.token);
+            localStorage.setItem("auth_token", loginData.token);
             navigate("/dashboard");
           } else {
             navigate("/login");

@@ -96,7 +96,7 @@ export default function PDFViewer({
   };
 
   const getPageImageUrl = (pageNum: number) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("auth_token");
     const url = `/api/v1/lease/pdf-page/${documentId}/${pageNum}?t=${token}`;
     console.log(`[PDFViewer] Loading page image: ${url}`);
     return url;

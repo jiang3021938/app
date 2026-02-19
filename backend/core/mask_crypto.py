@@ -5,8 +5,18 @@ import os
 
 from cryptography.fernet import Fernet
 
-secret_key = "Mgx@FunctionSea"
 key_prefix = "mgxkey-"
+
+
+def _get_mask_key() -> str:
+    """Get the encryption key from MASK_KEY environment variable."""
+    key = os.environ.get("MASK_KEY")
+    if not key:
+        raise RuntimeError(
+            "MASK_KEY environment variable is not set. "
+            "A secret encryption key must be provided via the MASK_KEY environment variable."
+        )
+    return key
 
 
 def _derive_fernet_key(key_material: str) -> bytes:
@@ -21,13 +31,13 @@ def _get_fernet(key_str: str) -> Fernet:
 
 
 def encrypt_text(plain: str) -> str:
-    pwd = os.environ.get("MASK_KEY", secret_key)
+    pwd = _get_mask_key()
     f = _get_fernet(pwd)
     return key_prefix + f.encrypt(plain.encode("utf-8")).decode("utf-8")
 
 
 def decrypt_text(token: str) -> str:
-    pwd = os.environ.get("MASK_KEY", secret_key)
+    pwd = _get_mask_key()
     f = _get_fernet(pwd)
     token = token.removeprefix(key_prefix)
     return f.decrypt(token.encode("utf-8")).decode("utf-8")
