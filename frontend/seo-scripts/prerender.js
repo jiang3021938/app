@@ -453,7 +453,7 @@ function prerenderHomepage(assets) {
     <section>
       <h2>Key Features</h2>
       <ul>
-        <li>AI-powered data extraction with 99%+ accuracy</li>
+        <li>AI-powered data extraction with high accuracy</li>
         <li>Risk identification and health scoring</li>
         <li>State-specific compliance checking for all 50 states</li>
         <li>Automatic calendar reminders for important dates</li>
@@ -508,4 +508,16 @@ export function prerender() {
   total += STATIC_PAGES.length;
 
   console.log(`✓ Prerendered ${total} page(s) for SEO`);
+}
+
+/**
+ * Returns the list of top-level directory names that the prerender step writes
+ * into dist/.  Used by generate-sitemap.js so the two scripts stay in sync.
+ */
+export function getPrerenderDirs() {
+  const dirs = new Set();
+  dirs.add("states");
+  for (const t of TOOLS) dirs.add(t.route.split("/")[0]);
+  for (const p of STATIC_PAGES) dirs.add(p.route.split("/")[0]);
+  return [...dirs];
 }
