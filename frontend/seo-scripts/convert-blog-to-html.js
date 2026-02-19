@@ -755,11 +755,11 @@ function generateListPage(articles) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Blog Articles List">
+  <meta name="description" content="Expert guides on landlord-tenant law, lease analysis, state rental regulations, and AI-powered contract review. Stay informed with the LeaseLenses blog.">
   
   <link rel="canonical" href="${baseUrl}/blog/">
   
-  <title>Articles</title>
+  <title>Landlord-Tenant Law Blog: Lease Analysis Guides &amp; State Laws | LeaseLenses</title>
   ${GA4_MEASUREMENT_ID ? `
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}"></script>
