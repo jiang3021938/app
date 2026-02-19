@@ -56,30 +56,32 @@ function collectHtmlFiles(dir, basePath = "") {
 }
 
 // Collect all HTML files
+const seen = new Set();
 const urls = [];
+
+function addUrl(entry) {
+  if (!seen.has(entry.url)) {
+    seen.add(entry.url);
+    urls.push(entry);
+  }
+}
 
 if (fs.existsSync(path.join(distDir, "index.html"))) {
   const stat = fs.statSync(path.join(distDir, "index.html"));
-  urls.push({
+  addUrl({
     url: baseUrl,
     lastmod: stat.mtime.toISOString()
   });
 }
 
-// Collect HTML files in blog directory
-const blogDir = path.join(distDir, "blog");
-if (fs.existsSync(blogDir)) {
-  const blogUrls = collectHtmlFiles(blogDir, "/blog");
-  urls.push(...blogUrls);
-}
-
 // Collect HTML files in prerendered directories (derived from prerender.js)
+// This includes blog, states, tools, and static marketing pages.
 const prerenderDirs = getPrerenderDirs();
 for (const dir of prerenderDirs) {
   const dirPath = path.join(distDir, dir);
   if (fs.existsSync(dirPath)) {
     const dirUrls = collectHtmlFiles(dirPath, `/${dir}`);
-    urls.push(...dirUrls);
+    dirUrls.forEach(addUrl);
   }
 }
 

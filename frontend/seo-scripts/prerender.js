@@ -546,6 +546,7 @@ export function prerender() {
  */
 export function getPrerenderDirs() {
   const dirs = new Set();
+  dirs.add("blog");
   dirs.add("states");
   for (const t of TOOLS) dirs.add(t.route.split("/")[0]);
   for (const p of STATIC_PAGES) dirs.add(p.route.split("/")[0]);
