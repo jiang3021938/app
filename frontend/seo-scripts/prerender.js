@@ -16,6 +16,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
 const distDir = path.resolve(projectRoot, "dist");
 const baseUrl = "https://www.leaselenses.com";
+// TODO: Replace with actual og-image.png when brand assets are ready
+const ogImage = `${baseUrl}/favicon.svg`;
 
 // ---------------------------------------------------------------------------
 // 1.  Read the Vite-built index.html to extract <head> assets & <body> scripts
@@ -150,20 +152,21 @@ function buildPage({ title, description, canonical, ogType, content, structuredD
   <meta property="og:url" content="${canonical}" />
   <meta property="og:title" content="${escapeHtml(title)}" />
   <meta property="og:description" content="${escapeHtml(description)}" />
-  <meta property="og:image" content="${baseUrl}/assets/og-image.png" />
+  <meta property="og:image" content="${ogImage}" />
 
   <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image" />
-  <meta property="twitter:url" content="${canonical}" />
-  <meta property="twitter:title" content="${escapeHtml(title)}" />
-  <meta property="twitter:description" content="${escapeHtml(description)}" />
-  <meta property="twitter:image" content="${baseUrl}/assets/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="${canonical}" />
+  <meta name="twitter:title" content="${escapeHtml(title)}" />
+  <meta name="twitter:description" content="${escapeHtml(description)}" />
+  <meta name="twitter:image" content="${ogImage}" />
 
   ${jsonLdBlocks}
   ${assets.headLinkTags}
 </head>
 <body>
-  <div id="root">${content}</div>
+  <div id="seo-content" style="display:none">${content}</div>
+  <div id="root"></div>
   ${assets.bodyScriptTags}
 </body>
 </html>`;
@@ -456,7 +459,7 @@ function prerenderHomepage(assets) {
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD", priceValidUntil: "2027-12-31" },
     description,
     url: baseUrl,
-    screenshot: `${baseUrl}/assets/og-image.png`,
+    screenshot: ogImage,
     softwareVersion: "2.0",
     author: { "@type": "Organization", name: "LeaseLenses" },
     featureList: [
@@ -496,7 +499,9 @@ function prerenderHomepage(assets) {
   });
 
   // Overwrite the root index.html with the prerendered version
-  fs.writeFileSync(path.join(distDir, "index.html"), html, "utf-8");
+  const indexPath = path.join(distDir, "index.html");
+  fs.copyFileSync(indexPath, path.join(distDir, "index.original.html"));
+  fs.writeFileSync(indexPath, html, "utf-8");
 }
 
 // ---------------------------------------------------------------------------
